@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QSpacerItem, QSizePolicy, QFileDialog
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
+from views.other_source_view import OtherSourceView
 import logging
 
 
@@ -8,12 +9,14 @@ class StartView(QWidget):
     def __init__(self):
         super().__init__()
 
+        self._other_source_window = None
         self._input_path = None
         self._functionality_selected = None
         self._model_selected = None
 
         self._btn_import_image = None
         self._btn_import_video = None
+        self._btn_other_source = None
         self._functionality_combo = None
         self._model_combo = None
         self._btn_run = None
@@ -103,6 +106,7 @@ class StartView(QWidget):
         btn_other_source = QPushButton('Other Source')
         btn_other_source.setProperty('class', 'input')
         btn_other_source.clicked.connect(self.open_other_source)
+        self._btn_other_source = btn_other_source
 
         # Input Layout
         input_layout = QVBoxLayout()
@@ -158,7 +162,6 @@ class StartView(QWidget):
         model_combo.addItem('YOLOv8m', 'yolov8m.pt')
         model_combo.addItem('YOLOv8l', 'yolov8l.pt')
         model_combo.addItem('YOLOv8x', 'yolov8x.pt')
-        model_combo.addItem('YOLOv8m-seg', 'yolov8m-seg.pt')
         model_combo.currentIndexChanged.connect(self.check_model_selected)
         self._model_combo = model_combo
 
@@ -232,7 +235,23 @@ class StartView(QWidget):
             self.check_enable_run()
 
     def open_other_source(self):
+        self._other_source_window = OtherSourceView(self.callback_other_source)
+        self._other_source_window.show()
         logging.debug('Window opened : Other Source')
+
+    def callback_other_source(self, url, image, video, live):
+        self._input_path = [url]
+        self._is_image = image
+        self._is_video = video
+        self._is_live = live
+
+        self._btn_import_video.setText('Import Video')
+        self._btn_import_image.setText('Import Image')
+        source_type = 'Image' if image else 'Video' if video else 'Live' if live else 'Unknown'
+        self._btn_other_source.setText(f'Source : {source_type}')
+
+        logging.debug(f'Other source opened: {url}, type: {source_type}')
+        self.check_enable_run()
 
     def open_settings(self):
         logging.debug('Window opened : Settings')
