@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, QProgressBar
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 from views.image_result_view import ImageResultView
@@ -10,9 +10,10 @@ import logging
 class StartView(QWidget):
     def __init__(self, add_new_tab):
         super().__init__()
+        self.callback_count = 0
         self._add_new_tab = add_new_tab
-        self._main_layout = None
         self._other_source_window = None
+        self._progress_bar = None
 
         self._input_path = None
         self._functionality_selected = None
@@ -37,16 +38,22 @@ class StartView(QWidget):
     ##############################
 
     def init_ui(self):
+        # Middle Layout
+        middle_layout = QHBoxLayout()
+        middle_layout.addStretch(1)
+        middle_layout.addWidget(self.input_ui())
+        middle_layout.addWidget(self.functionality_ui())
+        middle_layout.addWidget(self.model_ui())
+        middle_layout.addWidget(self.run_ui())
+        middle_layout.addStretch(1)
+
         # Main Layout
-        main_layout = QHBoxLayout()
-        main_layout.addStretch(1)
-        main_layout.addWidget(self.input_ui())
-        main_layout.addWidget(self.functionality_ui())
-        main_layout.addWidget(self.model_ui())
-        main_layout.addWidget(self.run_ui())
-        main_layout.addStretch(1)
-        self._main_layout = main_layout
-        self.setLayout(self._main_layout)
+        main_layout = QVBoxLayout(self)
+        main_layout.addStretch()
+        main_layout.addLayout(middle_layout)
+        main_layout.addStretch()
+        main_layout.addWidget(self.progress_bar_ui())
+        self.setLayout(main_layout)
 
     def input_ui(self):
         # Input icon
@@ -176,6 +183,16 @@ class StartView(QWidget):
         run_widget.setFixedSize(240, 240)
         return run_widget
 
+    def progress_bar_ui(self):
+        progress_bar = QProgressBar()
+        progress_bar.setRange(0, 100)
+        progress_bar.setValue(0)
+        progress_bar.setTextVisible(True)
+        progress_bar.setFormat('%p%')
+        progress_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._progress_bar = progress_bar
+        return progress_bar
+
     ##############################
     #         CONTROLLER         #
     ##############################
@@ -263,13 +280,20 @@ class StartView(QWidget):
 
         if media_type == 'image' and task == 'detect':
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path)
+            self.callback_count = 0
+            self.update_progress_bar()
 
             def callback_ok(input_path, output_media_path):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget = ImageResultView(input_path, output_media_path)
-                self._add_new_tab(result_widget, "Image detection")
+                self._add_new_tab(result_widget, "Image detection", len(self._input_path) == 1)
+                self.callback_count += 1
+                self.update_progress_bar()
 
             def callback_err(input_media_path, exception):
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
             pipeline.infer_each(callback_ok, callback_err)
+
+    def update_progress_bar(self):
+        self._progress_bar.setValue(int(self.callback_count / len(self._input_path) * 100))

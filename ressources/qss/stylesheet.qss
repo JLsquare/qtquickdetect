@@ -119,7 +119,6 @@ QTabBar::close-button:hover {
 QSlider {
     margin: 8px;
 }
-
 QSlider::groove:horizontal {
     height: 8px;
     background: #494A51;
@@ -127,7 +126,6 @@ QSlider::groove:horizontal {
     border-radius: 4px;
     margin: 2px 0;
 }
-
 QSlider::handle:horizontal {
     width: 16px;
     height: 16px;
@@ -136,13 +134,32 @@ QSlider::handle:horizontal {
     border-radius: 7px;
     margin: -3px 0;
 }
-
 QSlider::add-page:horizontal {
     background: none;
 }
-
 QSlider::sub-page:horizontal {
     background: #36363b;
     border: 1px solid #797979;
     border-radius: 7px;
+}
+
+/* ==== QProgressBar ==== */
+QProgressBar {
+    border: 1px solid #797979;
+    border-radius: 8px;
+    background-color: #494A51;
+    text-align: center;
+    margin: 8px;
+    color: white;
+    font-weight: bold;
+}
+
+QProgressBar::chunk {
+    background-color: #79D962;
+    border-radius: 8px;
+}
+
+QProgressBar::chunk:indeterminate {
+    background-color: #79D962;
+    border-radius: 8px;
 }

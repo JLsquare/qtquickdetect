@@ -14,11 +14,12 @@ class AppTab(QTabWidget):
         if index == self.count() - 1:
             self.add_new_tab()
 
-    def add_new_tab(self, new_tab=None, title="Start"):
+    def add_new_tab(self, new_tab=None, title="Start", redirect=True):
         if new_tab is None:
             new_tab = StartView(self.add_new_tab)
         self.insertTab(self.count() - 1, new_tab, title)
-        self.setCurrentIndex(self.count() - 2)
+        if redirect:
+            self.setCurrentIndex(self.count() - 2)
         if self.count() == 1:
             self.addTab(QWidget(), "+")
             self.tabBar().setTabButton(self.count() - 1, QTabBar.ButtonPosition.RightSide, None)
