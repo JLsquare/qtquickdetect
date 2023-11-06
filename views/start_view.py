@@ -5,6 +5,7 @@ from views.other_source_view import OtherSourceView
 from views.settings_view import SettingsView
 import logging
 
+from pipeline import img_detection
 
 class StartView(QWidget):
     def __init__(self):
@@ -290,4 +291,16 @@ class StartView(QWidget):
         task = self._functionality_combo.currentData()
         media_type = 'image' if self._is_image else 'video' if self._is_video else 'live'
         logging.info('Run with : ' + str(inputs) + ', ' + str(model_path) + ', ' + str(task) + ', ' + str(media_type))
+
+        if media_type == 'image' and task == 'detect':
+            pipeline = img_detection.ImgDetectionPipeline(inputs, model_path)
+
+            def callback_ok(input_path, output_media_path):
+                logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
+
+            def callback_err(input_media_path, exception):
+                logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
+
+            pipeline.infer_each(callback_ok, callback_err)
+
 
