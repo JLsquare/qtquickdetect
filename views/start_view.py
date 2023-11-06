@@ -46,9 +46,7 @@ class StartView(QWidget):
 
         # Main Layout
         main_layout = QVBoxLayout()
-        main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         main_layout.addLayout(middle_layout)
-        main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         self.setLayout(main_layout)
 
     def input_ui(self):
@@ -86,7 +84,7 @@ class StartView(QWidget):
 
         input_widget = QWidget()
         input_widget.setLayout(input_layout)
-        input_widget.setFixedSize(240, 300)
+        input_widget.setFixedSize(240, 240)
         return input_widget
 
     def functionality_ui(self):
@@ -115,7 +113,7 @@ class StartView(QWidget):
 
         functionality_widget = QWidget()
         functionality_widget.setLayout(functionality_layout)
-        functionality_widget.setFixedSize(240, 300)
+        functionality_widget.setFixedSize(240, 240)
         return functionality_widget
 
     def model_ui(self):
@@ -148,7 +146,7 @@ class StartView(QWidget):
 
         model_widget = QWidget()
         model_widget.setLayout(model_layout)
-        model_widget.setFixedSize(240, 300)
+        model_widget.setFixedSize(240, 240)
         return model_widget
 
     def run_ui(self):
@@ -176,7 +174,7 @@ class StartView(QWidget):
 
         run_widget = QWidget()
         run_widget.setLayout(run_layout)
-        run_widget.setFixedSize(240, 300)
+        run_widget.setFixedSize(240, 240)
         return run_widget
 
     ##############################
@@ -274,5 +272,3 @@ class StartView(QWidget):
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
             pipeline.infer_each(callback_ok, callback_err)
-
-
