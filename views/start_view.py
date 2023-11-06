@@ -37,10 +37,12 @@ class StartView(QWidget):
     def init_ui(self):
         # Middle Layout
         middle_layout = QHBoxLayout()
-        middle_layout.addLayout(self.input_ui(), 1)
-        middle_layout.addLayout(self.functionality_ui(), 1)
-        middle_layout.addLayout(self.model_ui(), 1)
-        middle_layout.addLayout(self.run_ui(), 1)
+        middle_layout.addStretch(1)
+        middle_layout.addWidget(self.input_ui())
+        middle_layout.addWidget(self.functionality_ui())
+        middle_layout.addWidget(self.model_ui())
+        middle_layout.addWidget(self.run_ui())
+        middle_layout.addStretch(1)
 
         # Main Layout
         main_layout = QVBoxLayout()
@@ -82,7 +84,10 @@ class StartView(QWidget):
         input_layout.addWidget(btn_other_source)
         input_layout.addStretch()
 
-        return input_layout
+        input_widget = QWidget()
+        input_widget.setLayout(input_layout)
+        input_widget.setFixedSize(240, 300)
+        return input_widget
 
     def functionality_ui(self):
         # Functionality icon
@@ -108,7 +113,10 @@ class StartView(QWidget):
         functionality_layout.addWidget(functionality_combo)
         functionality_layout.addStretch()
 
-        return functionality_layout
+        functionality_widget = QWidget()
+        functionality_widget.setLayout(functionality_layout)
+        functionality_widget.setFixedSize(240, 300)
+        return functionality_widget
 
     def model_ui(self):
         # Model icon
@@ -138,7 +146,10 @@ class StartView(QWidget):
         model_layout.addWidget(model_combo)
         model_layout.addStretch()
 
-        return model_layout
+        model_widget = QWidget()
+        model_widget.setLayout(model_layout)
+        model_widget.setFixedSize(240, 300)
+        return model_widget
 
     def run_ui(self):
         # Run icon
@@ -163,7 +174,10 @@ class StartView(QWidget):
         run_layout.addWidget(btn_run)
         run_layout.addStretch()
 
-        return run_layout
+        run_widget = QWidget()
+        run_widget.setLayout(run_layout)
+        run_widget.setFixedSize(240, 300)
+        return run_widget
 
     ##############################
     #         CONTROLLER         #
