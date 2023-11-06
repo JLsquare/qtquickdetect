@@ -1,10 +1,9 @@
-import logging
-
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
 from models.app_tab import AppTab
 from views.settings_view import SettingsView
+import logging
 
 
 class AppView(QWidget):
@@ -58,6 +57,10 @@ class AppView(QWidget):
         top_layout.addWidget(btn_settings)
 
         return top_layout
+
+    ##############################
+    #         CONTROLLER         #
+    ##############################
 
     def open_settings(self):
         self._settings_window = SettingsView()

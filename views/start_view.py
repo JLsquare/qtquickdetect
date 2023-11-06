@@ -1,15 +1,17 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QSpacerItem, QSizePolicy, QFileDialog
-from PyQt6.QtGui import QPixmap, QIcon
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import Qt
+from views.image_result_view import ImageResultView
 from views.other_source_view import OtherSourceView
-from views.settings_view import SettingsView
+from pipeline import img_detection
 import logging
 
-from pipeline import img_detection
 
 class StartView(QWidget):
-    def __init__(self):
+    def __init__(self, add_new_tab):
         super().__init__()
+        self._add_new_tab = add_new_tab
+        self._main_layout = None
         self._other_source_window = None
 
         self._input_path = None
@@ -35,19 +37,16 @@ class StartView(QWidget):
     ##############################
 
     def init_ui(self):
-        # Middle Layout
-        middle_layout = QHBoxLayout()
-        middle_layout.addStretch(1)
-        middle_layout.addWidget(self.input_ui())
-        middle_layout.addWidget(self.functionality_ui())
-        middle_layout.addWidget(self.model_ui())
-        middle_layout.addWidget(self.run_ui())
-        middle_layout.addStretch(1)
-
         # Main Layout
-        main_layout = QVBoxLayout()
-        main_layout.addLayout(middle_layout)
-        self.setLayout(main_layout)
+        main_layout = QHBoxLayout()
+        main_layout.addStretch(1)
+        main_layout.addWidget(self.input_ui())
+        main_layout.addWidget(self.functionality_ui())
+        main_layout.addWidget(self.model_ui())
+        main_layout.addWidget(self.run_ui())
+        main_layout.addStretch(1)
+        self._main_layout = main_layout
+        self.setLayout(self._main_layout)
 
     def input_ui(self):
         # Input icon
@@ -267,6 +266,8 @@ class StartView(QWidget):
 
             def callback_ok(input_path, output_media_path):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
+                result_widget = ImageResultView(input_path, output_media_path)
+                self._add_new_tab(result_widget, "Image detection")
 
             def callback_err(input_media_path, exception):
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
