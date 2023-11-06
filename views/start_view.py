@@ -1,11 +1,28 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QSpacerItem, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QSpacerItem, QSizePolicy, QFileDialog
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
+import logging
 
 
 class StartView(QWidget):
     def __init__(self):
         super().__init__()
+
+        self._input_path = None
+        self._functionality_selected = None
+        self._model_selected = None
+
+        self._btn_import_image = None
+        self._btn_import_video = None
+        self._functionality_combo = None
+        self._model_combo = None
+        self._btn_run = None
+
+        self._is_image = None
+        self._is_video = None
+        self._is_live = None
+
+        self.init_variables()
         self.init_window()
         self.init_ui()
 
@@ -53,6 +70,7 @@ class StartView(QWidget):
         btn_settings.setIconSize(QSize(32, 32))
         btn_settings.setFixedWidth(32)
         btn_settings.setProperty('class', 'settings')
+        btn_settings.clicked.connect(self.open_settings)
 
         # Top layout
         top_layout = QHBoxLayout()
@@ -76,10 +94,15 @@ class StartView(QWidget):
         # Input buttons
         btn_import_image = QPushButton('Import Image')
         btn_import_image.setProperty('class', 'input')
+        btn_import_image.clicked.connect(self.open_image)
+        self._btn_import_image = btn_import_image
         btn_import_video = QPushButton('Import Video')
         btn_import_video.setProperty('class', 'input')
+        btn_import_video.clicked.connect(self.open_video)
+        self._btn_import_video = btn_import_video
         btn_other_source = QPushButton('Other Source')
         btn_other_source.setProperty('class', 'input')
+        btn_other_source.clicked.connect(self.open_other_source)
 
         # Input Layout
         input_layout = QVBoxLayout()
@@ -105,6 +128,8 @@ class StartView(QWidget):
         functionality_combo = QComboBox()
         functionality_combo.addItem('Functionality')
         functionality_combo.addItem('Detection', 'detect')
+        functionality_combo.currentIndexChanged.connect(self.check_functionality_selected)
+        self._functionality_combo = functionality_combo
 
         # Functionality Layout
         functionality_layout = QVBoxLayout()
@@ -133,6 +158,9 @@ class StartView(QWidget):
         model_combo.addItem('YOLOv8m', 'yolov8m.pt')
         model_combo.addItem('YOLOv8l', 'yolov8l.pt')
         model_combo.addItem('YOLOv8x', 'yolov8x.pt')
+        model_combo.addItem('YOLOv8m-seg', 'yolov8m-seg.pt')
+        model_combo.currentIndexChanged.connect(self.check_model_selected)
+        self._model_combo = model_combo
 
         # Model Layout
         model_layout = QVBoxLayout()
@@ -156,6 +184,8 @@ class StartView(QWidget):
         btn_run = QPushButton('Run')
         btn_run.setProperty('class', 'run')
         btn_run.setEnabled(False)
+        btn_run.clicked.connect(self.run)
+        self._btn_run = btn_run
 
         # Run Layout
         run_layout = QVBoxLayout()
@@ -164,3 +194,76 @@ class StartView(QWidget):
         run_layout.addStretch()
 
         return run_layout
+
+    ##############################
+    #         CONTROLLER         #
+    ##############################
+
+    def init_variables(self):
+        self._model_selected = False
+        self._functionality_selected = False
+        self._input_path = ''
+        self._is_live = False
+        self._is_image = False
+        self._is_video = False
+
+    def open_image(self):
+        file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')
+        if len(file_name[0]) > 0:
+            self._btn_import_image.setText(str(len(file_name[0])) + ' Images')
+            self._btn_import_video.setText('Import Video')
+            self._is_image = True
+            self._is_video = False
+            self._is_live = False
+            self._input_path = file_name[0]
+            logging.debug('Image(s) opened : ' + str(file_name[0]))
+            self.check_enable_run()
+
+    def open_video(self):
+        file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov)')
+        if len(file_name[0]) > 0:
+            self._btn_import_video.setText(str(len(file_name[0])) + ' Videos')
+            self._btn_import_image.setText('Import Image')
+            self._is_video = True
+            self._is_image = False
+            self._is_live = False
+            self._input_path = file_name[0]
+            logging.debug('Video(s) opened : ' + str(file_name[0]))
+            self.check_enable_run()
+
+    def open_other_source(self):
+        logging.debug('Window opened : Other Source')
+
+    def open_settings(self):
+        logging.debug('Window opened : Settings')
+
+    def check_functionality_selected(self, index):
+        if index != 0:
+            self._functionality_selected = True
+        else:
+            self._functionality_selected = False
+        logging.debug('Functionality selected : ' + self._functionality_combo.currentData())
+        self.check_enable_run()
+
+    def check_model_selected(self, index):
+        if index != 0:
+            self._model_selected = True
+        else:
+            self._model_selected = False
+        logging.debug('Model selected : ' + self._model_combo.currentData())
+        self.check_enable_run()
+
+    def check_enable_run(self):
+        if (self._is_image or self._is_video or self._is_live) and self._model_selected and self._functionality_selected:
+            self._btn_run.setEnabled(True)
+        else:
+            self._btn_run.setEnabled(False)
+        logging.debug('Run enabled : ' + str(self._btn_run.isEnabled()))
+
+    def run(self):
+        inputs = self._input_path
+        model_path = self._model_combo.currentData()
+        task = self._functionality_combo.currentData()
+        media_type = 'image' if self._is_image else 'video' if self._is_video else 'live'
+        logging.info('Run with : ' + str(inputs) + ', ' + str(model_path) + ', ' + str(task) + ', ' + str(media_type))
+
