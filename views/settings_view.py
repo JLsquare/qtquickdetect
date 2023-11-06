@@ -39,15 +39,16 @@ class SettingsView(QWidget):
         general_page.setLayout(general_layout)
         general_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
+        # Device selection
         devices_label = QLabel('GPU Devices:')
         devices_combo = QComboBox()
         devices_combo.addItem('CPU')
         devices_combo.addItems(self.get_gpu_devices())
 
+        # Confidence threshold
         confidence_tresh_label = QLabel('Confidence Threshold:')
         confidence_tresh_slider = QSlider(Qt.Orientation.Horizontal)
         confidence_tresh_slider.setRange(0, 100)
-
         confidence_tresh_input = QLineEdit()
 
         general_layout.addWidget(devices_label)

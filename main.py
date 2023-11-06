@@ -1,7 +1,8 @@
 import logging
 import os
 from PyQt6.QtWidgets import QApplication
-from views.start_view import StartView
+
+from views.app_view import AppView
 
 # Configure logging
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
@@ -14,8 +15,9 @@ if not os.path.exists('tmp'):
 app = QApplication([])
 
 # Show the main window
-window = StartView()
+window = AppView()
 window.show()
 
 # Run the application
 app.exec()
+

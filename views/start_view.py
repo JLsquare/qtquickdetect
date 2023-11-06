@@ -10,8 +10,6 @@ from pipeline import img_detection
 class StartView(QWidget):
     def __init__(self):
         super().__init__()
-
-        self._settings_window = None
         self._other_source_window = None
 
         self._input_path = None
@@ -30,18 +28,11 @@ class StartView(QWidget):
         self._is_live = None
 
         self.init_variables()
-        self.init_window()
         self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
-
-    def init_window(self):
-        self.setWindowTitle('QTQuickDetect')
-        self.setGeometry(100, 100, 800, 480)
-        with open('ressources/qss/stylesheet.qss', 'r') as file:
-            self.setStyleSheet(file.read())
 
     def init_ui(self):
         # Middle Layout
@@ -51,41 +42,12 @@ class StartView(QWidget):
         middle_layout.addLayout(self.model_ui(), 1)
         middle_layout.addLayout(self.run_ui(), 1)
 
-        # Main layout
+        # Main Layout
         main_layout = QVBoxLayout()
-        main_layout.addLayout(self.top_ui())
         main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         main_layout.addLayout(middle_layout)
         main_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
         self.setLayout(main_layout)
-
-    def top_ui(self):
-        # Title Layout
-        title_layout = QHBoxLayout()
-        title_icon = QLabel()
-        title_icon.setPixmap(
-            QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                                       Qt.TransformationMode.SmoothTransformation))
-        title_icon.setFixedWidth(32)
-        title_label = QLabel('QTQuickDetect')
-        title_layout.addWidget(title_icon)
-        title_layout.addWidget(title_label)
-
-        # Settings icon
-        btn_settings = QPushButton()
-        btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
-        btn_settings.setIconSize(QSize(32, 32))
-        btn_settings.setFixedWidth(32)
-        btn_settings.setProperty('class', 'settings')
-        btn_settings.clicked.connect(self.open_settings)
-
-        # Top layout
-        top_layout = QHBoxLayout()
-        top_layout.addStretch(2)
-        top_layout.addLayout(title_layout, 3)
-        top_layout.addWidget(btn_settings, 1)
-
-        return top_layout
 
     def input_ui(self):
         # Input icon
@@ -118,6 +80,7 @@ class StartView(QWidget):
         input_layout.addWidget(btn_import_image)
         input_layout.addWidget(btn_import_video)
         input_layout.addWidget(btn_other_source)
+        input_layout.addStretch()
 
         return input_layout
 
@@ -256,11 +219,6 @@ class StartView(QWidget):
 
         logging.debug(f'Other source opened: {url}, type: {source_type}')
         self.check_enable_run()
-
-    def open_settings(self):
-        self._settings_window = SettingsView()
-        self._settings_window.show()
-        logging.debug('Window opened : Settings')
 
     def check_functionality_selected(self, index):
         if index != 0:
