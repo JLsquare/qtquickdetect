@@ -94,3 +94,55 @@ QLineEdit {
     padding: 8px 16px;
     margin: 8px;
 }
+
+/* ==== QTabBar et QTabWidget ==== */
+QTabBar {
+    background-color: #5D5D65;
+}
+QTabBar::tab {
+    background-color: #494A51;
+    border: 1px solid #797979;
+    border-radius: 16px;
+    padding: 8px 16px;
+    margin: 5px;
+    margin-top: 0px;
+}
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background-color: #36363b;
+}
+QTabWidget::pane {
+    border: none;
+    border-radius: 16px;
+}
+
+/* ==== QSlider ==== */
+QSlider {
+    margin: 8px;
+}
+
+QSlider::groove:horizontal {
+    height: 8px;
+    background: #494A51;
+    border: 1px solid #797979;
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+QSlider::handle:horizontal {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border: 1px solid #797979;
+    border-radius: 7px;
+    margin: -3px 0;
+}
+
+QSlider::add-page:horizontal {
+    background: none;
+}
+
+QSlider::sub-page:horizontal {
+    background: #36363b;
+    border: 1px solid #797979;
+    border-radius: 7px;
+}

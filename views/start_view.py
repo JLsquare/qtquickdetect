@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QCom
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 from views.other_source_view import OtherSourceView
+from views.settings_view import SettingsView
 import logging
 
 
@@ -9,7 +10,9 @@ class StartView(QWidget):
     def __init__(self):
         super().__init__()
 
+        self._settings_window = None
         self._other_source_window = None
+
         self._input_path = None
         self._functionality_selected = None
         self._model_selected = None
@@ -254,6 +257,8 @@ class StartView(QWidget):
         self.check_enable_run()
 
     def open_settings(self):
+        self._settings_window = SettingsView()
+        self._settings_window.show()
         logging.debug('Window opened : Settings')
 
     def check_functionality_selected(self, index):
