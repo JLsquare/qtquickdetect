@@ -23,7 +23,6 @@ class VidDetectionPipeline:
         """
 
         device = appstate.device
-        print(device)
 
         model = None     
 
