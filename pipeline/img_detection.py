@@ -3,13 +3,14 @@ import logging
 import ultralytics
 import ultralytics.engine.model
 import ultralytics.engine.results
-from typing import List, Callable, Any
-import os
-import random
+from typing import List
 import cv2 as cv
 
 from utils.file_handling import *
 from utils.image_helpers import *
+from models.app_state import AppState
+
+appstate = AppState.get_instance()
 
 class ImgDetectionPipeline:
     def __init__(self, inputs: List[str], model_path: str):
@@ -21,7 +22,8 @@ class ImgDetectionPipeline:
         :raises Exception: If the model fails to load or if it's task does not match the pipeline task
         """
 
-        device = torch.device('cpu')
+        device = appstate.device
+
         model = None     
 
         try:
