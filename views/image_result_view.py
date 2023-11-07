@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
+import logging
 
 
 class ImageResultView(QWidget):
@@ -56,4 +57,20 @@ class ImageResultView(QWidget):
 
     def save_image_button_ui(self):
         save_image_button = QPushButton('Save Image')
+        save_image_button.clicked.connect(self.save_image)
         return save_image_button
+
+    ##############################
+    #         CONTROLLER         #
+    ##############################
+
+    def save_image(self):
+        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG (*.png);;JPEG (*.jpg *.jpeg)")
+        if file_name and not file_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            if 'PNG' in selected_filter:
+                file_name += '.png'
+            elif 'JPEG' in selected_filter:
+                file_name += '.jpg'
+            pixmap = QPixmap(self._result_image)
+            pixmap.save(file_name)
+            logging.debug(f'Saved image to {file_name}')
