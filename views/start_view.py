@@ -6,6 +6,8 @@ from views.other_source_view import OtherSourceView
 from pipeline import img_detection, vid_detection
 import logging
 
+from views.video_result_view import VideoResultView
+
 
 class StartView(QWidget):
     def __init__(self, add_new_tab):
@@ -304,7 +306,7 @@ class StartView(QWidget):
 
             def callback_ok(input_path, output_media_path):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
-                result_widget = ImageResultView(input_path, output_media_path)
+                result_widget = VideoResultView(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Video detection", len(self._input_path) == 1)
                 self.callback_count += 1
                 self.update_progress_bar()
