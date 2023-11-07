@@ -8,6 +8,7 @@ import os
 import random
 import cv2 as cv
 
+from utils.file_handling import *
 from utils.image_helpers import *
 
 class ImgDetectionPipeline:
@@ -63,8 +64,7 @@ class ImgDetectionPipeline:
 
                     draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, (0, 255, 0), 2)
 
-                basename = random.randbytes(12).hex()
-                dst = os.path.join('tmp', basename + '.png')
+                dst = get_tmp_filepath('.png')
 
                 cv.imwrite(dst, opencv_img)
                 del opencv_img
