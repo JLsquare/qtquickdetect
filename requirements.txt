@@ -1,1 +1,5 @@
 pyqt6 == 6.5.*
+ultralytics == 8.0.*
+torchvision == 0.16.*
+torch == 2.1.*
+opencv-python == 4.8.*
