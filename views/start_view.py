@@ -284,7 +284,7 @@ class StartView(QWidget):
             self.callback_count = 0
             self.update_progress_bar()
 
-            def callback_ok(input_path, output_media_path):
+            def callback_ok(input_path, output_media_path, output_json_path):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget = ImageResultView(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Image detection", len(self._input_path) == 1)

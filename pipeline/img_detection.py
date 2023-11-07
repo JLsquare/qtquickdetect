@@ -5,6 +5,7 @@ import ultralytics.engine.model
 import ultralytics.engine.results
 from typing import List
 import cv2 as cv
+import json
 
 from utils.file_handling import *
 from utils.image_helpers import *
@@ -44,7 +45,7 @@ class ImgDetectionPipeline:
     def infer_each(self, cb_ok, cb_err):
         """
         Runs a detection for all images in the input list
-        :param callback_ok: Callback function `callback(input_path, output_media_path)`
+        :param callback_ok: Callback function `callback(input_path, output_media_path, output_json_path)`
         :param callback_err: Callback function `callback(input_media_path, exception)`
         """
 
@@ -53,9 +54,9 @@ class ImgDetectionPipeline:
                 result = self._model(src)
 
                 result = result[0].cpu()
-                json = result.tojson()
 
                 opencv_img = cv.imread(src)
+                json_result = []
 
                 for box in result.boxes:
                     flat = box.xyxy.flatten()
@@ -63,15 +64,20 @@ class ImgDetectionPipeline:
                     bottomright = (int(flat[2]), int(flat[3]))
                     classname = self._names[int(box.cls)] # type: ignore
                     conf = box.conf[0] # It's a tensor [x]
+                    json_result.append({'x1': topleft[0], 'y1': topleft[1], 'x2': bottomright[0], 'y2': bottomright[1], 'class': classname, 'confidence': conf.item()})
 
                     draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, (0, 255, 0), 2)
 
                 dst = get_tmp_filepath(f'.{appstate.config.image_format}')
+                dst_json = get_tmp_filepath('.json')
+
+                with open(dst_json, 'w') as json_file:
+                    json.dump(json_result, json_file)
 
                 cv.imwrite(dst, opencv_img)
                 del opencv_img
                 
-                cb_ok(src, dst)
+                cb_ok(src, dst, dst_json)
 
             except Exception as e:
                 cb_err(src, e)
