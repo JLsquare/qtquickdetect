@@ -320,9 +320,6 @@ class StartView(QWidget):
         base = self.callback_count / len(self._input_path)
         extra = extra / len(self._input_path)
 
-        print(f'base: {base}, extra: {extra}')
-        print(f'base + extra: {base + extra}')
-
         self._progress_bar.setValue(int((base + extra) * 100))
 
       
