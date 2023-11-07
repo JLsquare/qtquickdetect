@@ -53,11 +53,15 @@ class VidDetectionPipeline:
 
         for src in self._inputs:
             try:
-                output = get_tmp_filepath('.mp4')
+                output = get_tmp_filepath(f'.{appstate.config.video_format}')
 
                 cap = cv.VideoCapture(src)
                 width, height, fps, frame_count = int(cap.get(cv.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv.CAP_PROP_FPS)), int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-                writer = cv.VideoWriter(output, cv.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+                if appstate.config.video_format == 'avi':
+                    codec = 'XVID'
+                else:
+                    codec = 'mp4v'
+                writer = cv.VideoWriter(output, cv.VideoWriter_fourcc(*codec), fps, (width, height))
                 frame_index = 0
 
                 while cap.isOpened():

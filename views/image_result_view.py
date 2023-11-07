@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QFile
 import logging
 
 
@@ -65,12 +65,19 @@ class ImageResultView(QWidget):
     ##############################
 
     def save_image(self):
-        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Image", "", "PNG (*.png);;JPEG (*.jpg *.jpeg)")
-        if file_name and not file_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-            if 'PNG' in selected_filter:
-                file_name += '.png'
-            elif 'JPEG' in selected_filter:
-                file_name += '.jpg'
-            pixmap = QPixmap(self._result_image)
-            pixmap.save(file_name)
-            logging.debug(f'Saved image to {file_name}')
+        if self._result_image.lower().endswith('.jpg') or self._result_image.lower().endswith('.jpeg'):
+            format_filter = 'JPEG (*.jpg, *.jpeg)'
+        else:
+            format_filter = 'PNG (*.png)'
+        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Image", "", format_filter)
+        if file_name:
+            if selected_filter == 'JPEG (*.jpg, *.jpeg)' and not file_name.lower().endswith('.jpg'):
+                file_name += ".jpg"
+            if selected_filter == 'PNG (*.png)' and not file_name.lower().endswith('.png'):
+                file_name += ".png"
+            if QFile.copy(self._result_image, file_name):
+                QMessageBox.information(self, "Success", "Image saved successfully!")
+                logging.debug(f'Saved image to {file_name}')
+            else:
+                QMessageBox.critical(self, "Error", "An error occurred while saving the image.")
+                logging.error(f'Could not save image to {file_name}')

@@ -83,6 +83,17 @@ class SettingsView(QWidget):
         image_page = QWidget(self)
         image_layout = QVBoxLayout()
         image_page.setLayout(image_layout)
+        image_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        file_format_label = QLabel('File format:')
+        file_format_combo = QComboBox()
+        file_format_combo.addItem('PNG (.png)', 'png')
+        file_format_combo.addItem('JPEG (.jpg, .jpeg)', 'jpg')
+        file_format_combo.setCurrentText(self.get_image_format())
+        file_format_combo.currentTextChanged.connect(self.set_image_format)
+
+        image_layout.addWidget(file_format_label)
+        image_layout.addWidget(file_format_combo)
 
         return image_page
 
@@ -90,6 +101,17 @@ class SettingsView(QWidget):
         video_page = QWidget(self)
         video_layout = QVBoxLayout()
         video_page.setLayout(video_layout)
+        video_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        file_format_label = QLabel('File format:')
+        file_format_combo = QComboBox()
+        file_format_combo.addItem('MP4 (.mp4)', 'mp4')
+        file_format_combo.addItem('AVI (.avi)', 'avi')
+        file_format_combo.setCurrentText(self.get_video_format())
+        file_format_combo.currentTextChanged.connect(self.set_video_format)
+
+        video_layout.addWidget(file_format_label)
+        video_layout.addWidget(file_format_combo)
 
         return video_page
 
@@ -165,6 +187,32 @@ class SettingsView(QWidget):
         appstate.config.confidence_threshold = float_value
         self._confidence_tresh_slider.setValue(int(float_value * 100.0))
         logging.debug('Set confidence threshold to {}'.format(value))
+
+    def get_image_format(self):
+        if appstate.config.image_format == 'png':
+            return 'PNG (.png)'
+        elif appstate.config.image_format == 'jpg':
+            return 'JPEG (.jpg, .jpeg)'
+
+    def set_image_format(self, value):
+        if value == 'PNG (.png)':
+            appstate.config.image_format = 'png'
+        elif value == 'JPEG (.jpg, .jpeg)':
+            appstate.config.image_format = 'jpg'
+        logging.debug('Set image format to {}'.format(value))
+
+    def get_video_format(self):
+        if appstate.config.video_format == 'mp4':
+            return 'MP4 (.mp4)'
+        elif appstate.config.video_format == 'avi':
+            return 'AVI (.avi)'
+
+    def set_video_format(self, value):
+        if value == 'MP4 (.mp4)':
+            appstate.config.video_format = 'mp4'
+        elif value == 'AVI (.avi)':
+            appstate.config.video_format = 'avi'
+        logging.debug('Set video format to {}'.format(value))
 
     def clear_cache(self):
         for file in os.listdir('tmp'):

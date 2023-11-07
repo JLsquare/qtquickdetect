@@ -66,7 +66,7 @@ class ImgDetectionPipeline:
 
                     draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, (0, 255, 0), 2)
 
-                dst = get_tmp_filepath('.png')
+                dst = get_tmp_filepath(f'.{appstate.config.image_format}')
 
                 cv.imwrite(dst, opencv_img)
                 del opencv_img

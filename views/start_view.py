@@ -4,9 +4,8 @@ from PyQt6.QtCore import Qt
 from views.image_result_view import ImageResultView
 from views.other_source_view import OtherSourceView
 from pipeline import img_detection, vid_detection
-import logging
-
 from views.video_result_view import VideoResultView
+import logging
 
 
 class StartView(QWidget):
