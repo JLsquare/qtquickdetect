@@ -3,7 +3,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 from views.image_result_view import ImageResultView
 from views.other_source_view import OtherSourceView
-from pipeline import img_detection
+from pipeline import img_detection, vid_detection
 import logging
 
 
@@ -294,6 +294,34 @@ class StartView(QWidget):
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
             pipeline.infer_each(callback_ok, callback_err)
+        elif media_type == 'video' and task == 'detect':
+            pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
+            self.callback_count = 0
+            self.update_progress_bar()
+            
+            def callback_progress(current_frame, total_frames):
+                self.update_progress_bar(current_frame / total_frames)
 
-    def update_progress_bar(self):
-        self._progress_bar.setValue(int(self.callback_count / len(self._input_path) * 100))
+            def callback_ok(input_path, output_media_path):
+                logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
+                result_widget = ImageResultView(input_path, output_media_path)
+                self._add_new_tab(result_widget, "Video detection", len(self._input_path) == 1)
+                self.callback_count += 1
+                self.update_progress_bar()
+
+            def callback_err(input_media_path, exception):
+                logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
+
+            pipeline.infer_each(callback_progress, callback_ok, callback_err)
+
+    def update_progress_bar(self, extra=0.0):
+        base = self.callback_count / len(self._input_path)
+        extra = extra / len(self._input_path)
+
+        print(f'base: {base}, extra: {extra}')
+        print(f'base + extra: {base + extra}')
+
+        self._progress_bar.setValue(int((base + extra) * 100))
+
+      
+
