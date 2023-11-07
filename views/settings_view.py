@@ -1,8 +1,9 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QGridLayout, QPushButton, QLabel, QComboBox, QSlider, QLineEdit
 from PyQt6.QtCore import Qt
+from models.app_state import AppState
 import torch
 import logging
-from models.app_state import AppState
+import os
 
 appstate = AppState.get_instance()
 
@@ -11,13 +12,13 @@ class SettingsView(QWidget):
         super().__init__()
         self._confidence_tresh_input = None
         self._confidence_tresh_slider = None
-        self.initUI()
+        self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle('QTQuickDetect Settings')
         self.setGeometry(100, 100, 480, 480)
         with open('ressources/qss/stylesheet.qss', 'r') as file:
@@ -63,11 +64,18 @@ class SettingsView(QWidget):
         confidence_tresh_input.textChanged.connect(self.set_thresh_float)
         self._confidence_tresh_input = confidence_tresh_input
 
+        # Clear cache
+        clear_cache_label = QLabel('Clear cache:')
+        clear_cache_button = QPushButton('Clear')
+        clear_cache_button.clicked.connect(self.clear_cache)
+
         general_layout.addWidget(devices_label)
         general_layout.addWidget(devices_combo)
         general_layout.addWidget(confidence_tresh_label)
         general_layout.addWidget(confidence_tresh_slider)
         general_layout.addWidget(confidence_tresh_input)
+        general_layout.addWidget(clear_cache_label)
+        general_layout.addWidget(clear_cache_button)
 
         return general_page
 
@@ -157,3 +165,8 @@ class SettingsView(QWidget):
         appstate.config.confidence_threshold = float_value
         self._confidence_tresh_slider.setValue(int(float_value * 100.0))
         logging.debug('Set confidence threshold to {}'.format(value))
+
+    def clear_cache(self):
+        for file in os.listdir('tmp'):
+            os.remove(os.path.join('tmp', file))
+        logging.debug('Cleared cache')

@@ -23,8 +23,8 @@ class ImageResultView(QWidget):
 
         # Middle layout
         middle_layout = QHBoxLayout()
-        middle_layout.addStretch()
-        middle_layout.addWidget(tab)
+        middle_layout.addStretch(1)
+        middle_layout.addWidget(tab, 1)
 
         # Bottom layout
         bottom_layout = QHBoxLayout()
