@@ -1,4 +1,5 @@
 from models.settings import ConfigFile
+import torch
 
 class AppState:
     _instance = None
@@ -7,7 +8,7 @@ class AppState:
         if AppState._instance is not None:
             raise Exception('Singleton class, use get_instance() instead')
         
-        _instance = self
+        AppState._instance = self
 
         self.config = ConfigFile()
 
