@@ -2,9 +2,9 @@ from PyQt6.QtWidgets import QTabWidget, QWidget, QTabBar
 from views.start_view import StartView
 
 
-class AppTab(QTabWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+class AppTabView(QTabWidget):
+    def __init__(self):
+        super().__init__()
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_tab)
         self.tabBarClicked.connect(self.check_tab)

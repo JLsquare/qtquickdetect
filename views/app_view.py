@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
-from models.app_tab import AppTab
+from views.app_tab_view import AppTabView
 from views.settings_view import SettingsView
 import logging
 
@@ -27,7 +27,7 @@ class AppView(QWidget):
     def init_ui(self):
         main_layout = QGridLayout(self)
         main_layout.addLayout(self.top_ui(), 0, 0)
-        main_layout.addWidget(AppTab(self), 1, 0)
+        main_layout.addWidget(AppTabView(), 1, 0)
 
     def top_ui(self):
         # Title Layout

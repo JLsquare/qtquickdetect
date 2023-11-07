@@ -9,6 +9,8 @@ appstate = AppState.get_instance()
 class SettingsView(QWidget):
     def __init__(self):
         super().__init__()
+        self._confidence_tresh_input = None
+        self._confidence_tresh_slider = None
         self.initUI()
 
     ##############################
@@ -46,13 +48,20 @@ class SettingsView(QWidget):
         devices_combo = QComboBox()
         devices_combo.addItem('CPU')
         devices_combo.addItems(self.get_gpu_devices())
+        devices_combo.setCurrentText(self.get_device())
         devices_combo.currentTextChanged.connect(self.set_device)
 
         # Confidence threshold
         confidence_tresh_label = QLabel('Confidence Threshold:')
         confidence_tresh_slider = QSlider(Qt.Orientation.Horizontal)
         confidence_tresh_slider.setRange(0, 100)
+        confidence_tresh_slider.setValue(self.get_thresh())
+        confidence_tresh_slider.valueChanged.connect(self.set_thresh)
+        self._confidence_tresh_slider = confidence_tresh_slider
         confidence_tresh_input = QLineEdit()
+        confidence_tresh_input.setText("{:.2f}".format(self.get_thresh_float()))
+        confidence_tresh_input.textChanged.connect(self.set_thresh_float)
+        self._confidence_tresh_input = confidence_tresh_input
 
         general_layout.addWidget(devices_label)
         general_layout.addWidget(devices_combo)
@@ -115,8 +124,14 @@ class SettingsView(QWidget):
         num_gpus = torch.cuda.device_count()
         gpu_devices = ['GPU-{} ({})'.format(i, torch.cuda.get_device_name(i)) for i in range(num_gpus)]
         logging.debug('Found {} GPU devices: {}'.format(num_gpus, gpu_devices))
-
         return gpu_devices
+
+    def get_device(self):
+        if appstate.config.device == 'cpu':
+            return 'CPU'
+        else:
+            device_id = torch.cuda.current_device()
+            return 'GPU-{} ({})'.format(device_id, torch.cuda.get_device_name(device_id))
 
     def set_device(self, value):
         if value == 'CPU':
@@ -124,5 +139,21 @@ class SettingsView(QWidget):
         else:
             device_id = int(value.split('-')[1].split(' ')[0])
             appstate.config.device = 'cuda:{}'.format(device_id)
-
         logging.debug('Set device to {}'.format(value))
+
+    def get_thresh(self):
+        return int(appstate.config.confidence_threshold * 100)
+
+    def set_thresh(self, value):
+        appstate.config.confidence_threshold = value / 100.0
+        self._confidence_tresh_input.setText("{:.2f}".format(value / 100.0))
+        logging.debug('Set confidence threshold to {}'.format(value / 100.0))
+
+    def get_thresh_float(self):
+        return appstate.config.confidence_threshold
+
+    def set_thresh_float(self, value):
+        float_value = float(value)
+        appstate.config.confidence_threshold = float_value
+        self._confidence_tresh_slider.setValue(int(float_value * 100.0))
+        logging.debug('Set confidence threshold to {}'.format(value))
