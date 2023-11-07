@@ -2,7 +2,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QGridLayout, QPush
 from PyQt6.QtCore import Qt
 import torch
 import logging
+from models.app_state import AppState
 
+appstate = AppState.get_instance()
 
 class SettingsView(QWidget):
     def __init__(self):
@@ -44,6 +46,7 @@ class SettingsView(QWidget):
         devices_combo = QComboBox()
         devices_combo.addItem('CPU')
         devices_combo.addItems(self.get_gpu_devices())
+        devices_combo.currentTextChanged.connect(self.set_device)
 
         # Confidence threshold
         confidence_tresh_label = QLabel('Confidence Threshold:')
@@ -97,6 +100,8 @@ class SettingsView(QWidget):
     ##############################
 
     def save_settings(self):
+        appstate.save()
+
         logging.debug('Saved settings')
         self.close()
 
@@ -112,3 +117,12 @@ class SettingsView(QWidget):
         logging.debug('Found {} GPU devices: {}'.format(num_gpus, gpu_devices))
 
         return gpu_devices
+
+    def set_device(self, value):
+        if value == 'CPU':
+            appstate.config.device = 'cpu'
+        else:
+            device_id = int(value.split('-')[1].split(' ')[0])
+            appstate.config.device = 'cuda:{}'.format(device_id)
+
+        logging.debug('Set device to {}'.format(value))
