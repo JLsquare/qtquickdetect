@@ -31,6 +31,7 @@ class StartView(QWidget):
         self._is_video = None
         self._is_live = None
 
+        self.setAcceptDrops(True)
         self.init_variables()
         self.init_ui()
 
@@ -206,8 +207,34 @@ class StartView(QWidget):
         self._is_image = False
         self._is_video = False
 
-    def open_image(self):
-        file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        urls = event.mimeData().urls()
+        image_paths = []
+        video_paths = []
+        for url in urls:
+            path = url.toString()
+            if path.endswith(('.png', '.jpg', '.jpeg')):
+                image_paths.append(path)
+            elif path.endswith(('.mp4', '.avi', '.mov')):
+                video_paths.append(path)
+        if image_paths:
+            self.open_image(image_paths)
+        if video_paths:
+            self.open_video(video_paths)
+
+    def open_image(self, file_paths=None):
+        if file_paths is None:
+            file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')
+        else:
+            file_name = [file_paths]
         if len(file_name[0]) > 0:
             self._btn_import_image.setText(str(len(file_name[0])) + ' Images')
             self._btn_import_video.setText('Import Video')
@@ -218,8 +245,11 @@ class StartView(QWidget):
             logging.debug('Image(s) opened : ' + str(file_name[0]))
             self.check_enable_run()
 
-    def open_video(self):
-        file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov)')
+    def open_video(self, file_paths=None):
+        if file_paths is None:
+            file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov)')
+        else:
+            file_name = [file_paths]
         if len(file_name[0]) > 0:
             self._btn_import_video.setText(str(len(file_name[0])) + ' Videos')
             self._btn_import_image.setText('Import Image')
