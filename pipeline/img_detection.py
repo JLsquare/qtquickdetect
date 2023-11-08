@@ -56,7 +56,8 @@ class ImgDetectionPipeline:
                 if src.startswith('http'):
                     # Download file
                     media = urllib.request.urlopen(src)
-                    src = get_tmp_filepath('.png')
+                    ext = src.split('.')[-1]
+                    src = get_tmp_filepath('.' + ext)
                     with open(src, 'wb') as f:
                         f.write(media.read())
 

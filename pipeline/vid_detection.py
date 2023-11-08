@@ -5,6 +5,7 @@ import ultralytics.engine.model
 import ultralytics.engine.results
 from typing import List
 import cv2 as cv
+import urllib
 
 from utils.file_handling import *
 from utils.image_helpers import *
@@ -53,6 +54,14 @@ class VidDetectionPipeline:
 
         for src in self._inputs:
             try:
+                if src.startswith('http'):
+                    # Download file
+                    media = urllib.request.urlopen(src)
+                    ext = src.split('.')[-1]
+                    src = get_tmp_filepath('.' + ext)
+                    with open(src, 'wb') as f:
+                        f.write(media.read())
+
                 output = get_tmp_filepath(f'.{appstate.config.video_format}')
 
                 cap = cv.VideoCapture(src)
