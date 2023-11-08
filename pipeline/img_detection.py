@@ -6,6 +6,7 @@ import ultralytics.engine.results
 from typing import List
 import cv2 as cv
 import json
+import urllib
 
 from utils.file_handling import *
 from utils.image_helpers import *
@@ -18,7 +19,7 @@ class ImgDetectionPipeline:
         """
         Pipeline class, used to run inference on a list of inputs
 
-        :param inputs: List of input paths
+        :param inputs: List of input paths or URLs
         :param model_path: Path to the model
         :raises Exception: If the model fails to load or if it's task does not match the pipeline task
         """
@@ -51,6 +52,14 @@ class ImgDetectionPipeline:
 
         for src in self._inputs:
             try:
+                # Check if src is a local file
+                if src.startswith('http'):
+                    # Download file
+                    media = urllib.request.urlopen(src)
+                    src = get_tmp_filepath('.png')
+                    with open(src, 'wb') as f:
+                        f.write(media.read())
+
                 result = self._model(src)
 
                 result = result[0].cpu()
