@@ -226,7 +226,7 @@ class StartView(QWidget):
                 path = url.toString()
             if path.endswith(('.png', '.jpg', '.jpeg')):
                 image_paths.append(path)
-            elif path.endswith(('.mp4', '.avi', '.mov')):
+            elif path.endswith(('.mp4', '.avi', '.mov', '.webm')):
                 video_paths.append(path)
         if image_paths:
             self.open_image(file_paths=image_paths)
@@ -251,7 +251,7 @@ class StartView(QWidget):
 
     def open_video(self, _=None, file_paths=None):
         if file_paths is None:
-            file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov)')
+            file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov *.webm)')
         else:
             file_name = [file_paths]
         if len(file_name[0]) > 0:
