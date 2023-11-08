@@ -229,11 +229,12 @@ class StartView(QWidget):
             elif path.endswith(('.mp4', '.avi', '.mov')):
                 video_paths.append(path)
         if image_paths:
-            self.open_image(image_paths)
+            self.open_image(file_paths=image_paths)
         if video_paths:
-            self.open_video(video_paths)
+            self.open_video(file_paths=video_paths)
 
-    def open_image(self, file_paths=None):
+    def open_image(self, _=None, file_paths=None):
+        logging.debug(file_paths)
         if file_paths is None:
             file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')
         else:
@@ -248,7 +249,7 @@ class StartView(QWidget):
             logging.debug('Image(s) opened : ' + str(file_name[0]))
             self.check_enable_run()
 
-    def open_video(self, file_paths=None):
+    def open_video(self, _=None, file_paths=None):
         if file_paths is None:
             file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov)')
         else:
