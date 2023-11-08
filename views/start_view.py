@@ -220,7 +220,10 @@ class StartView(QWidget):
         image_paths = []
         video_paths = []
         for url in urls:
-            path = url.toString()
+            if url.isLocalFile():
+                path = url.toLocalFile()
+            else:
+                path = url.toString()
             if path.endswith(('.png', '.jpg', '.jpeg')):
                 image_paths.append(path)
             elif path.endswith(('.mp4', '.avi', '.mov')):
