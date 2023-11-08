@@ -1,15 +1,16 @@
+from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, QProgressBar
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt
-from views.image_result_view import ImageResultView
-from views.other_source_view import OtherSourceView
+from views.image_result_widget import ImageResultWidget
+from views.other_source_widget import OtherSourceWidget
 from pipeline import img_detection, vid_detection
-from views.video_result_view import VideoResultView
+from views.video_result_widget import VideoResultWidget
 import logging
 
 
-class StartView(QWidget):
-    def __init__(self, add_new_tab):
+class StartWidget(QWidget):
+    def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
         self.callback_count = 0
         self._add_new_tab = add_new_tab
@@ -32,7 +33,6 @@ class StartView(QWidget):
         self._is_live = None
 
         self.setAcceptDrops(True)
-        self.init_variables()
         self.init_ui()
 
     ##############################
@@ -57,7 +57,7 @@ class StartView(QWidget):
         main_layout.addWidget(self.progress_bar_ui())
         self.setLayout(main_layout)
 
-    def input_ui(self):
+    def input_ui(self) -> QWidget:
         # Input icon
         input_icon_layout = QHBoxLayout()
         input_icon_layout.addStretch()
@@ -95,7 +95,7 @@ class StartView(QWidget):
         input_widget.setFixedSize(240, 240)
         return input_widget
 
-    def functionality_ui(self):
+    def functionality_ui(self) -> QWidget:
         # Functionality icon
         functionality_icon_layout = QHBoxLayout()
         functionality_icon_layout.addStretch()
@@ -124,7 +124,7 @@ class StartView(QWidget):
         functionality_widget.setFixedSize(240, 240)
         return functionality_widget
 
-    def model_ui(self):
+    def model_ui(self) -> QWidget:
         # Model icon
         model_icon_layout = QHBoxLayout()
         model_icon_layout.addStretch()
@@ -157,7 +157,7 @@ class StartView(QWidget):
         model_widget.setFixedSize(240, 240)
         return model_widget
 
-    def run_ui(self):
+    def run_ui(self) -> QWidget:
         # Run icon
         run_icon_layout = QHBoxLayout()
         run_icon_layout.addStretch()
@@ -185,7 +185,7 @@ class StartView(QWidget):
         run_widget.setFixedSize(240, 240)
         return run_widget
 
-    def progress_bar_ui(self):
+    def progress_bar_ui(self) -> QProgressBar:
         progress_bar = QProgressBar()
         progress_bar.setRange(0, 100)
         progress_bar.setValue(0)
@@ -199,23 +199,15 @@ class StartView(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def init_variables(self):
-        self._model_selected = False
-        self._functionality_selected = False
-        self._input_path = ''
-        self._is_live = False
-        self._is_image = False
-        self._is_video = False
-
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event: QDragEnterEvent | None):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
 
-    def dragMoveEvent(self, event):
+    def dragMoveEvent(self, event: QDragMoveEvent | None):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
 
-    def dropEvent(self, event):
+    def dropEvent(self, event: QDropEvent | None):
         urls = event.mimeData().urls()
         image_paths = []
         video_paths = []
@@ -233,43 +225,42 @@ class StartView(QWidget):
         if video_paths:
             self.open_video(file_paths=video_paths)
 
-    def open_image(self, _=None, file_paths=None):
-        logging.debug(file_paths)
+    def open_image(self, _: bool = False, file_paths: list[str] = None):
         if file_paths is None:
-            file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')
+            file_name = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')[0]
         else:
-            file_name = [file_paths]
-        if len(file_name[0]) > 0:
-            self._btn_import_image.setText(str(len(file_name[0])) + ' Images')
+            file_name = file_paths
+        if len(file_name) > 0:
+            self._btn_import_image.setText(str(len(file_name)) + ' Images')
             self._btn_import_video.setText('Import Video')
             self._is_image = True
             self._is_video = False
             self._is_live = False
-            self._input_path = file_name[0]
-            logging.debug('Image(s) opened : ' + str(file_name[0]))
+            self._input_path = file_name
+            logging.debug('Image(s) opened : ' + str(file_name))
             self.check_enable_run()
 
-    def open_video(self, _=None, file_paths=None):
+    def open_video(self, _: bool = False, file_paths: list[str] = None):
         if file_paths is None:
-            file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov *.webm)')
+            file_name = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov *.webm)')[0]
         else:
-            file_name = [file_paths]
-        if len(file_name[0]) > 0:
-            self._btn_import_video.setText(str(len(file_name[0])) + ' Videos')
+            file_name = file_paths
+        if len(file_name) > 0:
+            self._btn_import_video.setText(str(len(file_name)) + ' Videos')
             self._btn_import_image.setText('Import Image')
             self._is_video = True
             self._is_image = False
             self._is_live = False
-            self._input_path = file_name[0]
-            logging.debug('Video(s) opened : ' + str(file_name[0]))
+            self._input_path = file_name
+            logging.debug('Video(s) opened : ' + str(file_name))
             self.check_enable_run()
 
     def open_other_source(self):
-        self._other_source_window = OtherSourceView(self.callback_other_source)
+        self._other_source_window = OtherSourceWidget(self.callback_other_source)
         self._other_source_window.show()
         logging.debug('Window opened : Other Source')
 
-    def callback_other_source(self, url, image, video, live):
+    def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         self._input_path = [url]
         self._is_image = image
         self._is_video = video
@@ -283,7 +274,7 @@ class StartView(QWidget):
         logging.debug(f'Other source opened: {url}, type: {source_type}')
         self.check_enable_run()
 
-    def check_functionality_selected(self, index):
+    def check_functionality_selected(self, index: int):
         if index != 0:
             self._functionality_selected = True
         else:
@@ -291,7 +282,7 @@ class StartView(QWidget):
         logging.debug('Functionality selected : ' + self._functionality_combo.currentData())
         self.check_enable_run()
 
-    def check_model_selected(self, index):
+    def check_model_selected(self, index: int):
         if index != 0:
             self._model_selected = True
         else:
@@ -318,14 +309,14 @@ class StartView(QWidget):
             self.callback_count = 0
             self.update_progress_bar()
 
-            def callback_ok(input_path, output_media_path, output_json_path):
+            def callback_ok(input_path: str, output_media_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
-                result_widget = ImageResultView(input_path, output_media_path)
+                result_widget = ImageResultWidget(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Image detection", len(self._input_path) == 1)
                 self.callback_count += 1
                 self.update_progress_bar()
 
-            def callback_err(input_media_path, exception):
+            def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
             pipeline.infer_each(callback_ok, callback_err)
@@ -334,22 +325,22 @@ class StartView(QWidget):
             self.callback_count = 0
             self.update_progress_bar()
             
-            def callback_progress(current_frame, total_frames):
+            def callback_progress(current_frame: int, total_frames: int) -> None:
                 self.update_progress_bar(current_frame / total_frames)
 
-            def callback_ok(input_path, output_media_path):
+            def callback_ok(input_path: str, output_media_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
-                result_widget = VideoResultView(input_path, output_media_path)
+                result_widget = VideoResultWidget(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Video detection", len(self._input_path) == 1)
                 self.callback_count += 1
                 self.update_progress_bar()
 
-            def callback_err(input_media_path, exception):
+            def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
             pipeline.infer_each(callback_progress, callback_ok, callback_err)
 
-    def update_progress_bar(self, extra=0.0):
+    def update_progress_bar(self, extra: float = 0.0):
         base = self.callback_count / len(self._input_path)
         extra = extra / len(self._input_path)
 

@@ -1,9 +1,10 @@
+from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel
 import requests
 
 
-class OtherSourceView(QWidget):
-    def __init__(self, callback):
+class OtherSourceWidget(QWidget):
+    def __init__(self, callback: Callable[[str, bool, bool, bool], None]):
         super().__init__()
 
         self._url_input = None
@@ -16,13 +17,13 @@ class OtherSourceView(QWidget):
 
         self._callback = callback
 
-        self.initUI()
+        self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle('QTQuickDetect Other Source')
         self.setGeometry(100, 100, 480, 240)
 
@@ -93,14 +94,14 @@ class OtherSourceView(QWidget):
             self._format_display.setText("Unknown Format")
             self._ok_btn.setDisabled(True)
 
-    def get_content_type(self, url):
+    def get_content_type(self, url: str) -> str | None:
         try:
             response = requests.head(url, allow_redirects=True, timeout=10)
             return response.headers.get('Content-Type', '').split(';')[0].strip()
         except requests.RequestException:
             return None
 
-    def is_live_video(self, url):
+    def is_live_video(self, url: str) -> bool:
         content_type = self.get_content_type(url)
         live_content_types = ["application/vnd.apple.mpegurl", "application/dash+xml"]
         live_url_patterns = ["m3u8", ".ts", "live", "streaming"]
@@ -110,14 +111,14 @@ class OtherSourceView(QWidget):
             return True
         return False
 
-    def is_image(self, url):
+    def is_image(self, url: str) -> bool:
         content_type = self.get_content_type(url)
         if not content_type:
             return False
         image_types = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff"]
         return content_type in image_types
 
-    def is_video(self, url):
+    def is_video(self, url: str) -> bool:
         content_type = self.get_content_type(url)
         if not content_type:
             return False

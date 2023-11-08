@@ -4,18 +4,18 @@ from PyQt6.QtCore import Qt, QFile
 import logging
 
 
-class ImageResultView(QWidget):
-    def __init__(self, input_image, result_image):
+class ImageResultWidget(QWidget):
+    def __init__(self, input_image: str, result_image: str):
         super().__init__()
         self._input_image = input_image
         self._result_image = result_image
-        self.initUI()
+        self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
 
-    def initUI(self):
+    def init_ui(self):
         # Tab input / result image
         tab = QTabWidget(self)
         tab.addTab(self.input_image_ui(), "Input")
@@ -39,23 +39,23 @@ class ImageResultView(QWidget):
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
-    def input_image_ui(self):
+    def input_image_ui(self) -> QLabel:
         input_image = QLabel(self)
         input_image.setPixmap(QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         input_image.setScaledContents(True)
         return input_image
 
-    def result_image_ui(self):
+    def result_image_ui(self) -> QLabel:
         result_image = QLabel(self)
         result_image.setPixmap(QPixmap(self._result_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         result_image.setScaledContents(True)
         return result_image
 
-    def save_json_button_ui(self):
+    def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
         return save_json_button
 
-    def save_image_button_ui(self):
+    def save_image_button_ui(self) -> QPushButton:
         save_image_button = QPushButton('Save Image')
         save_image_button.clicked.connect(self.save_image)
         return save_image_button

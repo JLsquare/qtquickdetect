@@ -4,8 +4,8 @@ from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSlider, QPushButton, QStyle, QHBoxLayout
 
 
-class VideoPlayerView(QWidget):
-    def __init__(self, video_path):
+class VideoPlayerWidget(QWidget):
+    def __init__(self, video_path: str):
         super().__init__()
         self._position_slider = None
         self._play_button = None
@@ -14,13 +14,17 @@ class VideoPlayerView(QWidget):
         self._status = "Playing"
         self.init_ui()
 
+    ##############################
+    #            VIEW            #
+    ##############################
+
     def init_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(self.video_ui())
         main_layout.addLayout(self.control_ui())
         self.setLayout(main_layout)
 
-    def video_ui(self):
+    def video_ui(self) -> QVideoWidget:
         video_widget = QVideoWidget()
         self._player.setVideoOutput(video_widget)
         self._player.play()
@@ -28,7 +32,7 @@ class VideoPlayerView(QWidget):
 
         return video_widget
 
-    def control_ui(self):
+    def control_ui(self) -> QHBoxLayout:
         play_button = QPushButton()
         play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
         play_button.clicked.connect(self.play_pause)
@@ -47,7 +51,11 @@ class VideoPlayerView(QWidget):
 
         return control_layout
 
-    def auto_replay(self, status):
+    ##############################
+    #         CONTROLLER         #
+    ##############################
+
+    def auto_replay(self, status: QMediaPlayer.MediaStatus):
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self._player.setPosition(0)
             self._player.play()
@@ -68,7 +76,7 @@ class VideoPlayerView(QWidget):
         self._status = "Playing"
         self._play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
 
-    def change_position(self, position):
+    def change_position(self, position: int):
         self._player.setPosition(position)
         self.pause()
 

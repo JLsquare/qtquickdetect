@@ -1,20 +1,19 @@
+from typing import Callable
+from utils.file_handling import *
+from utils.image_helpers import *
+from models.app_state import AppState
 import torch
 import logging
 import ultralytics
 import ultralytics.engine.model
 import ultralytics.engine.results
-from typing import List
 import cv2 as cv
 import urllib
-
-from utils.file_handling import *
-from utils.image_helpers import *
-from models.app_state import AppState
 
 appstate = AppState.get_instance()
 
 class VidDetectionPipeline:
-    def __init__(self, inputs: List[str], model_path: str):
+    def __init__(self, inputs: list[str], model_path: str):
         """
         Pipeline class, used to run inference on a list of inputs
 
@@ -23,9 +22,8 @@ class VidDetectionPipeline:
         :raises Exception: If the model fails to load or if it's task does not match the pipeline task
         """
 
+        model = None
         device = appstate.device
-
-        model = None     
 
         try:
             model = ultralytics.YOLO(model_path).to(device)
@@ -42,7 +40,7 @@ class VidDetectionPipeline:
         self._device: torch.device = device
         self._inputs = inputs
         
-    def infer_each(self, cb_frame, cb_ok, cb_err):
+    def infer_each(self, cb_frame: Callable[[int, int], None], cb_ok: Callable[[str, str], None], cb_err: Callable[[str, Exception], None]):
         """
         Runs a detection for all videos in the input list
 

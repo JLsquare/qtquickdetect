@@ -1,12 +1,12 @@
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
-from views.app_tab_view import AppTabView
-from views.settings_view import SettingsView
+from views.app_tab_widget import AppTabWidget
+from views.config_widget import Config
 import logging
 
 
-class AppView(QWidget):
+class MainWindowWidget(QWidget):
     def __init__(self):
         super().__init__()
         self._settings_window = None
@@ -27,9 +27,9 @@ class AppView(QWidget):
     def init_ui(self):
         main_layout = QGridLayout(self)
         main_layout.addLayout(self.top_ui(), 0, 0)
-        main_layout.addWidget(AppTabView(), 1, 0)
+        main_layout.addWidget(AppTabWidget(), 1, 0)
 
-    def top_ui(self):
+    def top_ui(self) -> QHBoxLayout:
         # Title Layout
         title_layout = QHBoxLayout()
         title_icon = QLabel()
@@ -63,6 +63,6 @@ class AppView(QWidget):
     ##############################
 
     def open_settings(self):
-        self._settings_window = SettingsView()
+        self._settings_window = Config()
         self._settings_window.show()
         logging.debug('Window opened : Settings')

@@ -5,9 +5,10 @@ import torch
 import logging
 import os
 
+
 appstate = AppState.get_instance()
 
-class SettingsView(QWidget):
+class Config(QWidget):
     def __init__(self):
         super().__init__()
         self._confidence_tresh_input = None
@@ -38,7 +39,7 @@ class SettingsView(QWidget):
         main_layout.addWidget(self.cancel_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignLeft)
         main_layout.addWidget(self.save_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
 
-    def general_page_ui(self):
+    def general_page_ui(self) -> QWidget:
         general_page = QWidget(self)
         general_layout = QVBoxLayout()
         general_page.setLayout(general_layout)
@@ -79,7 +80,7 @@ class SettingsView(QWidget):
 
         return general_page
 
-    def image_page_ui(self):
+    def image_page_ui(self) -> QWidget:
         image_page = QWidget(self)
         image_layout = QVBoxLayout()
         image_page.setLayout(image_layout)
@@ -97,7 +98,7 @@ class SettingsView(QWidget):
 
         return image_page
 
-    def video_page_ui(self):
+    def video_page_ui(self) -> QWidget:
         video_page = QWidget(self)
         video_layout = QVBoxLayout()
         video_page.setLayout(video_layout)
@@ -115,20 +116,20 @@ class SettingsView(QWidget):
 
         return video_page
 
-    def live_page_ui(self):
+    def live_page_ui(self) -> QWidget:
         live_page = QWidget(self)
         live_layout = QVBoxLayout()
         live_page.setLayout(live_layout)
 
         return live_page
 
-    def cancel_button_ui(self):
+    def cancel_button_ui(self) -> QPushButton:
         cancel_button = QPushButton('Cancel')
         cancel_button.clicked.connect(self.cancel_settings)
 
         return cancel_button
 
-    def save_button_ui(self):
+    def save_button_ui(self) -> QPushButton:
         save_button = QPushButton('Save')
         save_button.clicked.connect(self.save_settings)
 
@@ -148,7 +149,7 @@ class SettingsView(QWidget):
         logging.debug('Canceled settings')
         self.close()
 
-    def get_gpu_devices(self):
+    def get_gpu_devices(self) -> list[str]:
         if not torch.cuda.is_available():
             return []
         num_gpus = torch.cuda.device_count()
@@ -156,14 +157,14 @@ class SettingsView(QWidget):
         logging.debug('Found {} GPU devices: {}'.format(num_gpus, gpu_devices))
         return gpu_devices
 
-    def get_device(self):
+    def get_device(self) -> str:
         if appstate.config.device == 'cpu':
             return 'CPU'
         else:
             device_id = torch.cuda.current_device()
             return 'GPU-{} ({})'.format(device_id, torch.cuda.get_device_name(device_id))
 
-    def set_device(self, value):
+    def set_device(self, value: str):
         if value == 'CPU':
             appstate.config.device = 'cpu'
         else:
@@ -171,43 +172,43 @@ class SettingsView(QWidget):
             appstate.config.device = 'cuda:{}'.format(device_id)
         logging.debug('Set device to {}'.format(value))
 
-    def get_thresh(self):
+    def get_thresh(self) -> int:
         return int(appstate.config.confidence_threshold * 100)
 
-    def set_thresh(self, value):
+    def set_thresh(self, value: int):
         appstate.config.confidence_threshold = value / 100.0
         self._confidence_tresh_input.setText("{:.2f}".format(value / 100.0))
         logging.debug('Set confidence threshold to {}'.format(value / 100.0))
 
-    def get_thresh_float(self):
+    def get_thresh_float(self) -> float:
         return appstate.config.confidence_threshold
 
-    def set_thresh_float(self, value):
+    def set_thresh_float(self, value: float):
         float_value = float(value)
         appstate.config.confidence_threshold = float_value
         self._confidence_tresh_slider.setValue(int(float_value * 100.0))
         logging.debug('Set confidence threshold to {}'.format(value))
 
-    def get_image_format(self):
+    def get_image_format(self) -> str:
         if appstate.config.image_format == 'png':
             return 'PNG (.png)'
         elif appstate.config.image_format == 'jpg':
             return 'JPEG (.jpg, .jpeg)'
 
-    def set_image_format(self, value):
+    def set_image_format(self, value: str):
         if value == 'PNG (.png)':
             appstate.config.image_format = 'png'
         elif value == 'JPEG (.jpg, .jpeg)':
             appstate.config.image_format = 'jpg'
         logging.debug('Set image format to {}'.format(value))
 
-    def get_video_format(self):
+    def get_video_format(self) -> str:
         if appstate.config.video_format == 'mp4':
             return 'MP4 (.mp4)'
         elif appstate.config.video_format == 'avi':
             return 'AVI (.avi)'
 
-    def set_video_format(self, value):
+    def set_video_format(self, value: str):
         if value == 'MP4 (.mp4)':
             appstate.config.video_format = 'mp4'
         elif value == 'AVI (.avi)':

@@ -1,4 +1,4 @@
-from models.settings import ConfigFile
+from models.config_file import ConfigFile
 import torch
 
 class AppState:
@@ -16,7 +16,7 @@ class AppState:
         self.confidence_threshold = self.config.confidence_threshold
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> 'AppState':
         if AppState._instance is None:
             AppState()
         return AppState._instance

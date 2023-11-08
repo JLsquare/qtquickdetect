@@ -1,6 +1,5 @@
 import logging
 import json
-import torch
 import os
 import re
 

@@ -1,25 +1,25 @@
 from PyQt6.QtCore import QFile
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox
-from views.video_player_view import VideoPlayerView
+from views.video_player_widget import VideoPlayerWidget
 import logging
 
 
-class VideoResultView(QWidget):
-    def __init__(self, input_video, result_video):
+class VideoResultWidget(QWidget):
+    def __init__(self, input_video: str, result_video: str):
         super().__init__()
         self._input_video = input_video
         self._result_video = result_video
-        self.initUI()
+        self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
 
-    def initUI(self):
+    def init_ui(self):
         # Tab input / result image
         tab = QTabWidget(self)
-        tab.addTab(VideoPlayerView(self._input_video), "Input")
-        tab.addTab(VideoPlayerView(self._result_video), "Result")
+        tab.addTab(VideoPlayerWidget(self._input_video), "Input")
+        tab.addTab(VideoPlayerWidget(self._result_video), "Result")
         tab.setCurrentIndex(1)
 
         # Middle layout
