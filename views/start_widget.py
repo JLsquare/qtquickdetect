@@ -3,15 +3,17 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QCom
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt
 from views.image_result_widget import ImageResultWidget
+from views.video_result_widget import VideoResultWidget
 from views.other_source_widget import OtherSourceWidget
 from pipeline import img_detection, vid_detection
-from views.video_result_widget import VideoResultWidget
+from pipeline.inference_thread import InferenceThread
 import logging
 
 
 class StartWidget(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
+        self._current_inference_thread = None
         self.callback_count = 0
         self._add_new_tab = add_new_tab
         self._other_source_window = None
@@ -297,6 +299,7 @@ class StartWidget(QWidget):
             self._btn_run.setEnabled(False)
         logging.debug('Run enabled : ' + str(self._btn_run.isEnabled()))
 
+
     def run(self):
         inputs = self._input_path
         model_path = self._model_combo.currentData()
@@ -319,7 +322,12 @@ class StartWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            pipeline.infer_each(callback_ok, callback_err)
+            inference_thread = InferenceThread(pipeline)
+            inference_thread.finished_signal.connect(callback_ok)
+            inference_thread.error_signal.connect(callback_err)
+            inference_thread.start()
+            self._current_inference_thread = inference_thread
+
         elif media_type == 'video' and task == 'detect':
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
             self.callback_count = 0
@@ -338,7 +346,12 @@ class StartWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            pipeline.infer_each(callback_progress, callback_ok, callback_err)
+            inference_thread = InferenceThread(pipeline)
+            inference_thread.progress_signal.connect(callback_progress)
+            inference_thread.finished_signal.connect(callback_ok)
+            inference_thread.error_signal.connect(callback_err)
+            inference_thread.start()
+            self._current_inference_thread = inference_thread
 
     def update_progress_bar(self, extra: float = 0.0):
         base = self.callback_count / len(self._input_path)
