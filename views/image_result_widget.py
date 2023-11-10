@@ -41,13 +41,15 @@ class ImageResultWidget(QWidget):
 
     def input_image_ui(self) -> QLabel:
         input_image = QLabel(self)
-        input_image.setPixmap(QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        input_image.setPixmap(QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                                Qt.TransformationMode.SmoothTransformation))
         input_image.setScaledContents(True)
         return input_image
 
     def result_image_ui(self) -> QLabel:
         result_image = QLabel(self)
-        result_image.setPixmap(QPixmap(self._result_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        result_image.setPixmap(QPixmap(self._result_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                                  Qt.TransformationMode.SmoothTransformation))
         result_image.setScaledContents(True)
         return result_image
 

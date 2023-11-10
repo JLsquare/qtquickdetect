@@ -29,9 +29,7 @@ class StartWidget(QWidget):
         self._model_combo = None
         self._btn_run = None
 
-        self._is_image = None
-        self._is_video = None
-        self._is_live = None
+        self._media_type = None
 
         self.setAcceptDrops(True)
         self.init_ui()
@@ -234,9 +232,7 @@ class StartWidget(QWidget):
         if len(file_name) > 0:
             self._btn_import_image.setText(str(len(file_name)) + ' Images')
             self._btn_import_video.setText('Import Video')
-            self._is_image = True
-            self._is_video = False
-            self._is_live = False
+            self._media_type = 'image'
             self._input_path = file_name
             logging.debug('Image(s) opened : ' + str(file_name))
             self.check_enable_run()
@@ -249,9 +245,7 @@ class StartWidget(QWidget):
         if len(file_name) > 0:
             self._btn_import_video.setText(str(len(file_name)) + ' Videos')
             self._btn_import_image.setText('Import Image')
-            self._is_video = True
-            self._is_image = False
-            self._is_live = False
+            self._media_type = 'video'
             self._input_path = file_name
             logging.debug('Video(s) opened : ' + str(file_name))
             self.check_enable_run()
@@ -263,16 +257,11 @@ class StartWidget(QWidget):
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         self._input_path = [url]
-        self._is_image = image
-        self._is_video = video
-        self._is_live = live
-
+        self._media_type = 'image' if image else 'video' if video else 'live' if live else 'unknown'
         self._btn_import_video.setText('Import Video')
         self._btn_import_image.setText('Import Image')
-        source_type = 'Image' if image else 'Video' if video else 'Live' if live else 'Unknown'
-        self._btn_other_source.setText(f'Source : {source_type}')
-
-        logging.debug(f'Other source opened: {url}, type: {source_type}')
+        self._btn_other_source.setText(f'Source : {self._media_type}')
+        logging.debug(f'Other source opened: {url}, type: {self._media_type}')
         self.check_enable_run()
 
     def check_functionality_selected(self, index: int):
@@ -292,7 +281,8 @@ class StartWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if (self._is_image or self._is_video or self._is_live) and self._model_selected and self._functionality_selected:
+        if ((self._media_type == 'image' or self._media_type == 'video' or self._media_type == 'live')
+                and self._model_selected and self._functionality_selected):
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
@@ -303,10 +293,9 @@ class StartWidget(QWidget):
         inputs = self._input_path
         model_path = self._model_combo.currentData()
         task = self._functionality_combo.currentData()
-        media_type = 'image' if self._is_image else 'video' if self._is_video else 'live'
-        logging.info('Run with : ' + str(inputs) + ', ' + str(model_path) + ', ' + str(task) + ', ' + str(media_type))
+        logging.info(f'Run with : {str(inputs)}, {str(model_path)}, {str(task)}, {str(self._media_type)}')
 
-        if media_type == 'image' and task == 'detect':
+        if self._media_type == 'image' and task == 'detect':
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path)
             self.callback_count = 0
             self.update_progress_bar()
@@ -326,7 +315,7 @@ class StartWidget(QWidget):
             pipeline.start()
             self._current_pipeline = pipeline
 
-        elif media_type == 'video' and task == 'detect':
+        elif self._media_type == 'video' and task == 'detect':
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
             self.callback_count = 0
             self.update_progress_bar()
@@ -355,6 +344,3 @@ class StartWidget(QWidget):
         extra = extra / len(self._input_path)
 
         self._progress_bar.setValue(int((base + extra) * 100))
-
-      
-

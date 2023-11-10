@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QGridLayout, QPushButton
+from PyQt6.QtWidgets import QWidget, QTabWidget, QGridLayout, QPushButton
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
 from views.image_config_widget import ImageConfig

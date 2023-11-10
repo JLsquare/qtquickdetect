@@ -146,4 +146,3 @@ class OtherSourceWidget(QWidget):
     def ok(self):
         self._callback(self._url_input.text(), self._is_image, self._is_video, self._is_live)
         self.close()
-
