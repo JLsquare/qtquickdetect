@@ -27,7 +27,7 @@ class ImageConfig(QWidget):
         main_layout.addLayout(self.text_size_ui())
         self.setLayout(main_layout)
 
-    def file_format_ui(self):
+    def file_format_ui(self) -> QVBoxLayout:
         file_format_label = QLabel('File format:')
         file_format_combo = QComboBox()
         file_format_combo.addItem('PNG (.png)', 'png')
@@ -41,7 +41,7 @@ class ImageConfig(QWidget):
 
         return file_format_layout
 
-    def box_color_ui(self):
+    def box_color_ui(self) -> QVBoxLayout:
         box_color_label = QLabel('Box color:')
         box_color_picker = QPushButton('Pick')
         box_color_picker.clicked.connect(self.set_box_color)
@@ -54,7 +54,7 @@ class ImageConfig(QWidget):
 
         return box_color_layout
 
-    def text_color_ui(self):
+    def text_color_ui(self) -> QVBoxLayout:
         text_color_label = QLabel('Text color:')
         text_color_picker = QPushButton('Pick')
         text_color_picker.clicked.connect(self.set_text_color)
@@ -67,7 +67,7 @@ class ImageConfig(QWidget):
 
         return text_color_layout
 
-    def box_thickness_ui(self):
+    def box_thickness_ui(self) -> QVBoxLayout:
         box_thickness_label = QLabel('Box thickness:')
         box_thickness_slider = QLineEdit()
         box_thickness_slider.setText(str(self._appstate.config.image_box_thickness))
@@ -79,7 +79,7 @@ class ImageConfig(QWidget):
 
         return box_thickness_layout
 
-    def text_size_ui(self):
+    def text_size_ui(self) -> QVBoxLayout:
         text_size_label = QLabel('Text size:')
         text_size_slider = QLineEdit()
         text_size_slider.setText(str(self._appstate.config.image_text_size))

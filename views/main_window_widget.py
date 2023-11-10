@@ -25,23 +25,31 @@ class MainWindowWidget(QWidget):
             self.setStyleSheet(file.read())
 
     def init_ui(self):
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(1)
+        top_layout.addLayout(self.title_ui())
+        top_layout.addStretch(1)
+        top_layout.addWidget(self.settings_ui())
+
         main_layout = QGridLayout(self)
-        main_layout.addLayout(self.top_ui(), 0, 0)
+        main_layout.addLayout(top_layout, 0, 0)
         main_layout.addWidget(AppTabWidget(), 1, 0)
 
-    def top_ui(self) -> QHBoxLayout:
-        # Title Layout
-        title_layout = QHBoxLayout()
+    def title_ui(self) -> QHBoxLayout:
         title_icon = QLabel()
-        title_icon.setPixmap(
-            QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                                       Qt.TransformationMode.SmoothTransformation))
+        pixmap = QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
+                                                                            Qt.TransformationMode.SmoothTransformation)
+        title_icon.setPixmap(pixmap)
         title_icon.setFixedWidth(32)
         title_label = QLabel('QTQuickDetect')
+
+        title_layout = QHBoxLayout()
         title_layout.addWidget(title_icon)
         title_layout.addWidget(title_label)
 
-        # Settings icon
+        return title_layout
+
+    def settings_ui(self) -> QPushButton:
         btn_settings = QPushButton()
         btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
         btn_settings.setIconSize(QSize(32, 32))
@@ -49,14 +57,7 @@ class MainWindowWidget(QWidget):
         btn_settings.setProperty('class', 'settings')
         btn_settings.clicked.connect(self.open_settings)
 
-        # Top layout
-        top_layout = QHBoxLayout()
-        top_layout.addStretch(1)
-        top_layout.addLayout(title_layout)
-        top_layout.addStretch(1)
-        top_layout.addWidget(btn_settings)
-
-        return top_layout
+        return btn_settings
 
     ##############################
     #         CONTROLLER         #

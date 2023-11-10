@@ -39,11 +39,11 @@ class VideoResultWidget(QWidget):
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
-    def save_json_button_ui(self):
+    def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
         return save_json_button
 
-    def save_video_button_ui(self):
+    def save_video_button_ui(self) -> QPushButton:
         save_video_button = QPushButton('Save Video')
         save_video_button.clicked.connect(self.save_video)
         return save_video_button
