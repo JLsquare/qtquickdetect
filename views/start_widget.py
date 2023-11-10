@@ -6,14 +6,13 @@ from views.image_result_widget import ImageResultWidget
 from views.video_result_widget import VideoResultWidget
 from views.other_source_widget import OtherSourceWidget
 from pipeline import img_detection, vid_detection
-from pipeline.inference_thread import InferenceThread
 import logging
 
 
 class StartWidget(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
-        self._current_inference_thread = None
+        self._current_pipeline = None
         self.callback_count = 0
         self._add_new_tab = add_new_tab
         self._other_source_window = None
@@ -322,11 +321,10 @@ class StartWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            inference_thread = InferenceThread(pipeline)
-            inference_thread.finished_signal.connect(callback_ok)
-            inference_thread.error_signal.connect(callback_err)
-            inference_thread.start()
-            self._current_inference_thread = inference_thread
+            pipeline.finished_signal.connect(callback_ok)
+            pipeline.error_signal.connect(callback_err)
+            pipeline.start()
+            self._current_pipeline = pipeline
 
         elif media_type == 'video' and task == 'detect':
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
@@ -346,12 +344,11 @@ class StartWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            inference_thread = InferenceThread(pipeline)
-            inference_thread.progress_signal.connect(callback_progress)
-            inference_thread.finished_signal.connect(callback_ok)
-            inference_thread.error_signal.connect(callback_err)
-            inference_thread.start()
-            self._current_inference_thread = inference_thread
+            pipeline.finished_signal.connect(callback_ok)
+            pipeline.progress_signal.connect(callback_progress)
+            pipeline.error_signal.connect(callback_err)
+            pipeline.start()
+            self._current_pipeline = pipeline
 
     def update_progress_bar(self, extra: float = 0.0):
         base = self.callback_count / len(self._input_path)

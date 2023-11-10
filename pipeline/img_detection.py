@@ -1,4 +1,4 @@
-from typing import Callable
+from PyQt6.QtCore import QThread, pyqtSignal
 from utils.file_handling import *
 from utils.image_helpers import *
 from models.app_state import AppState
@@ -13,7 +13,11 @@ import urllib
 
 appstate = AppState.get_instance()
 
-class ImgDetectionPipeline:
+
+class ImgDetectionPipeline(QThread):
+    finished_signal = pyqtSignal(str, str)
+    error_signal = pyqtSignal(str, Exception)
+
     def __init__(self, inputs: list[str], model_path: str):
         """
         Pipeline class, used to run inference on a list of inputs
@@ -23,6 +27,7 @@ class ImgDetectionPipeline:
         :raises Exception: If the model fails to load or if it's task does not match the pipeline task
         """
 
+        super().__init__()
         model = None
         device = appstate.device
 
@@ -31,21 +36,19 @@ class ImgDetectionPipeline:
         except Exception as e:
             logging.error('Failed to load model: {}'.format(e))
             raise e
-        
+
         if model.task != 'detect':
-                logging.error('Model task ({}) does not match pipeline task'.format(model.task))
-                raise ValueError('Model task ({}) does not match pipeline task'.format(model.task))
-        
+            logging.error('Model task ({}) does not match pipeline task'.format(model.task))
+            raise ValueError('Model task ({}) does not match pipeline task'.format(model.task))
+
         self._names = model.names
         self._model: ultralytics.engine.model.Model = model
         self._device: torch.device = device
         self._inputs = inputs
-        
-    def infer_each(self, cb_ok: Callable[[str, str], None], cb_err: Callable[[str, Exception], None]):
+
+    def run(self):
         """
         Runs a detection for all images in the input list
-        :param cb_ok: Callback function `callback(input_path, output_media_path, output_json_path)`
-        :param cb_err: Callback function `callback(input_media_path, exception)`
         """
 
         for src in self._inputs:
@@ -70,11 +73,14 @@ class ImgDetectionPipeline:
                     flat = box.xyxy.flatten()
                     topleft = (int(flat[0]), int(flat[1]))
                     bottomright = (int(flat[2]), int(flat[3]))
-                    classname = self._names[int(box.cls)] # type: ignore
-                    conf = box.conf[0] # It's a tensor [x]
-                    json_result.append({'x1': topleft[0], 'y1': topleft[1], 'x2': bottomright[0], 'y2': bottomright[1], 'class': classname, 'confidence': conf.item()})
+                    classname = self._names[int(box.cls)]  # type: ignore
+                    conf = box.conf[0]  # It's a tensor [x]
+                    json_result.append({'x1': topleft[0], 'y1': topleft[1], 'x2': bottomright[0], 'y2': bottomright[1],
+                                        'class': classname, 'confidence': conf.item()})
 
-                    draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, (0, 255, 0), 2)
+                    config = appstate.config
+                    draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, config.image_box_color,
+                                      config.image_text_color, config.image_box_thickness, config.image_text_size)
 
                 dst = get_tmp_filepath(f'.{appstate.config.image_format}')
                 dst_json = get_tmp_filepath('.json')
@@ -84,11 +90,8 @@ class ImgDetectionPipeline:
 
                 cv.imwrite(dst, opencv_img)
                 del opencv_img
-                
-                cb_ok(src, dst)
+
+                self.finished_signal.emit(src, dst)
 
             except Exception as e:
-                cb_err(src, e)
-
-    
-
+                self.error_signal.emit(src, e)

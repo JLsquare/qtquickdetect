@@ -1,4 +1,4 @@
-from typing import Callable
+from PyQt6.QtCore import pyqtSignal, QThread
 from utils.file_handling import *
 from utils.image_helpers import *
 from models.app_state import AppState
@@ -12,7 +12,11 @@ import urllib
 
 appstate = AppState.get_instance()
 
-class VidDetectionPipeline:
+class VidDetectionPipeline(QThread):
+    progress_signal = pyqtSignal(int, int)
+    finished_signal = pyqtSignal(str, str)
+    error_signal = pyqtSignal(str, Exception)
+
     def __init__(self, inputs: list[str], model_path: str):
         """
         Pipeline class, used to run inference on a list of inputs
@@ -22,6 +26,7 @@ class VidDetectionPipeline:
         :raises Exception: If the model fails to load or if it's task does not match the pipeline task
         """
 
+        super().__init__()
         model = None
         device = appstate.device
 
@@ -40,14 +45,9 @@ class VidDetectionPipeline:
         self._device: torch.device = device
         self._inputs = inputs
         
-    def infer_each(self, cb_frame: Callable[[int, int], None], cb_ok: Callable[[str, str], None], cb_err: Callable[[str, Exception], None]):
+    def run(self):
         """
         Runs a detection for all videos in the input list
-
-        :param cb_frame: Callback function `callback(current_frame, total_frames)`
-            where current_frame is the current frame number and total_frames is the total number of frames in the video
-        :param cb_ok: Callback function `callback(input_path, output_media_path)` called when a video is successfully processed
-        :param cb_err: Callback function `callback(input_media_path, exception)` called when a video fails to process
         """
 
         for src in self._inputs:
@@ -86,19 +86,21 @@ class VidDetectionPipeline:
                         classname = self._names[int(box.cls)]
                         conf = box.conf[0]
 
-                        draw_bounding_box(frame, topleft, bottomright, classname, conf, (0, 255, 0), 2)
+                        config = appstate.config
+                        draw_bounding_box(frame, topleft, bottomright, classname, conf, config.video_box_color,
+                                          config.video_text_color, config.video_box_thickness, config.video_text_size)
 
                     writer.write(frame)
                     frame_index += 1
-                    cb_frame(frame_index, frame_count)
+                    self.progress_signal.emit(frame_index, frame_count)
 
                 cap.release()
                 writer.release()
 
-                cb_ok(src, output)
+                self.finished_signal.emit(src, output)
 
             except Exception as e:
-                cb_err(src, e)
+                self.error_signal.emit(src, e)
 
     
 

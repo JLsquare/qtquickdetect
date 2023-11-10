@@ -9,8 +9,18 @@ class ConfigFile:
     def __init__(self):
         self.device = 'cpu'
         self.confidence_threshold = 0.8
+
         self.image_format = 'png'
+        self.image_box_color = (0, 255, 0)
+        self.image_text_color = (0, 0, 0)
+        self.image_box_thickness = 2
+        self.image_text_size = 1.5
+
         self.video_format = 'mp4'
+        self.video_box_color = (0, 255, 0)
+        self.video_text_color = (0, 0, 0)
+        self.video_box_thickness = 2
+        self.video_text_size = 1.5
 
         if os.path.exists('config.json'):
             if os.path.isfile('config.json'):
@@ -67,13 +77,62 @@ class ConfigFile:
             self.image_format = 'png'
             changed = True
 
+        if not self._check_color(self.image_box_color):
+            logging.warning(f'Invalid image box color in config: {self.image_box_color}')
+            self.image_box_color = (0, 255, 0)
+            changed = True
+
+        if not self._check_color(self.image_text_color):
+            logging.warning(f'Invalid image text color in config: {self.image_text_color}')
+            self.image_text_color = (0, 0, 0)
+            changed = True
+
+        if self.image_box_thickness < 0:
+            logging.warning(f'Invalid video box thickness in config: {self.video_box_thickness}')
+            self.video_box_thickness = 2
+            changed = True
+
+        if self.image_text_size < 0:
+            logging.warning(f'Invalid video text size in config: {self.video_text_size}')
+            self.video_text_size = 1.5
+            changed = True
+
         if self.video_format not in ['mp4', 'avi']:
             logging.warning(f'Invalid video format in config: {self.video_format}')
             self.video_format = 'mp4'
             changed = True
 
+        if not self._check_color(self.video_box_color):
+            logging.warning(f'Invalid video box color in config: {self.video_box_color}')
+            self.video_box_color = (0, 255, 0)
+            changed = True
+
+        if not self._check_color(self.video_text_color):
+            logging.warning(f'Invalid video text color in config: {self.video_text_color}')
+            self.video_text_color = (0, 0, 0)
+            changed = True
+
+        if self.video_box_thickness < 0:
+            logging.warning(f'Invalid video box thickness in config: {self.video_box_thickness}')
+            self.video_box_thickness = 2
+            changed = True
+
+        if self.video_text_size < 0:
+            logging.warning(f'Invalid video text size in config: {self.video_text_size}')
+            self.video_text_size = 1.5
+            changed = True
+
         return changed
 
+    def _check_color(self, color) -> bool:
+        if len(color) != 3:
+            return False
+
+        for c in color:
+            if not (0 <= c <= 255):
+                return False
+
+        return True
 
     def save(self):
         """
