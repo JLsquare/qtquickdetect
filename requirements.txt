@@ -3,3 +3,4 @@ ultralytics == 8.0.*
 torchvision == 0.15.*
 torch == 2.*
 opencv-python == 4.8.*
+requests == 2.31.*
