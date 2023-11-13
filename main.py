@@ -8,8 +8,8 @@ from views.main_window_widget import MainWindowWidget
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=log_format)
 
-if not os.path.exists('tmp'):
-    os.mkdir('tmp')
+if not os.path.exists('projects'):
+    os.mkdir('projects')
 
 # Set up the QApplication
 app = QApplication([])

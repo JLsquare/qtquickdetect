@@ -1,11 +1,19 @@
 import os
-import random
-
+import 
 
 def get_tmp_filepath(ext: str):
     """
-    Returns a random filepath in the temporary directory
-    :param ext: File extension (with the dot)
+    TO BE PHASED OUT (remove when all references are gone)
     """
-    basename = random.randbytes(12).hex()
-    return os.path.join('tmp', basename + ext)
+    raise NotImplementedError 
+
+def new_project(name: str) -> None:
+    """
+    Creates a new project folder
+    :param name: Name of the project
+    """
+
+    # TODO: Handle collisions
+    os.mkdir(name)
+
+
