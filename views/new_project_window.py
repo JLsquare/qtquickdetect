@@ -1,13 +1,15 @@
+import os
 from typing import Callable
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QGridLayout
 
-from views.start_widget import StartWidget
+from views.project_widget import ProjectWidget
 
 
 class NewProjectWindow(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
+        self._project_name_error = None
         self._project_name_input = None
         self._add_new_tab = add_new_tab
         self.init_ui()
@@ -34,11 +36,17 @@ class NewProjectWindow(QWidget):
         project_name_label = QLabel('Project name:')
         project_name_input = QLineEdit()
         project_name_input.setPlaceholderText('MyProject')
+        project_name_input.textChanged.connect(self.clear_error)
         self._project_name_input = project_name_input
+        project_name_error = QLabel('Project already exists')
+        project_name_error.setStyleSheet('color: red')
+        project_name_error.hide()
+        self._project_name_error = project_name_error
 
         project_name_layout = QVBoxLayout()
         project_name_layout.addWidget(project_name_label)
         project_name_layout.addWidget(project_name_input)
+        project_name_layout.addWidget(project_name_error)
         project_name_layout.addStretch()
 
         return project_name_layout
@@ -59,9 +67,18 @@ class NewProjectWindow(QWidget):
     #         CONTROLLER         #
     ##############################
 
+    def clear_error(self):
+        self._project_name_error.hide()
+
     def create_project(self):
         project_name = self._project_name_input.text()
-        new_tab = StartWidget(self._add_new_tab)
+        if os.path.exists(f'projects/{project_name}'):
+            self._project_name_error.show()
+            return
+        os.mkdir(f'projects/{project_name}')
+        os.mkdir(f'projects/{project_name}/input')
+        os.mkdir(f'projects/{project_name}/result')
+        new_tab = ProjectWidget(self._add_new_tab, project_name)
         self._add_new_tab(new_tab, project_name, True)
         self.close()
 

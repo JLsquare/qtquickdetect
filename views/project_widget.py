@@ -9,16 +9,19 @@ from pipeline import img_detection, vid_detection
 import logging
 
 
-class StartWidget(QWidget):
-    def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
+class ProjectWidget(QWidget):
+    def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project_name: str):
         super().__init__()
+
+        self._project_name = project_name
         self._current_pipeline = None
-        self.callback_count = 0
+        self._callback_count = 0
         self._add_new_tab = add_new_tab
         self._other_source_window = None
         self._progress_bar = None
 
         self._input_path = None
+        self._media_type = None
         self._functionality_selected = None
         self._model_selected = None
 
@@ -28,8 +31,6 @@ class StartWidget(QWidget):
         self._functionality_combo = None
         self._model_combo = None
         self._btn_run = None
-
-        self._media_type = None
 
         self.setAcceptDrops(True)
         self.init_ui()
@@ -296,14 +297,14 @@ class StartWidget(QWidget):
 
         if self._media_type == 'image' and task == 'detect':
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path)
-            self.callback_count = 0
+            self._callback_count = 0
             self.update_progress_bar()
 
             def callback_ok(input_path: str, output_media_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget = ImageResultWidget(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Image detection", len(self._input_path) == 1)
-                self.callback_count += 1
+                self._callback_count += 1
                 self.update_progress_bar()
 
             def callback_err(input_media_path: str, exception: Exception) -> None:
@@ -316,7 +317,7 @@ class StartWidget(QWidget):
 
         elif self._media_type == 'video' and task == 'detect':
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
-            self.callback_count = 0
+            self._callback_count = 0
             self.update_progress_bar()
             
             def callback_progress(current_frame: int, total_frames: int) -> None:
@@ -326,7 +327,7 @@ class StartWidget(QWidget):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget = VideoResultWidget(input_path, output_media_path)
                 self._add_new_tab(result_widget, "Video detection", len(self._input_path) == 1)
-                self.callback_count += 1
+                self._callback_count += 1
                 self.update_progress_bar()
 
             def callback_err(input_media_path: str, exception: Exception) -> None:
@@ -339,7 +340,7 @@ class StartWidget(QWidget):
             self._current_pipeline = pipeline
 
     def update_progress_bar(self, extra: float = 0.0):
-        base = self.callback_count / len(self._input_path)
+        base = self._callback_count / len(self._input_path)
         extra = extra / len(self._input_path)
 
         self._progress_bar.setValue(int((base + extra) * 100))
