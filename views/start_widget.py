@@ -4,7 +4,7 @@ from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt
 from views.image_result_widget import ImageResultWidget
 from views.video_result_widget import VideoResultWidget
-from views.other_source_widget import OtherSourceWidget
+from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
 import logging
 
@@ -251,7 +251,7 @@ class StartWidget(QWidget):
             self.check_enable_run()
 
     def open_other_source(self):
-        self._other_source_window = OtherSourceWidget(self.callback_other_source)
+        self._other_source_window = OtherSourceWindow(self.callback_other_source)
         self._other_source_window.show()
         logging.debug('Window opened : Other Source')
 
@@ -287,7 +287,6 @@ class StartWidget(QWidget):
         else:
             self._btn_run.setEnabled(False)
         logging.debug('Run enabled : ' + str(self._btn_run.isEnabled()))
-
 
     def run(self):
         inputs = self._input_path

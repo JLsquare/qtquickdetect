@@ -2,11 +2,11 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
 from views.app_tab_widget import AppTabWidget
-from views.config_widget import Config
+from views.config_window import ConfigWindow
 import logging
 
 
-class MainWindowWidget(QWidget):
+class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self._settings_window = None
@@ -64,6 +64,6 @@ class MainWindowWidget(QWidget):
     ##############################
 
     def open_settings(self):
-        self._settings_window = Config()
+        self._settings_window = ConfigWindow()
         self._settings_window.show()
         logging.debug('Window opened : Settings')

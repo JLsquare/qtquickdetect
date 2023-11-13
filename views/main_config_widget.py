@@ -6,7 +6,7 @@ import logging
 import os
 
 
-class MainConfig(QWidget):
+class MainConfigWidget(QWidget):
     def __init__(self, appstate: AppState):
         super().__init__()
         self._appstate = appstate

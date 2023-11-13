@@ -1,8 +1,8 @@
-from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel
 from utils.url_handler import *
 
-class OtherSourceWidget(QWidget):
+
+class OtherSourceWindow(QWidget):
     def __init__(self, callback: Callable[[str, bool, bool, bool], None]):
         super().__init__()
 

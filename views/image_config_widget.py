@@ -5,7 +5,7 @@ from models.app_state import AppState
 import logging
 
 
-class ImageConfig(QWidget):
+class ImageConfigWidget(QWidget):
     def __init__(self, appstate: AppState):
         super().__init__()
         self._appstate = appstate

@@ -1,13 +1,13 @@
 from PyQt6.QtWidgets import QWidget, QTabWidget, QGridLayout, QPushButton
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
-from views.image_config_widget import ImageConfig
-from views.main_config_widget import MainConfig
-from views.video_config_widget import VideoConfig
+from views.image_config_widget import ImageConfigWidget
+from views.main_config_widget import MainConfigWidget
+from views.video_config_widget import VideoConfigWidget
 import logging
 
 
-class Config(QWidget):
+class ConfigWindow(QWidget):
     def __init__(self):
         super().__init__()
         self._appstate = AppState.get_instance()
@@ -28,9 +28,9 @@ class Config(QWidget):
 
         tab = QTabWidget(self)
 
-        tab.addTab(MainConfig(self._appstate), "General")
-        tab.addTab(ImageConfig(self._appstate), "Image")
-        tab.addTab(VideoConfig(self._appstate), "Video")
+        tab.addTab(MainConfigWidget(self._appstate), "General")
+        tab.addTab(ImageConfigWidget(self._appstate), "Image")
+        tab.addTab(VideoConfigWidget(self._appstate), "Video")
         tab.addTab(QWidget(), "Live")
 
         main_layout.addWidget(tab, 0, 0, 2, 1)
