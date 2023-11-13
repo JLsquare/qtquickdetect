@@ -15,8 +15,8 @@ appstate = AppState.get_instance()
 
 
 class ImgDetectionPipeline(QThread):
-    finished_signal = pyqtSignal(str, set) # Source file, data
-    error_signal = pyqtSignal(str, Exception) # Source file, Exception
+    finished_signal = pyqtSignal(str, str)  # Source file, data
+    error_signal = pyqtSignal(str, Exception)  # Source file, Exception
 
     '''
     Data format:
@@ -37,7 +37,7 @@ class ImgDetectionPipeline(QThread):
     }
     '''
 
-    def __init__(self, inputs: list[str], model_path: str):
+    def __init__(self, inputs: list[str], model_path: str, results_path: str):
         """
         Pipeline class, used to run inference on a list of inputs
 
@@ -64,6 +64,7 @@ class ImgDetectionPipeline(QThread):
         self._model: ultralytics.engine.model.Model = model
         self._device: torch.device = device
         self._inputs = inputs
+        self._results_path = results_path
         self._results = dict()
 
         model_name = os.path.basename(model_path)
@@ -105,7 +106,9 @@ class ImgDetectionPipeline(QThread):
 
                 self._results['results'].append(results_array)
 
-                self.finished_signal.emit(src, self._results)
+                # TODO: Sauvegarder le resultat dans un fichier JSON au result_path
+
+                self.finished_signal.emit(src, "placeholder.json")
 
             except Exception as e:
                 self.error_signal.emit(src, e)
