@@ -15,8 +15,27 @@ appstate = AppState.get_instance()
 
 
 class ImgDetectionPipeline(QThread):
-    finished_signal = pyqtSignal(str, str)
-    error_signal = pyqtSignal(str, Exception)
+    finished_signal = pyqtSignal(str, set) # Source file, data
+    error_signal = pyqtSignal(str, Exception) # Source file, Exception
+
+    '''
+    Data format:
+    {
+        "classes": <dict of classes>,
+        "model_name": <str>,
+        "task": <str>,
+        "results": [
+            [
+                "x1": <int>,
+                "y1": <int>,
+                "x2": <int>,
+                "y2": <int>,
+                "classid": <int>,
+                "confidence": <float>
+            ]
+        ]
+    }
+    '''
 
     def __init__(self, inputs: list[str], model_path: str):
         """
@@ -45,6 +64,15 @@ class ImgDetectionPipeline(QThread):
         self._model: ultralytics.engine.model.Model = model
         self._device: torch.device = device
         self._inputs = inputs
+        self._results = dict()
+
+        model_name = os.path.basename(model_path)
+
+        self._results['classes'] = self._names
+        self._results['model_name'] = model_name
+        self._results['task'] = "detection"
+        self._results['results'] = []
+
 
     def run(self):
         """
@@ -53,45 +81,34 @@ class ImgDetectionPipeline(QThread):
 
         for src in self._inputs:
             try:
-                # Check if src is a local file
-                if src.startswith('http'):
-                    # Download file
-                    media = urllib.request.urlopen(src)
-                    ext = src.split('.')[-1]
-                    src = get_tmp_filepath('.' + ext)
-                    with open(src, 'wb') as f:
-                        f.write(media.read())
-
                 result = self._model(src)
 
                 result = result[0].cpu()
 
-                opencv_img = cv.imread(src)
-                json_result = []
+                results_array = []
 
                 for box in result.boxes:
                     flat = box.xyxy.flatten()
                     topleft = (int(flat[0]), int(flat[1]))
                     bottomright = (int(flat[2]), int(flat[3]))
-                    classname = self._names[int(box.cls)]  # type: ignore
-                    conf = box.conf[0]  # It's a tensor [x]
-                    json_result.append({'x1': topleft[0], 'y1': topleft[1], 'x2': bottomright[0], 'y2': bottomright[1],
-                                        'class': classname, 'confidence': conf.item()})
+                    classid = int(box.cls)
+                    conf = float(box.conf[0])  # It's a tensor [x]
+                    
+                    results_array.append({
+                        'x1': topleft[0],
+                        'y1': topleft[1],
+                        'x2': bottomright[0],
+                        'y2': bottomright[1],
+                        'classid': classid,
+                        'confidence': conf
+                    })
 
-                    config = appstate.config
-                    draw_bounding_box(opencv_img, topleft, bottomright, classname, conf, config.image_box_color,
-                                      config.image_text_color, config.image_box_thickness, config.image_text_size)
+                self._results['results'].append(results_array)
 
-                dst = get_tmp_filepath(f'.{appstate.config.image_format}')
-                dst_json = get_tmp_filepath('.json')
+                results_json = json.dumps(self._results)
+                print(results_json)
 
-                with open(dst_json, 'w') as json_file:
-                    json.dump(json_result, json_file)
-
-                cv.imwrite(dst, opencv_img)
-                del opencv_img
-
-                self.finished_signal.emit(src, dst)
+                self.finished_signal.emit(src, self._results)
 
             except Exception as e:
                 self.error_signal.emit(src, e)
