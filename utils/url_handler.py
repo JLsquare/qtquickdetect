@@ -89,9 +89,7 @@ def download_file(url: str, dst: str, cb: Callable[[int, int], None] | None = No
     with open(dst, 'wb') as file:
         for chunk in resp.iter_content(chunk_size=1024):
             current += len(chunk)
-            print('\r{:%}'.format(current/total), end='')
             file.write(chunk)
 
             if cb:
                 cb(current, total)
-                
