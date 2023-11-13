@@ -105,9 +105,6 @@ class ImgDetectionPipeline(QThread):
 
                 self._results['results'].append(results_array)
 
-                results_json = json.dumps(self._results)
-                print(results_json)
-
                 self.finished_signal.emit(src, self._results)
 
             except Exception as e:
