@@ -1,4 +1,5 @@
 import requests
+from typing import Callable
 
 def get_content_type(url: str) -> str | None:
     """
@@ -56,3 +57,41 @@ def is_live_video(url: str) -> bool:
         return True
     return False
 
+def is_url(url: str) -> bool:
+    """
+    Convenience function to check if a string is a valid URL
+    :param url: String to check
+    :return: True if the string is a valid URL, False otherwise
+    """
+
+    if not url.startswith('http'):
+        return False 
+
+    try:
+        requests.head(url, allow_redirects=True, timeout=10)
+        return True
+    except requests.RequestException:
+        return False
+    
+def download_file(url: str, dst: str, cb: Callable[[int, int], None] | None = None) -> None:
+    """
+    Downloads a file from a URL
+    :param url: URL to download from
+    :param dst: Destination path (leading folders must exist)
+    :param cb: Callback function to call on download progress (takes current and total bytes as parameters)
+    :raises any exception if 
+    """
+
+    resp = requests.get(url, stream=True)
+    total = int(resp.headers.get('content-length', 0))
+    current = 0
+
+    with open(dst, 'wb') as file:
+        for chunk in resp.iter_content(chunk_size=1024):
+            current += len(chunk)
+            print('\r{:%}'.format(current/total), end='')
+            file.write(chunk)
+
+            if cb:
+                cb(current, total)
+                
