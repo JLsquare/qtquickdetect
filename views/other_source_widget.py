@@ -1,7 +1,6 @@
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel
-import requests
-
+from utils.url_handler import *
 
 class OtherSourceWidget(QWidget):
     def __init__(self, callback: Callable[[str, bool, bool, bool], None]):
@@ -95,53 +94,21 @@ class OtherSourceWidget(QWidget):
         self._is_image = False
         self._is_video = False
         self._is_live = False
-        if self.is_live_video(url):
+        if is_live_video(url):
             self._format_display.setText("Live Video Pipeline (Live)")
             self._ok_btn.setDisabled(False)
             self._is_live = True
-        elif self.is_image(url):
+        elif is_image(url):
             self._format_display.setText("Image")
             self._ok_btn.setDisabled(False)
             self._is_image = True
-        elif self.is_video(url):
+        elif is_video(url):
             self._format_display.setText("Video")
             self._ok_btn.setDisabled(False)
             self._is_video = True
         else:
             self._format_display.setText("Unknown Format")
             self._ok_btn.setDisabled(True)
-
-    def get_content_type(self, url: str) -> str | None:
-        try:
-            response = requests.head(url, allow_redirects=True, timeout=10)
-            return response.headers.get('Content-Type', '').split(';')[0].strip()
-        except requests.RequestException:
-            return None
-
-    def is_live_video(self, url: str) -> bool:
-        content_type = self.get_content_type(url)
-        live_content_types = ["application/vnd.apple.mpegurl", "application/dash+xml"]
-        live_url_patterns = ["m3u8", ".ts", "live", "streaming"]
-        if content_type and content_type in live_content_types:
-            return True
-        if any(pattern in url for pattern in live_url_patterns):
-            return True
-        return False
-
-    def is_image(self, url: str) -> bool:
-        content_type = self.get_content_type(url)
-        if not content_type:
-            return False
-        image_types = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff"]
-        return content_type in image_types
-
-    def is_video(self, url: str) -> bool:
-        content_type = self.get_content_type(url)
-        if not content_type:
-            return False
-        video_types = ["video/mp4", "video/avi", "video/mkv", "video/mpeg", "video/quicktime", "video/x-msvideo",
-                       "video/webm"]
-        return content_type in video_types
 
     def ok(self):
         self._callback(self._url_input.text(), self._is_image, self._is_video, self._is_live)
