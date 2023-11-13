@@ -1,14 +1,16 @@
 from PyQt6.QtWidgets import QTabWidget, QWidget, QTabBar
-from views.start_widget import StartWidget
+from views.new_project_window import NewProjectWindow
 
 
 class AppTabWidget(QTabWidget):
     def __init__(self):
         super().__init__()
+        self._new_project_window = None
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_tab)
         self.tabBarClicked.connect(self.check_tab)
-        self.add_new_tab()
+        self.addTab(QWidget(), "+")
+        self.tabBar().setTabButton(self.count() - 1, QTabBar.ButtonPosition.RightSide, None)
 
     ##############################
     #         CONTROLLER         #
@@ -20,7 +22,10 @@ class AppTabWidget(QTabWidget):
 
     def add_new_tab(self, new_tab: QWidget = None, title: str = "Start", redirect: bool = True) -> None:
         if new_tab is None:
-            new_tab = StartWidget(self.add_new_tab)
+            # new_tab = StartWidget(self.add_new_tab)
+            self._new_project_window = NewProjectWindow(self.add_new_tab)
+            self._new_project_window.show()
+            return
         self.insertTab(self.count() - 1, new_tab, title)
         if redirect:
             self.setCurrentIndex(self.count() - 2)
