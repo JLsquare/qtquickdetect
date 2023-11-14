@@ -169,6 +169,7 @@ class ImageResultWidget(QWidget):
         result_json = self._result_jsons[self._file_select_combo.currentIndex()]
         tab.addTab(self.input_image_ui(input_image), 'Input')
         tab.addTab(self.result_image_ui(input_image, result_json), 'Result')
+        tab.setCurrentIndex(1)
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()
         self._middle_layout.addWidget(tab, 1)

@@ -1,9 +1,9 @@
-import os
-import cv2
 from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QLabel, QWidget, QVBoxLayout
 import logging
+import os
+import cv2
 
 
 class CheckableFileSystemModel(QFileSystemModel):
@@ -15,7 +15,10 @@ class CheckableFileSystemModel(QFileSystemModel):
 
     def data(self, index: QModelIndex, role: int = None):
         if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
-            return self.checks.get(index, Qt.CheckState.Unchecked)
+            if self.isDir(index):
+                return -1
+            else:
+                return self.checks.get(index, 2)
         return super().data(index, role)
 
     def setData(self, index: QModelIndex, value, role: int = None):
