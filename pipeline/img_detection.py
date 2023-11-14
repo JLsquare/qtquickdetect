@@ -21,9 +21,9 @@ class ImgDetectionPipeline(QThread):
     '''
     Data format:
     {
-        "classes": <dict of classes>,
         "model_name": <str>,
         "task": <str>,
+        "classes": <dict of classes>,
         "results": [
             [
                 "x1": <int>,
@@ -69,9 +69,9 @@ class ImgDetectionPipeline(QThread):
 
         model_name = os.path.basename(model_path)
 
-        self._results['classes'] = self._names
         self._results['model_name'] = model_name
         self._results['task'] = "detection"
+        self._results['classes'] = self._names
         self._results['results'] = []
 
 
@@ -104,11 +104,16 @@ class ImgDetectionPipeline(QThread):
                         'confidence': conf
                     })
 
-                self._results['results'].append(results_array)
+                results = self._results.copy()
+                results['results'] = results_array
 
-                # TODO: Sauvegarder le resultat dans un fichier JSON au result_path
+                json_name = os.path.basename(src).split('.')[0] + '.json'
+                json_path = os.path.join(self._results_path, json_name)
 
-                self.finished_signal.emit(src, "placeholder.json")
+                with open(json_path, 'w') as f:
+                    json.dump(results, f, indent=4)
+
+                self.finished_signal.emit(src, json_path)
 
             except Exception as e:
                 self.error_signal.emit(src, e)

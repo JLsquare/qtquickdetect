@@ -72,11 +72,7 @@ class FileListWidget(QWidget):
         return selected_files
 
     def _get_selected_files_recursive(self, index, selected_files):
-        check_state = self._model.data(index, Qt.ItemDataRole.CheckStateRole)
-        check_state_name = 'Unchecked' if check_state == Qt.CheckState.Unchecked else 'Checked'
-        logging.debug(f'FileListWidget: {self._model.filePath(index)} {selected_files}')
-        logging.debug(f'FileListWidget: {check_state_name} | Checked')
-        if check_state_name == 'Checked':
+        if self._model.data(index, Qt.ItemDataRole.CheckStateRole) == 2:
             selected_files.append(self._model.filePath(index))
 
         if self._model.hasChildren(index):

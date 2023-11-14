@@ -315,7 +315,7 @@ class ProjectWidget(QWidget):
         logging.info(f'Run with : {str(inputs)}, {str(model_path)}, {str(task)}, {str(self._media_type)}')
 
         if self._media_type == 'image' and task == 'detect':
-            pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/results')
+            pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
 
