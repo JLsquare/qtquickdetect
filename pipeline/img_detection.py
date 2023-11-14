@@ -1,15 +1,12 @@
 from PyQt6.QtCore import QThread, pyqtSignal
-from utils.file_handling import *
-from utils.image_helpers import *
 from models.app_state import AppState
 import torch
 import logging
 import ultralytics
 import ultralytics.engine.model
 import ultralytics.engine.results
-import cv2 as cv
 import json
-import urllib
+import os
 
 appstate = AppState.get_instance()
 

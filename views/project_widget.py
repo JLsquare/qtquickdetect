@@ -335,7 +335,7 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'video' and task == 'detect':
-            pipeline = vid_detection.VidDetectionPipeline(inputs, model_path)
+            pipeline = vid_detection.VidDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
             

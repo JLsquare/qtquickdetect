@@ -1,5 +1,6 @@
+import os
+
 from PyQt6.QtCore import pyqtSignal, QThread
-from utils.file_handling import *
 from utils.image_helpers import *
 from models.app_state import AppState
 import torch
@@ -12,12 +13,13 @@ import urllib
 
 appstate = AppState.get_instance()
 
+
 class VidDetectionPipeline(QThread):
     progress_signal = pyqtSignal(int, int)
     finished_signal = pyqtSignal(str, str)
     error_signal = pyqtSignal(str, Exception)
 
-    def __init__(self, inputs: list[str], model_path: str):
+    def __init__(self, inputs: list[str], model_path: str, results_path: str):
         """
         Pipeline class, used to run inference on a list of inputs
 
@@ -35,16 +37,17 @@ class VidDetectionPipeline(QThread):
         except Exception as e:
             logging.error('Failed to load model: {}'.format(e))
             raise e
-        
+
         if model.task != 'detect':
-                logging.error('Model task ({}) does not match pipeline task'.format(model.task))
-                raise ValueError('Model task ({}) does not match pipeline task'.format(model.task))
-        
+            logging.error('Model task ({}) does not match pipeline task'.format(model.task))
+            raise ValueError('Model task ({}) does not match pipeline task'.format(model.task))
+
         self._names = model.names
         self._model: ultralytics.engine.model.Model = model
         self._device: torch.device = device
         self._inputs = inputs
-        
+        self._results_path = results_path
+
     def run(self):
         """
         Runs a detection for all videos in the input list
@@ -52,18 +55,21 @@ class VidDetectionPipeline(QThread):
 
         for src in self._inputs:
             try:
-                if src.startswith('http'):
-                    # Download file
-                    media = urllib.request.urlopen(src)
-                    ext = src.split('.')[-1]
-                    src = get_tmp_filepath('.' + ext)
-                    with open(src, 'wb') as f:
-                        f.write(media.read())
+                #if src.startswith('http'):
+                #    # Download file
+                #    media = urllib.request.urlopen(src)
+                #    ext = src.split('.')[-1]
+                #    src = get_tmp_filepath('.' + ext)
+                #    with open(src, 'wb') as f:
+                #        f.write(media.read())
 
-                output = get_tmp_filepath(f'.{appstate.config.video_format}')
+                video_name = os.path.basename(src)
+                output = os.path.join(self._results_path, video_name)
 
                 cap = cv.VideoCapture(src)
-                width, height, fps, frame_count = int(cap.get(cv.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv.CAP_PROP_FPS)), int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+                width, height, fps, frame_count = int(cap.get(cv.CAP_PROP_FRAME_WIDTH)), int(
+                    cap.get(cv.CAP_PROP_FRAME_HEIGHT)), int(cap.get(cv.CAP_PROP_FPS)), int(
+                    cap.get(cv.CAP_PROP_FRAME_COUNT))
                 if appstate.config.video_format == 'avi':
                     codec = 'XVID'
                 else:
@@ -101,6 +107,3 @@ class VidDetectionPipeline(QThread):
 
             except Exception as e:
                 self.error_signal.emit(src, e)
-
-    
-
