@@ -82,29 +82,34 @@ class FileListWidget(QWidget):
 
     def update_preview(self, selected):
         indexes = selected.indexes()
-        if indexes:
-            index = indexes[0]
-            file_path = self._model.filePath(index)
+        if not indexes:
+            return
 
-            if os.path.isfile(file_path):
-                if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-                    pixmap = QPixmap(file_path)
-                    self._preview_label.setPixmap(
-                        pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
-                elif file_path.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):  # Add other video formats as needed
-                    cap = cv2.VideoCapture(file_path)
-                    success, frame = cap.read()
-                    if success:
-                        height, width, channel = frame.shape
-                        bytes_per_line = 3 * width
-                        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
-                        pixmap = QPixmap.fromImage(q_img)
-                        self._preview_label.setPixmap(
-                            pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
-                    else:
-                        self._preview_label.setText("Cannot preview video.")
-                    cap.release()
-                else:
-                    self._preview_label.setText("Cannot preview this file type.")
-            else:
-                self._preview_label.setText("This is a directory.")
+        file_path = self._model.filePath(indexes[0])
+        if not os.path.isfile(file_path):
+            self._preview_label.setText("This is a directory.")
+            return
+
+        if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+            self._set_image_preview(file_path)
+        elif file_path.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
+            self._set_video_preview(file_path)
+        else:
+            self._preview_label.setText("Cannot preview this file type.")
+
+    def _set_image_preview(self, file_path):
+        pixmap = QPixmap(file_path)
+        self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+
+    def _set_video_preview(self, file_path):
+        cap = cv2.VideoCapture(file_path)
+        success, frame = cap.read()
+        if success:
+            height, width, channel = frame.shape
+            bytes_per_line = 3 * width
+            q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
+            pixmap = QPixmap.fromImage(q_img)
+            self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        else:
+            self._preview_label.setText("Cannot preview video.")
+        cap.release()
