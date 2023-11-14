@@ -1,24 +1,28 @@
-import numpy as np
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog, \
-    QMessageBox, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QGraphicsPixmapItem, \
+    QGraphicsScene, QComboBox, QLabel
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtCore import Qt, QFile
+from PyQt6.QtCore import Qt
 from models.app_state import AppState
 from utils.image_helpers import draw_bounding_box
-import logging
-import json
-
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
+import json
+import os
+import numpy as np
 
 appstate = AppState.get_instance()
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self, input_image: str, result_json: str):
+    def __init__(self):
         super().__init__()
-        self._input_image = input_image
-        self._result_json = result_json
+
+        self._middle_layout = None
+        self._input_images = []
+        self._result_jsons = []
         self._layer_visibility = {}
+
+        self._file_select_combo = None
+
         self.init_ui()
 
     ##############################
@@ -26,16 +30,11 @@ class ImageResultWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        # Tab input / result image
-        tab = QTabWidget(self)
-        tab.addTab(self.input_image_ui(), "Input")
-        tab.addTab(self.result_image_ui(), "Result")
-        tab.setCurrentIndex(1)
-
         # Middle layout
         middle_layout = QHBoxLayout()
-        middle_layout.addStretch(1)
-        middle_layout.addWidget(tab, 1)
+        middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        middle_layout.addLayout(self.left_ui(), 1)
+        self._middle_layout = middle_layout
 
         # Bottom layout
         bottom_layout = QHBoxLayout()
@@ -49,24 +48,49 @@ class ImageResultWidget(QWidget):
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
-    def input_image_ui(self) -> QLabel:
-        input_image = QLabel(self)
-        input_image.setPixmap(QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                                Qt.TransformationMode.SmoothTransformation))
-        return input_image
+    def left_ui(self) -> QVBoxLayout:
+        file_select_label = QLabel('Select file:')
+        file_select = QComboBox()
+        file_select.currentIndexChanged.connect(self.open_current_file)
+        self._file_select_combo = file_select
 
-    def result_image_ui(self) -> QWidget:
+        left_layout = QVBoxLayout()
+        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        left_layout.addWidget(file_select_label)
+        left_layout.addWidget(file_select)
+
+        return left_layout
+
+    def input_image_ui(self, input_image: str) -> QWidget:
         container_widget = QWidget(self)
         container_layout = QVBoxLayout(container_widget)
 
         scene = QGraphicsScene(container_widget)
 
-        pixmap = QPixmap(self._input_image)
+        pixmap = QPixmap(input_image)
+        base_image_item = QGraphicsPixmapItem(pixmap)
+        scene.addItem(base_image_item)
+
+        view = ResizeableGraphicsWidget(scene, container_widget)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        container_layout.addWidget(view)
+
+        container_widget.setLayout(container_layout)
+        return container_widget
+
+    def result_image_ui(self, input_image: str, result_json: str) -> QWidget:
+        container_widget = QWidget(self)
+        container_layout = QVBoxLayout(container_widget)
+
+        scene = QGraphicsScene(container_widget)
+
+        pixmap = QPixmap(input_image)
         img_size = pixmap.size()
         base_image_item = QGraphicsPixmapItem(pixmap)
         scene.addItem(base_image_item)
 
-        with open(self._result_json, 'r') as file:
+        with open(result_json, 'r') as file:
             result_json = json.load(file)
 
         results = result_json['results']
@@ -107,15 +131,16 @@ class ImageResultWidget(QWidget):
         container_widget.setLayout(container_layout)
         return container_widget
 
-    def toggle_layer(self, class_id: int):
-        layer_info = self._layer_visibility.get(class_id)
-        if layer_info:
-            layer_item = layer_info['item']
-            layer_item.setVisible(not layer_item.isVisible())
-            layer_info['visible'] = layer_item.isVisible()
+    # def toggle_layer(self, class_id: int):
+    #    layer_info = self._layer_visibility.get(class_id)
+    #    if layer_info:
+    #        layer_item = layer_info['item']
+    #        layer_item.setVisible(not layer_item.isVisible())
+    #        layer_info['visible'] = layer_item.isVisible()
 
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
+        save_json_button.clicked.connect(self.save_json)
         return save_json_button
 
     def save_image_button_ui(self) -> QPushButton:
@@ -128,19 +153,22 @@ class ImageResultWidget(QWidget):
     ##############################
 
     def save_image(self):
-        if self._result_json.lower().endswith('.jpg') or self._result_json.lower().endswith('.jpeg'):
-            format_filter = 'JPEG (*.jpg, *.jpeg)'
-        else:
-            format_filter = 'PNG (*.png)'
-        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Image", "", format_filter)
-        if file_name:
-            if selected_filter == 'JPEG (*.jpg, *.jpeg)' and not file_name.lower().endswith('.jpg'):
-                file_name += ".jpg"
-            if selected_filter == 'PNG (*.png)' and not file_name.lower().endswith('.png'):
-                file_name += ".png"
-            if QFile.copy(self._result_json, file_name):
-                QMessageBox.information(self, "Success", "Image saved successfully!")
-                logging.debug(f'Saved image to {file_name}')
-            else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the image.")
-                logging.error(f'Could not save image to {file_name}')
+        pass
+
+    def save_json(self):
+        pass
+
+    def add_input_and_result(self, input_image: str, result_json: str):
+        self._input_images.append(input_image)
+        self._result_jsons.append(result_json)
+        self._file_select_combo.addItem(os.path.basename(input_image), result_json)
+
+    def open_current_file(self):
+        tab = QTabWidget()
+        input_image = self._input_images[self._file_select_combo.currentIndex()]
+        result_json = self._result_jsons[self._file_select_combo.currentIndex()]
+        tab.addTab(self.input_image_ui(input_image), 'Input')
+        tab.addTab(self.result_image_ui(input_image, result_json), 'Result')
+        if self._middle_layout.count() > 1:
+            self._middle_layout.itemAt(1).widget().deleteLater()
+        self._middle_layout.addWidget(tab, 1)

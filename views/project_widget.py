@@ -318,11 +318,12 @@ class ProjectWidget(QWidget):
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
+            result_widget = ImageResultWidget()
+            self._add_new_tab(result_widget, "Image detection", len(inputs) == 1)
 
             def callback_ok(input_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
-                result_widget = ImageResultWidget(input_path, output_json_path)
-                self._add_new_tab(result_widget, "Image detection", len(inputs) == 1)
+                result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
                 self.update_progress_bar()
 
