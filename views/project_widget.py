@@ -319,7 +319,7 @@ class ProjectWidget(QWidget):
             self._callback_count = 0
             self.update_progress_bar()
             result_widget = ImageResultWidget()
-            self._add_new_tab(result_widget, "Image detection", len(inputs) == 1)
+            self._add_new_tab(result_widget, f"{self._project_name} : Image detection", len(inputs) == 1)
 
             def callback_ok(input_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
@@ -340,7 +340,7 @@ class ProjectWidget(QWidget):
             self._callback_count = 0
             self.update_progress_bar()
             result_widget = VideoResultWidget()
-            self._add_new_tab(result_widget, "Video detection", len(inputs) == 1)
+            self._add_new_tab(result_widget, f"{self._project_name} : Video detection", len(inputs) == 1)
             
             def callback_progress(current_frame: int, total_frames: int) -> None:
                 self.update_progress_bar(current_frame / total_frames)
