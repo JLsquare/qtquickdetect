@@ -163,3 +163,15 @@ QProgressBar::chunk:indeterminate {
     background-color: #79D962;
     border-radius: 8px;
 }
+
+/* ==== QGraphicsScene et QGraphicsView ==== */
+QGraphicsScene {
+    margin: 0px;
+    padding: 0px;
+    border: 0px;
+}
+QGraphicsView {
+    border: 0px;
+    margin: 0px;
+    padding: 0px;
+}

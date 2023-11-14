@@ -8,6 +8,8 @@ from utils.image_helpers import draw_bounding_box
 import logging
 import json
 
+from views.resizeable_graphics_widget import ResizeableGraphicsWidget
+
 appstate = AppState.get_instance()
 
 
@@ -59,8 +61,8 @@ class ImageResultWidget(QWidget):
 
         scene = QGraphicsScene(container_widget)
 
-        pixmap = QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                   Qt.TransformationMode.SmoothTransformation)
+        pixmap = QPixmap(self._input_image)
+        img_size = pixmap.size()
         base_image_item = QGraphicsPixmapItem(pixmap)
         scene.addItem(base_image_item)
 
@@ -78,14 +80,16 @@ class ImageResultWidget(QWidget):
             classname = classes[str(result['classid'])]
             confidence = result['confidence']
             config = appstate.config
-            layer = np.full((pixmap.width(), pixmap.height(), 4), 0, np.uint8)
-            draw_bounding_box(layer, top_left, bottom_right, classname, confidence, config.video_box_color,
-                              config.video_text_color, config.video_box_thickness, config.video_text_size)
+
+            layer = np.full((img_size.width(), img_size.height(), 4), 0, np.uint8)
+            draw_bounding_box(layer, top_left, bottom_right, classname, confidence,
+                              config.video_box_color, config.video_text_color,
+                              config.video_box_thickness, config.video_text_size)
+
             height, width, channel = layer.shape
             bytes_per_line = 4 * width
             q_img = QImage(layer.data, width, height, bytes_per_line, QImage.Format.Format_RGBA8888)
-            layer_pixmap = QPixmap(q_img).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                 Qt.TransformationMode.SmoothTransformation)
+            layer_pixmap = QPixmap(q_img)
             layer_item = QGraphicsPixmapItem(layer_pixmap)
             layer_item.setPos(0, 0)
             scene.addItem(layer_item)
@@ -95,7 +99,9 @@ class ImageResultWidget(QWidget):
                 'visible': True
             }
 
-        view = QGraphicsView(scene, container_widget)
+        view = ResizeableGraphicsWidget(scene, container_widget)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         container_layout.addWidget(view)
 
         container_widget.setLayout(container_layout)
