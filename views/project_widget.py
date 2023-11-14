@@ -339,14 +339,15 @@ class ProjectWidget(QWidget):
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
+            result_widget = VideoResultWidget()
+            self._add_new_tab(result_widget, "Video detection", len(inputs) == 1)
             
             def callback_progress(current_frame: int, total_frames: int) -> None:
                 self.update_progress_bar(current_frame / total_frames)
 
             def callback_ok(input_path: str, output_media_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
-                result_widget = VideoResultWidget(input_path, output_media_path)
-                self._add_new_tab(result_widget, "Video detection", len(inputs) == 1)
+                result_widget.add_input_and_result(input_path, output_media_path)
                 self._callback_count += 1
                 self.update_progress_bar()
 
