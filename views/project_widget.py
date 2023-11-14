@@ -23,6 +23,7 @@ class ProjectWidget(QWidget):
         self._other_source_window = None
         self._progress_bar = None
         self._file_list = FileListWidget(f'{QDir.currentPath()}/projects/{self._project_name}/input')
+        self._file_list.model.selection_changed_signal.connect(self.check_enable_run)
 
         self._media_type = None
         self._functionality_selected = None
@@ -301,8 +302,7 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if ((self._media_type == 'image' or self._media_type == 'video' or self._media_type == 'live')
-                and self._model_selected and self._functionality_selected):
+        if (len(self._file_list.get_selected_files()) > 0) and self._model_selected and self._functionality_selected:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)

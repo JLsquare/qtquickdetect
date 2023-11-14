@@ -1,12 +1,14 @@
 import os
 import cv2
-from PyQt6.QtCore import Qt, QModelIndex
+from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QLabel, QWidget, QVBoxLayout
 import logging
 
 
 class CheckableFileSystemModel(QFileSystemModel):
+    selection_changed_signal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.checks = {}
@@ -20,6 +22,7 @@ class CheckableFileSystemModel(QFileSystemModel):
         if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
             self.checks[index] = value
             self.dataChanged.emit(index, index, [role])
+            self.selection_changed_signal.emit()
             return True
         return super().setData(index, value, role)
 
@@ -28,7 +31,6 @@ class CheckableFileSystemModel(QFileSystemModel):
 
 
 class FileListWidget(QWidget):
-
     def __init__(self, file_dir: str):
         super().__init__()
 
@@ -38,11 +40,11 @@ class FileListWidget(QWidget):
         self._preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         logging.debug('FileListWidget: ' + self._file_dir)
-        self._model = CheckableFileSystemModel()
-        self._model.setRootPath(self._file_dir)
+        self.model = CheckableFileSystemModel()
+        self.model.setRootPath(self._file_dir)
         self._qtree_view = QTreeView()
-        self._qtree_view.setModel(self._model)
-        self._qtree_view.setRootIndex(self._model.index(self._file_dir))
+        self._qtree_view.setModel(self.model)
+        self._qtree_view.setRootIndex(self.model.index(self._file_dir))
         self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
 
         self.init_ui()
@@ -52,7 +54,7 @@ class FileListWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        for i in range(1, self._model.columnCount()):
+        for i in range(1, self.model.columnCount()):
             self._qtree_view.hideColumn(i)
         self._qtree_view.setHeaderHidden(True)
 
@@ -67,17 +69,17 @@ class FileListWidget(QWidget):
 
     def get_selected_files(self):
         selected_files = []
-        self._get_selected_files_recursive(self._model.index(self._file_dir), selected_files)
+        self._get_selected_files_recursive(self.model.index(self._file_dir), selected_files)
         logging.debug('FileListWidget: ' + str(selected_files))
         return selected_files
 
     def _get_selected_files_recursive(self, index, selected_files):
-        if self._model.data(index, Qt.ItemDataRole.CheckStateRole) == 2:
-            selected_files.append(self._model.filePath(index))
+        if self.model.data(index, Qt.ItemDataRole.CheckStateRole) == 2:
+            selected_files.append(self.model.filePath(index))
 
-        if self._model.hasChildren(index):
-            for row in range(self._model.rowCount(index)):
-                child_index = self._model.index(row, 0, index)
+        if self.model.hasChildren(index):
+            for row in range(self.model.rowCount(index)):
+                child_index = self.model.index(row, 0, index)
                 self._get_selected_files_recursive(child_index, selected_files)
 
     def update_preview(self, selected):
@@ -85,7 +87,7 @@ class FileListWidget(QWidget):
         if not indexes:
             return
 
-        file_path = self._model.filePath(indexes[0])
+        file_path = self.model.filePath(indexes[0])
         if not os.path.isfile(file_path):
             self._preview_label.setText("This is a directory.")
             return

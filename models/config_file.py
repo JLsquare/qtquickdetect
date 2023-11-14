@@ -11,14 +11,14 @@ class ConfigFile:
         self.confidence_threshold = 0.8
 
         self.image_format = 'png'
-        self.image_box_color = (0, 255, 0)
-        self.image_text_color = (0, 0, 0)
+        self.image_box_color = (0, 255, 0, 255)
+        self.image_text_color = (0, 0, 0, 255)
         self.image_box_thickness = 2
         self.image_text_size = 1.5
 
         self.video_format = 'mp4'
-        self.video_box_color = (0, 255, 0)
-        self.video_text_color = (0, 0, 0)
+        self.video_box_color = (0, 255, 0, 255)
+        self.video_text_color = (0, 0, 0, 255)
         self.video_box_thickness = 2
         self.video_text_size = 1.5
 
@@ -79,12 +79,12 @@ class ConfigFile:
 
         if not self._check_color(self.image_box_color):
             logging.warning(f'Invalid image box color in config: {self.image_box_color}')
-            self.image_box_color = (0, 255, 0)
+            self.image_box_color = (0, 255, 0, 255)
             changed = True
 
         if not self._check_color(self.image_text_color):
             logging.warning(f'Invalid image text color in config: {self.image_text_color}')
-            self.image_text_color = (0, 0, 0)
+            self.image_text_color = (0, 0, 0, 255)
             changed = True
 
         if self.image_box_thickness < 0:
@@ -104,12 +104,12 @@ class ConfigFile:
 
         if not self._check_color(self.video_box_color):
             logging.warning(f'Invalid video box color in config: {self.video_box_color}')
-            self.video_box_color = (0, 255, 0)
+            self.video_box_color = (0, 255, 0, 255)
             changed = True
 
         if not self._check_color(self.video_text_color):
             logging.warning(f'Invalid video text color in config: {self.video_text_color}')
-            self.video_text_color = (0, 0, 0)
+            self.video_text_color = (0, 0, 0, 255)
             changed = True
 
         if self.video_box_thickness < 0:
@@ -125,7 +125,7 @@ class ConfigFile:
         return changed
 
     def _check_color(self, color) -> bool:
-        if len(color) != 3:
+        if len(color) != 4:
             return False
 
         for c in color:
@@ -142,5 +142,3 @@ class ConfigFile:
 
         with open('config.json', 'w') as f:
             json.dump(self.__dict__, f, indent=4)
-
-        

@@ -111,10 +111,10 @@ class VideoConfigWidget(QWidget):
     def set_box_color(self):
         color = self._appstate.config.video_box_color
         color_picker = QColorDialog()
-        color_picker.setCurrentColor(QColor(color[1], color[1], color[0]))
+        color_picker.setCurrentColor(QColor(color[0], color[1], color[2], color[3]))
         if color_picker.exec() == QColorDialog.DialogCode.Accepted:
             new_color = color_picker.currentColor()
-            self._appstate.config.video_box_color = (new_color.blue(), new_color.green(), new_color.red())
+            self._appstate.config.video_box_color = (new_color.red(), new_color.green(), new_color.blue(), new_color.alpha())
             self.update_box_color()
 
     def update_box_color(self):
@@ -124,10 +124,10 @@ class VideoConfigWidget(QWidget):
     def set_text_color(self):
         color = self._appstate.config.video_text_color
         color_picker = QColorDialog()
-        color_picker.setCurrentColor(QColor(color[2], color[1], color[0]))
+        color_picker.setCurrentColor(QColor(color[0], color[1], color[2], color[3]))
         if color_picker.exec() == QColorDialog.DialogCode.Accepted:
             new_color = color_picker.currentColor()
-            self._appstate.config.video_text_color = (new_color.blue(), new_color.green(), new_color.red())
+            self._appstate.config.video_text_color = (new_color.red(), new_color.green(), new_color.blue(), new_color.alpha())
             self.update_text_color()
 
     def update_text_color(self):

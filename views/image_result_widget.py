@@ -1,14 +1,22 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog, QMessageBox
-from PyQt6.QtGui import QPixmap
+import numpy as np
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QLabel, QHBoxLayout, QPushButton, QFileDialog, \
+    QMessageBox, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtCore import Qt, QFile
+from models.app_state import AppState
+from utils.image_helpers import draw_bounding_box
 import logging
+import json
+
+appstate = AppState.get_instance()
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self, input_image: str, result_image: str):
+    def __init__(self, input_image: str, result_json: str):
         super().__init__()
         self._input_image = input_image
-        self._result_image = result_image
+        self._result_json = result_json
+        self._layer_visibility = {}
         self.init_ui()
 
     ##############################
@@ -43,15 +51,62 @@ class ImageResultWidget(QWidget):
         input_image = QLabel(self)
         input_image.setPixmap(QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
                                                                 Qt.TransformationMode.SmoothTransformation))
-        input_image.setScaledContents(True)
         return input_image
 
-    def result_image_ui(self) -> QLabel:
-        result_image = QLabel(self)
-        result_image.setPixmap(QPixmap(self._result_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                                  Qt.TransformationMode.SmoothTransformation))
-        result_image.setScaledContents(True)
-        return result_image
+    def result_image_ui(self) -> QWidget:
+        container_widget = QWidget(self)
+        container_layout = QVBoxLayout(container_widget)
+
+        scene = QGraphicsScene(container_widget)
+
+        pixmap = QPixmap(self._input_image).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                   Qt.TransformationMode.SmoothTransformation)
+        base_image_item = QGraphicsPixmapItem(pixmap)
+        scene.addItem(base_image_item)
+
+        with open(self._result_json, 'r') as file:
+            result_json = json.load(file)
+
+        results = result_json['results']
+        classes = result_json['classes']
+
+        self._layer_visibility = {}
+
+        for result in results:
+            top_left = (int(result['x1']), int(result['y1']))
+            bottom_right = (int(result['x2']), int(result['y2']))
+            classname = classes[str(result['classid'])]
+            confidence = result['confidence']
+            config = appstate.config
+            layer = np.full((pixmap.width(), pixmap.height(), 4), 0, np.uint8)
+            draw_bounding_box(layer, top_left, bottom_right, classname, confidence, config.video_box_color,
+                              config.video_text_color, config.video_box_thickness, config.video_text_size)
+            height, width, channel = layer.shape
+            bytes_per_line = 4 * width
+            q_img = QImage(layer.data, width, height, bytes_per_line, QImage.Format.Format_RGBA8888)
+            layer_pixmap = QPixmap(q_img).scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                                 Qt.TransformationMode.SmoothTransformation)
+            layer_item = QGraphicsPixmapItem(layer_pixmap)
+            layer_item.setPos(0, 0)
+            scene.addItem(layer_item)
+
+            self._layer_visibility[result['classid']] = {
+                'item': layer_item,
+                'visible': True
+            }
+
+        view = QGraphicsView(scene, container_widget)
+        container_layout.addWidget(view)
+
+        container_widget.setLayout(container_layout)
+        return container_widget
+
+    def toggle_layer(self, class_id: int):
+        layer_info = self._layer_visibility.get(class_id)
+        if layer_info:
+            layer_item = layer_info['item']
+            layer_item.setVisible(not layer_item.isVisible())
+            layer_info['visible'] = layer_item.isVisible()
 
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
@@ -67,7 +122,7 @@ class ImageResultWidget(QWidget):
     ##############################
 
     def save_image(self):
-        if self._result_image.lower().endswith('.jpg') or self._result_image.lower().endswith('.jpeg'):
+        if self._result_json.lower().endswith('.jpg') or self._result_json.lower().endswith('.jpeg'):
             format_filter = 'JPEG (*.jpg, *.jpeg)'
         else:
             format_filter = 'PNG (*.png)'
@@ -77,7 +132,7 @@ class ImageResultWidget(QWidget):
                 file_name += ".jpg"
             if selected_filter == 'PNG (*.png)' and not file_name.lower().endswith('.png'):
                 file_name += ".png"
-            if QFile.copy(self._result_image, file_name):
+            if QFile.copy(self._result_json, file_name):
                 QMessageBox.information(self, "Success", "Image saved successfully!")
                 logging.debug(f'Saved image to {file_name}')
             else:

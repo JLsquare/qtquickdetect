@@ -1,11 +1,13 @@
 import cv2 as cv
+import numpy as np
 
 # Static resource
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 
 def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str, confidence: float,
-                      box_color: tuple[int, int, int], text_color: tuple[int, int, int], thickness: int, text_size: float):
+                      box_color: tuple[int, int, int, int], text_color: tuple[int, int, int, int], thickness: int,
+                      text_size: float):
     """
     Draws a rectangle, a label with background and a percentage on a loaded openCV image.
     :param img: The input image loaded with OpenCV.
@@ -27,4 +29,3 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
 
     cv.rectangle(img, box_coords[0], box_coords[1], box_color, cv.FILLED)
     cv.putText(img, text, (top_left[0], top_left[1] - 5), FONT, text_size, text_color, 2)
-
