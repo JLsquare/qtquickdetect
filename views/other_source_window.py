@@ -33,7 +33,7 @@ class OtherSourceWindow(QWidget):
         self.setLayout(main_layout)
         main_layout.addLayout(self.url_input_ui())
         main_layout.addWidget(self.check_button_ui())
-        main_layout.addWidget(self.format_ui())
+        main_layout.addLayout(self.format_ui())
         main_layout.addStretch()
         main_layout.addLayout(self.btn_layout())
 

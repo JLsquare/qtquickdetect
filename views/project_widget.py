@@ -28,6 +28,7 @@ class ProjectWidget(QWidget):
         self._media_type = None
         self._functionality_selected = None
         self._model_selected = None
+        self._live_url = None
 
         self._btn_import_image = None
         self._btn_import_video = None
@@ -302,10 +303,13 @@ class ProjectWidget(QWidget):
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         self._media_type = 'image' if image else 'video' if video else 'live' if live else 'unknown'
-        self._btn_import_video.setText('Import Video')
-        self._btn_import_image.setText('Import Image')
-        self._btn_other_source.setText(f'Source : {self._media_type}')
         logging.debug(f'Other source opened: {url}, type: {self._media_type}')
+        if image:
+            self.open_image(file_paths=[url])
+        elif video:
+            self.open_video(file_paths=[url])
+        elif live:
+            self._live_url = url
         self.check_enable_run()
 
     def check_functionality_selected(self, index: int):
@@ -325,7 +329,8 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if (len(self._file_list.get_selected_files()) > 0) and self._model_selected and self._functionality_selected:
+        if (len(self._file_list.get_selected_files()) > 0) and self._model_selected and self._functionality_selected \
+                or self._live_url is not None:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
@@ -407,6 +412,10 @@ class ProjectWidget(QWidget):
             pipeline.cleanup_signal.connect(callback_cleanup)
             pipeline.start()
             self._current_pipeline = pipeline
+
+        elif self._media_type == 'live' and task == 'detect':
+            # TODO: Implement live detection
+            pass
 
     def update_progress_bar(self, extra: float = 0.0):
         inputs = self._file_list.get_selected_files()
