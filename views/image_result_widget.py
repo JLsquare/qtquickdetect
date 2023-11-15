@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QGraphicsPixmapItem, \
-    QGraphicsScene, QComboBox, QLabel
+    QGraphicsScene, QComboBox, QLabel, QListWidget, QListWidgetItem
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
@@ -16,12 +16,13 @@ class ImageResultWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self._middle_layout = None
         self._input_images = []
         self._result_jsons = []
         self._layer_visibility = {}
 
         self._file_select_combo = None
+        self._layer_list = None
+        self._middle_layout = None
 
         self.init_ui()
 
@@ -30,6 +31,8 @@ class ImageResultWidget(QWidget):
     ##############################
 
     def init_ui(self):
+        # Initialize user interface layout and widgets
+
         # Middle layout
         middle_layout = QHBoxLayout()
         middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -49,19 +52,30 @@ class ImageResultWidget(QWidget):
         self.setLayout(main_layout)
 
     def left_ui(self) -> QVBoxLayout:
+        # UI elements for file selection and layer visibility
+
         file_select_label = QLabel('Select file:')
         file_select = QComboBox()
         file_select.currentIndexChanged.connect(self.open_current_file)
         self._file_select_combo = file_select
 
+        layer_select_label = QLabel('Select layers:')
+        layer_list = QListWidget()
+        layer_list.itemChanged.connect(self.toggle_layer)
+        self._layer_list = layer_list
+
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         left_layout.addWidget(file_select_label)
         left_layout.addWidget(file_select)
+        left_layout.addWidget(layer_select_label)
+        left_layout.addWidget(layer_list)
 
         return left_layout
 
     def input_image_ui(self, input_image: str) -> QWidget:
+        # Create UI for displaying input images
+
         container_widget = QWidget(self)
         container_layout = QVBoxLayout(container_widget)
 
@@ -80,6 +94,8 @@ class ImageResultWidget(QWidget):
         return container_widget
 
     def result_image_ui(self, input_image: str, result_json: str) -> QWidget:
+        # Create UI for displaying result images with annotations
+
         container_widget = QWidget(self)
         container_layout = QVBoxLayout(container_widget)
 
@@ -91,37 +107,13 @@ class ImageResultWidget(QWidget):
         scene.addItem(base_image_item)
 
         with open(result_json, 'r') as file:
-            result_json = json.load(file)
-
-        results = result_json['results']
-        classes = result_json['classes']
+            results_data = json.load(file)
 
         self._layer_visibility = {}
 
-        for result in results:
-            top_left = (int(result['x1']), int(result['y1']))
-            bottom_right = (int(result['x2']), int(result['y2']))
-            classname = classes[str(result['classid'])]
-            confidence = result['confidence']
-            config = appstate.config
-
-            layer = np.full((img_size.width(), img_size.height(), 4), 0, np.uint8)
-            draw_bounding_box(layer, top_left, bottom_right, classname, confidence,
-                              config.video_box_color, config.video_text_color,
-                              config.video_box_thickness, config.video_text_size)
-
-            height, width, channel = layer.shape
-            bytes_per_line = 4 * width
-            q_img = QImage(layer.data, width, height, bytes_per_line, QImage.Format.Format_RGBA8888)
-            layer_pixmap = QPixmap(q_img)
-            layer_item = QGraphicsPixmapItem(layer_pixmap)
-            layer_item.setPos(0, 0)
-            scene.addItem(layer_item)
-
-            self._layer_visibility[result['classid']] = {
-                'item': layer_item,
-                'visible': True
-            }
+        for index, result in enumerate(results_data['results']):
+            # Drawing bounding boxes on the result image
+            self.draw_bounding_box_on_layer(scene, result, pixmap.size(), index, results_data['classes'])
 
         view = ResizeableGraphicsWidget(scene, container_widget)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -130,13 +122,6 @@ class ImageResultWidget(QWidget):
 
         container_widget.setLayout(container_layout)
         return container_widget
-
-    # def toggle_layer(self, class_id: int):
-    #    layer_info = self._layer_visibility.get(class_id)
-    #    if layer_info:
-    #        layer_item = layer_info['item']
-    #        layer_item.setVisible(not layer_item.isVisible())
-    #        layer_info['visible'] = layer_item.isVisible()
 
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
@@ -164,12 +149,66 @@ class ImageResultWidget(QWidget):
         self._file_select_combo.addItem(os.path.basename(input_image), result_json)
 
     def open_current_file(self):
+        # Handler for opening and displaying the selected file and its results
+
         tab = QTabWidget()
-        input_image = self._input_images[self._file_select_combo.currentIndex()]
-        result_json = self._result_jsons[self._file_select_combo.currentIndex()]
-        tab.addTab(self.input_image_ui(input_image), 'Input')
-        tab.addTab(self.result_image_ui(input_image, result_json), 'Result')
+        current_index = self._file_select_combo.currentIndex()
+
+        tab.addTab(self.input_image_ui(self._input_images[current_index]), 'Input')
+        tab.addTab(self.result_image_ui(self._input_images[current_index], self._result_jsons[current_index]), 'Result')
         tab.setCurrentIndex(1)
+
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()
         self._middle_layout.addWidget(tab, 1)
+
+        self.populate_layer_list(self._result_jsons[current_index])
+
+    def populate_layer_list(self, result_json):
+        self._layer_list.clear()
+        with open(result_json, 'r') as file:
+            data = json.load(file)
+
+        for index, result in enumerate(data['results']):
+            item_text = f"{data['classes'][str(result['classid'])]} ({index}) : {round(result['confidence'] * 100, 2)}%"
+            self.add_layer_list_item(result['classid'], index, item_text)
+
+    def add_layer_list_item(self, class_id, index, text):
+        item = QListWidgetItem(text)
+        unique_key = (class_id, index)
+        item.setData(Qt.ItemDataRole.UserRole, unique_key)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setCheckState(Qt.CheckState.Checked)
+        self._layer_list.addItem(item)
+
+    def toggle_layer(self, item: QListWidgetItem):
+        unique_key = item.data(Qt.ItemDataRole.UserRole)
+        layer_info = self._layer_visibility.get(unique_key)
+        if layer_info:
+            layer_info['item'].setVisible(item.checkState() == Qt.CheckState.Checked)
+            layer_info['visible'] = layer_info['item'].isVisible()
+
+    def draw_bounding_box_on_layer(self, scene, result, img_size, index, classes):
+        # Utility function for drawing bounding boxes
+
+        config = appstate.config
+        top_left = (int(result['x1']), int(result['y1']))
+        bottom_right = (int(result['x2']), int(result['y2']))
+        classname = classes[str(result['classid'])]
+        confidence = result['confidence']
+
+        layer = np.full((img_size.width(), img_size.height(), 4), 0, np.uint8)
+        draw_bounding_box(layer, top_left, bottom_right, classname, confidence,
+                          config.video_box_color, config.video_text_color,
+                          config.video_box_thickness, config.video_text_size)
+
+        q_img = QImage(layer.data, img_size.width(), img_size.height(), QImage.Format.Format_RGBA8888)
+        layer_pixmap = QPixmap(q_img)
+        layer_item = QGraphicsPixmapItem(layer_pixmap)
+        scene.addItem(layer_item)
+
+        # Update layer visibility mapping
+        self._layer_visibility[(result['classid'], index)] = {
+            'item': layer_item,
+            'visible': True
+        }
