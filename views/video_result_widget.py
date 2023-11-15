@@ -1,8 +1,9 @@
-import os
-
 from PyQt6.QtCore import QFile, Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QLabel, QComboBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QLabel, QComboBox, \
+    QFileDialog, QMessageBox
 from views.video_player_widget import VideoPlayerWidget
+import logging
+import os
 
 
 class VideoResultWidget(QWidget):
@@ -13,6 +14,7 @@ class VideoResultWidget(QWidget):
         self._file_select_combo = None
         self._input_videos = []
         self._result_videos = []
+        self._result_jsons = []
         self.init_ui()
 
     ##############################
@@ -51,14 +53,6 @@ class VideoResultWidget(QWidget):
 
         return left_layout
 
-    def input_video_ui(self, input_video: str) -> VideoPlayerWidget:
-        video_player_widget = VideoPlayerWidget(input_video)
-        return video_player_widget
-
-    def result_video_ui(self, result_video: str) -> VideoPlayerWidget:
-        video_player_widget = VideoPlayerWidget(result_video)
-        return video_player_widget
-
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
         save_json_button.clicked.connect(self.save_json)
@@ -74,40 +68,47 @@ class VideoResultWidget(QWidget):
     ##############################
 
     def save_json(self):
-        pass
+        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON (*.json)")
+        if file_name:
+            if not file_name.lower().endswith('.json'):
+                file_name += ".json"
+            if QFile.copy(self._result_jsons[self._file_select_combo.currentIndex()], file_name):
+                QMessageBox.information(self, "Success", "JSON saved successfully!")
+                logging.debug(f'Saved JSON to {file_name}')
+            else:
+                QMessageBox.critical(self, "Error", "An error occurred while saving the JSON.")
+                logging.error(f'Could not save JSON to {file_name}')
 
     def save_video(self):
-        pass
+        if self._result_videos[self._file_select_combo.currentIndex()].lower().endswith('.avi'):
+            format_filter = 'AVI (*.avi)'
+        else:
+            format_filter = 'MP4 (*.mp4)'
+        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Video", "", format_filter)
+        if file_name:
+            if selected_filter == 'AVI (*.avi)' and not file_name.lower().endswith('.avi'):
+                file_name += ".avi"
+            if selected_filter == 'MP4 (*.mp4)' and not file_name.lower().endswith('.mp4'):
+                file_name += ".mp4"
+            if QFile.copy(self._result_videos[self._file_select_combo.currentIndex()], file_name):
+                QMessageBox.information(self, "Success", "Video saved successfully!")
+                logging.debug(f'Saved video to {file_name}')
+            else:
+                QMessageBox.critical(self, "Error", "An error occurred while saving the video.")
+                logging.error(f'Could not save video to {file_name}')
 
-    # def save_video(self):
-    #    if self._result_video.lower().endswith('.avi'):
-    #        format_filter = 'AVI (*.avi)'
-    #    else:
-    #        format_filter = 'MP4 (*.mp4)'
-    #    file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Video", "", format_filter)
-    #    if file_name:
-    #        if selected_filter == 'AVI (*.avi)' and not file_name.lower().endswith('.avi'):
-    #            file_name += ".avi"
-    #        if selected_filter == 'MP4 (*.mp4)' and not file_name.lower().endswith('.mp4'):
-    #            file_name += ".mp4"
-    #        if QFile.copy(self._result_video, file_name):
-    #            QMessageBox.information(self, "Success", "Video saved successfully!")
-    #            logging.debug(f'Saved video to {file_name}')
-    #        else:
-    #            QMessageBox.critical(self, "Error", "An error occurred while saving the video.")
-    #            logging.error(f'Could not save video to {file_name}')
-
-    def add_input_and_result(self, input_video: str, result_video: str):
+    def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
         self._input_videos.append(input_video)
         self._result_videos.append(result_video)
+        self._result_jsons.append(result_json)
         self._file_select_combo.addItem(os.path.basename(input_video))
 
     def open_current_file(self):
         tab = QTabWidget()
         input_video = self._input_videos[self._file_select_combo.currentIndex()]
         result_video = self._result_videos[self._file_select_combo.currentIndex()]
-        tab.addTab(self.input_video_ui(input_video), 'Input')
-        tab.addTab(self.result_video_ui(result_video), 'Result')
+        tab.addTab(VideoPlayerWidget(input_video), 'Input')
+        tab.addTab(VideoPlayerWidget(result_video), 'Result')
         tab.setCurrentIndex(1)
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()

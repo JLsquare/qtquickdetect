@@ -1,5 +1,3 @@
-import os
-
 from PyQt6.QtCore import pyqtSignal, QThread
 from utils.image_helpers import *
 from models.app_state import AppState
@@ -9,14 +7,15 @@ import ultralytics
 import ultralytics.engine.model
 import ultralytics.engine.results
 import cv2 as cv
-import urllib
+import os
+import json
 
 appstate = AppState.get_instance()
 
 
 class VidDetectionPipeline(QThread):
     progress_signal = pyqtSignal(int, int)
-    finished_signal = pyqtSignal(str, str)
+    finished_signal = pyqtSignal(str, str, str)
     error_signal = pyqtSignal(str, Exception)
 
     def __init__(self, inputs: list[str], model_path: str, results_path: str):
@@ -47,6 +46,14 @@ class VidDetectionPipeline(QThread):
         self._device: torch.device = device
         self._inputs = inputs
         self._results_path = results_path
+        self._results = dict()
+
+        model_name = os.path.basename(model_path)
+
+        self._results['model_name'] = model_name
+        self._results['task'] = "detection"
+        self._results['classes'] = self._names
+        self._results['results'] = []
 
     def run(self):
         """
@@ -77,16 +84,30 @@ class VidDetectionPipeline(QThread):
                     # Inference
                     results = self._model(frame)[0].cpu()
 
+                    results_array = []
+
                     for box in results.boxes:
                         flat = box.xyxy.flatten()
                         topleft = (int(flat[0]), int(flat[1]))
                         bottomright = (int(flat[2]), int(flat[3]))
-                        classname = self._names[int(box.cls)]
-                        conf = box.conf[0]
+                        classid = int(box.cls)
+                        classname = self._names[classid]
+                        conf = float(box.conf[0])
 
                         config = appstate.config
                         draw_bounding_box(frame, topleft, bottomright, classname, conf, config.video_box_color,
                                           config.video_text_color, config.video_box_thickness, config.video_text_size)
+
+                        results_array.append({
+                            'x1': topleft[0],
+                            'y1': topleft[1],
+                            'x2': bottomright[0],
+                            'y2': bottomright[1],
+                            'classid': classid,
+                            'confidence': conf
+                        })
+
+                    self._results['results'].append(results_array)
 
                     writer.write(frame)
                     frame_index += 1
@@ -95,7 +116,13 @@ class VidDetectionPipeline(QThread):
                 cap.release()
                 writer.release()
 
-                self.finished_signal.emit(src, output)
+                json_name = os.path.basename(src).split('.')[0] + '.json'
+                json_path = os.path.join(self._results_path, json_name)
+
+                with open(json_path, 'w') as f:
+                    json.dump(self._results, f, indent=4)
+
+                self.finished_signal.emit(src, output, json_path)
 
             except Exception as e:
                 self.error_signal.emit(src, e)

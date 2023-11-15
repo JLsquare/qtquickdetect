@@ -359,9 +359,9 @@ class ProjectWidget(QWidget):
             def callback_progress(current_frame: int, total_frames: int) -> None:
                 self.update_progress_bar(current_frame / total_frames)
 
-            def callback_ok(input_path: str, output_media_path: str) -> None:
+            def callback_ok(input_path: str, output_media_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
-                result_widget.add_input_and_result(input_path, output_media_path)
+                result_widget.add_input_and_result(input_path, output_media_path, output_json_path)
                 self._callback_count += 1
                 self.update_progress_bar()
 
