@@ -33,7 +33,7 @@ class ImgDetectionPipeline(QThread):
             'results': []
         }
 
-    def _load_model(self, model_path: str):
+    def _load_model(self, model_path: str) -> ultralytics.YOLO:
         """
         Loads the model from the given path.
 
@@ -59,7 +59,7 @@ class ImgDetectionPipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(src, e)
 
-    def _process_source(self, src: str):
+    def _process_source(self, src: str) -> list:
         """
         Processes a single source file.
 
