@@ -14,6 +14,7 @@ class VidDetectionPipeline(QThread):
     progress_signal = pyqtSignal(int, int)  # Current frame, total frames
     finished_signal = pyqtSignal(str, str, str)  # Source file, video output, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
+    cleanup_signal = pyqtSignal()
 
     def __init__(self, inputs: list[str], model_path: str, results_path: str):
         """
@@ -25,6 +26,7 @@ class VidDetectionPipeline(QThread):
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
+        self._cancel_requested = False
         self._device = appstate.device
         self._model = self._load_model(model_path)
         self._inputs = inputs
@@ -52,6 +54,10 @@ class VidDetectionPipeline(QThread):
             logging.error(f'Failed to load model: {e}')
             raise
 
+    def request_cancel(self):
+        """Public method to request cancellation of the process."""
+        self._cancel_requested = True
+
     def run(self):
         """Runs detection for all videos in the input list."""
         for src in self._inputs:
@@ -72,6 +78,9 @@ class VidDetectionPipeline(QThread):
 
         frame_index = 0
         while cap.isOpened():
+            if self._cancel_requested:
+                break
+
             ret, frame = cap.read()
             if not ret:
                 break
@@ -86,7 +95,27 @@ class VidDetectionPipeline(QThread):
         cap.release()
         writer.release()
 
+        if self._cancel_requested:
+            self._cleanup()
+            return
+
         self._save_results(src, output_path)
+
+    def _cleanup(self):
+        """
+        Cleans up the video file and JSON file if they exist.
+        """
+        for src in self._inputs:
+            video_name = os.path.basename(src)
+            output_path = os.path.join(self._results_path, video_name)
+            json_path = os.path.join(self._results_path, video_name.split('.')[0] + '.json')
+
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            if os.path.exists(json_path):
+                os.remove(json_path)
+
+        self.cleanup_signal.emit()
 
     def _setup_video(self, src: str, output_path: str) -> tuple[cv.VideoCapture, cv.VideoWriter, int]:
         """

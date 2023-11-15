@@ -31,10 +31,19 @@ QPushButton.run {
     background-color: #79D962;
     border: 1px solid #b7e2ab;
 }
+QPushButton.cancel {
+    background-color: #D96262;
+    border: 1px solid #e2abab;
+}
 QPushButton.run:disabled {
     background-color: rgba(121, 217, 98, 51);
     color: rgba(255, 255, 255, 51);
     border: 1px solid rgba(183, 226, 171, 51);
+}
+QPushButton.cancel:disabled {
+    background-color: rgba(217, 98, 98, 51);
+    color: rgba(255, 255, 255, 51);
+    border: 1px solid rgba(226, 171, 171, 51);
 }
 QPushButton.settings {
     background: transparent;

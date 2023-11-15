@@ -35,6 +35,7 @@ class ProjectWidget(QWidget):
         self._functionality_combo = None
         self._model_combo = None
         self._btn_run = None
+        self._btn_cancel = None
 
         self.setAcceptDrops(True)
         self.init_ui()
@@ -186,10 +187,18 @@ class ProjectWidget(QWidget):
         btn_run.clicked.connect(self.run)
         self._btn_run = btn_run
 
+        # Cancel button
+        btn_cancel = QPushButton('Cancel')
+        btn_cancel.setProperty('class', 'cancel')
+        btn_cancel.clicked.connect(self.cancel_current_pipeline)
+        btn_cancel.setEnabled(False)
+        self._btn_cancel = btn_cancel
+
         # Run Layout
         run_layout = QVBoxLayout()
         run_layout.addLayout(run_icon_layout)
         run_layout.addWidget(btn_run)
+        run_layout.addWidget(btn_cancel)
         run_layout.addStretch()
 
         run_widget = QWidget()
@@ -322,11 +331,17 @@ class ProjectWidget(QWidget):
             self._btn_run.setEnabled(False)
         logging.debug('Run enabled : ' + str(self._btn_run.isEnabled()))
 
+    def cancel_current_pipeline(self):
+        if self._current_pipeline:
+            self._current_pipeline.request_cancel()
+
     def run(self):
         inputs = self._file_list.get_selected_files()
         model_path = self._model_combo.currentData()
         task = self._functionality_combo.currentData()
         logging.info(f'Run with : {str(inputs)}, {str(model_path)}, {str(task)}, {str(self._media_type)}')
+        self._btn_run.setEnabled(False)
+        self._btn_cancel.setEnabled(True)
 
         if self._media_type == 'image' and task == 'detect':
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
@@ -340,6 +355,11 @@ class ProjectWidget(QWidget):
                 result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
                 self.update_progress_bar()
+                if self._callback_count == len(inputs):
+                    pipeline.deleteLater()
+                    self._current_pipeline = None
+                    self._btn_cancel.setEnabled(False)
+                    self._btn_run.setEnabled(True)
 
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
@@ -354,7 +374,7 @@ class ProjectWidget(QWidget):
             self._callback_count = 0
             self.update_progress_bar()
             result_widget = VideoResultWidget()
-            self._add_new_tab(result_widget, f"{self._project_name} : Video detection", len(inputs) == 1)
+            self._add_new_tab(result_widget, f"{self._project_name} : Video detection", False)
             
             def callback_progress(current_frame: int, total_frames: int) -> None:
                 self.update_progress_bar(current_frame / total_frames)
@@ -364,13 +384,27 @@ class ProjectWidget(QWidget):
                 result_widget.add_input_and_result(input_path, output_media_path, output_json_path)
                 self._callback_count += 1
                 self.update_progress_bar()
+                if self._callback_count == len(inputs):
+                    pipeline.deleteLater()
+                    self._current_pipeline = None
+                    self._btn_cancel.setEnabled(False)
+                    self._btn_run.setEnabled(True)
 
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
+            def callback_cleanup() -> None:
+                self._callback_count = 0
+                self.update_progress_bar()
+                pipeline.deleteLater()
+                self._current_pipeline = None
+                self._btn_cancel.setEnabled(False)
+                self._btn_run.setEnabled(True)
+
             pipeline.finished_signal.connect(callback_ok)
             pipeline.progress_signal.connect(callback_progress)
             pipeline.error_signal.connect(callback_err)
+            pipeline.cleanup_signal.connect(callback_cleanup)
             pipeline.start()
             self._current_pipeline = pipeline
 
