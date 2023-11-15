@@ -1,5 +1,4 @@
 import cv2 as cv
-import numpy as np
 
 # Static resource
 FONT = cv.FONT_HERSHEY_SIMPLEX

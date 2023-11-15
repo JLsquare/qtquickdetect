@@ -102,7 +102,6 @@ class ImageResultWidget(QWidget):
         scene = QGraphicsScene(container_widget)
 
         pixmap = QPixmap(input_image)
-        img_size = pixmap.size()
         base_image_item = QGraphicsPixmapItem(pixmap)
         scene.addItem(base_image_item)
 
@@ -197,12 +196,12 @@ class ImageResultWidget(QWidget):
         classname = classes[str(result['classid'])]
         confidence = result['confidence']
 
-        layer = np.full((img_size.width(), img_size.height(), 4), 0, np.uint8)
+        layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
         draw_bounding_box(layer, top_left, bottom_right, classname, confidence,
                           config.video_box_color, config.video_text_color,
                           config.video_box_thickness, config.video_text_size)
 
-        q_img = QImage(layer.data, img_size.width(), img_size.height(), QImage.Format.Format_RGBA8888)
+        q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(), QImage.Format.Format_RGBA8888)
         layer_pixmap = QPixmap(q_img)
         layer_item = QGraphicsPixmapItem(layer_pixmap)
         scene.addItem(layer_item)
