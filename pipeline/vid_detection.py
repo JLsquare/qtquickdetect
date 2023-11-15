@@ -55,14 +55,6 @@ class VidDetectionPipeline(QThread):
 
         for src in self._inputs:
             try:
-                #if src.startswith('http'):
-                #    # Download file
-                #    media = urllib.request.urlopen(src)
-                #    ext = src.split('.')[-1]
-                #    src = get_tmp_filepath('.' + ext)
-                #    with open(src, 'wb') as f:
-                #        f.write(media.read())
-
                 video_name = os.path.basename(src)
                 output = os.path.join(self._results_path, video_name)
 

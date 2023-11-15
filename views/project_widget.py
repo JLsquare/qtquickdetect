@@ -1,15 +1,15 @@
-import os
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, QProgressBar
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt, QDir, QFile
-
 from views.file_list_widget import FileListWidget
 from views.image_result_widget import ImageResultWidget
 from views.video_result_widget import VideoResultWidget
 from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
 import logging
+import os
+import urllib.request
 
 
 class ProjectWidget(QWidget):
@@ -247,7 +247,10 @@ class ProjectWidget(QWidget):
                 self.reset_input_folder()
             self._media_type = 'image'
             logging.debug('Image(s) opened : ' + str(filenames))
-            self.copy_files(filenames, f'projects/{self._project_name}/input')
+            if filenames[0].startswith('http://') or filenames[0].startswith('https://'):
+                filenames[0] = self.download_file_to_input(filenames[0])
+            else:
+                self.copy_files(filenames)
             self.check_enable_run()
 
     def open_video(self, _: bool = False, file_paths: list[str] = None):
@@ -260,13 +263,24 @@ class ProjectWidget(QWidget):
                 self.reset_input_folder()
             self._media_type = 'video'
             logging.debug('Video(s) opened : ' + str(filenames))
-            self.copy_files(filenames, f'projects/{self._project_name}/input')
+            if filenames[0].startswith('http://') or filenames[0].startswith('https://'):
+                filenames[0] = self.download_file_to_input(filenames[0])
+            else:
+                self.copy_files(filenames)
             self.check_enable_run()
 
-    def copy_files(self, file_paths: list[str], destination: str):
+    def download_file_to_input(self, url: str):
+        media = urllib.request.urlopen(url)
+        media_name = os.path.basename(url)
+        file_path = f'projects/{self._project_name}/input/{media_name}'
+        with open(file_path, 'wb') as f:
+            f.write(media.read())
+        return file_path
+
+    def copy_files(self, file_paths: list[str]):
         for file_path in file_paths:
             file_name = file_path.split('/')[-1]
-            QFile.copy(file_path, f'{destination}/{file_name}')
+            QFile.copy(file_path, f'projects/{self._project_name}/input/{file_name}')
 
     def reset_input_folder(self):
         for file in os.listdir(f'projects/{self._project_name}/input'):
