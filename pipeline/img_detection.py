@@ -1,12 +1,9 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 from models.app_state import AppState
-import torch
 import logging
 import ultralytics
-import ultralytics.engine.model
-import ultralytics.engine.results
-import json
 import os
+import json
 
 appstate = AppState.get_instance()
 
@@ -15,102 +12,92 @@ class ImgDetectionPipeline(QThread):
     finished_signal = pyqtSignal(str, str)  # Source file, data
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
 
-    '''
-    Data format:
-    {
-        "model_name": <str>,
-        "task": <str>,
-        "classes": <dict of classes>,
-        "results": [
-            [
-                "x1": <int>,
-                "y1": <int>,
-                "x2": <int>,
-                "y2": <int>,
-                "classid": <int>,
-                "confidence": <float>
-            ]
-        ]
-    }
-    '''
-
     def __init__(self, inputs: list[str], model_path: str, results_path: str):
         """
-        Pipeline class, used to run inference on a list of inputs
+        Initializes the Image Detection Pipeline.
 
-        :param inputs: List of input paths or URLs
-        :param model_path: Path to the model
-        :raises Exception: If the model fails to load or if it's task does not match the pipeline task
+        :param inputs: List of input paths or URLs.
+        :param model_path: Path to the model.
+        :param results_path: Path for saving results.
+        :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
-
         super().__init__()
-        model = None
-        device = appstate.device
-
-        try:
-            model = ultralytics.YOLO(model_path).to(device)
-        except Exception as e:
-            logging.error('Failed to load model: {}'.format(e))
-            raise e
-
-        if model.task != 'detect':
-            logging.error('Model task ({}) does not match pipeline task'.format(model.task))
-            raise ValueError('Model task ({}) does not match pipeline task'.format(model.task))
-
-        self._names = model.names
-        self._model: ultralytics.engine.model.Model = model
-        self._device: torch.device = device
+        self._device = appstate.device
+        self._model = self._load_model(model_path)
         self._inputs = inputs
         self._results_path = results_path
-        self._results = dict()
+        self._results = {
+            'model_name': os.path.basename(model_path),
+            'task': "detection",
+            'classes': self._model.names,
+            'results': []
+        }
 
-        model_name = os.path.basename(model_path)
+    def _load_model(self, model_path: str):
+        """
+        Loads the model from the given path.
 
-        self._results['model_name'] = model_name
-        self._results['task'] = "detection"
-        self._results['classes'] = self._names
-        self._results['results'] = []
-
+        :param model_path: Path to the model.
+        :return: Loaded model.
+        """
+        try:
+            model = ultralytics.YOLO(model_path).to(self._device)
+            if model.task != 'detect':
+                raise ValueError(f'Model task ({model.task}) does not match pipeline task')
+            return model
+        except Exception as e:
+            logging.error(f'Failed to load model: {e}')
+            raise
 
     def run(self):
-        """
-        Runs a detection for all images in the input list
-        """
-
+        """Runs detection for all images in the input list."""
         for src in self._inputs:
             try:
-                result = self._model(src)
-
-                result = result[0].cpu()
-
-                results_array = []
-
-                for box in result.boxes:
-                    flat = box.xyxy.flatten()
-                    topleft = (int(flat[0]), int(flat[1]))
-                    bottomright = (int(flat[2]), int(flat[3]))
-                    classid = int(box.cls)
-                    conf = float(box.conf[0])  # It's a tensor [x]
-                    
-                    results_array.append({
-                        'x1': topleft[0],
-                        'y1': topleft[1],
-                        'x2': bottomright[0],
-                        'y2': bottomright[1],
-                        'classid': classid,
-                        'confidence': conf
-                    })
-
-                results = self._results.copy()
-                results['results'] = results_array
-
-                json_name = os.path.basename(src).split('.')[0] + '.json'
-                json_path = os.path.join(self._results_path, json_name)
-
-                with open(json_path, 'w') as f:
-                    json.dump(results, f, indent=4)
-
-                self.finished_signal.emit(src, json_path)
-
+                results_array = self._process_source(src)
+                self._save_results(src, results_array)
+                self.finished_signal.emit(src, self._json_path(src))
             except Exception as e:
                 self.error_signal.emit(src, e)
+
+    def _process_source(self, src: str):
+        """
+        Processes a single source file.
+
+        :param src: Source file path.
+        :return: Array of results.
+        """
+        result = self._model(src)
+        result = result[0].cpu()
+        return [
+            {
+                'x1': int(box.xyxy.flatten()[0]),
+                'y1': int(box.xyxy.flatten()[1]),
+                'x2': int(box.xyxy.flatten()[2]),
+                'y2': int(box.xyxy.flatten()[3]),
+                'classid': int(box.cls),
+                'confidence': float(box.conf[0])
+            } for box in result.boxes
+        ]
+
+    def _save_results(self, src: str, results_array: list):
+        """
+        Saves the results to a JSON file.
+
+        :param src: Source file path.
+        :param results_array: Array of results.
+        """
+        results = self._results.copy()
+        results['results'] = results_array
+        json_path = self._json_path(src)
+        with open(json_path, 'w') as f:
+            json.dump(results, f, indent=4)
+
+    def _json_path(self, src: str) -> str:
+        """
+        Generates the JSON file path for a source file.
+
+        :param src: Source file path.
+        :return: Path for the corresponding JSON file.
+        """
+        json_name = os.path.basename(src).split('.')[0] + '.json'
+        return os.path.join(self._results_path, json_name)
