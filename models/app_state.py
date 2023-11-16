@@ -31,4 +31,3 @@ class AppState:
         for pipeline in self.pipelines:
             pipeline.request_cancel()
             pipeline.wait()
-        self.pipelines = []

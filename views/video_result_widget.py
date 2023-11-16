@@ -1,15 +1,20 @@
 from PyQt6.QtCore import QFile, Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QLabel, QComboBox, \
     QFileDialog, QMessageBox
+from models.app_state import AppState
 from views.video_player_widget import VideoPlayerWidget
 import logging
 import os
+import cv2 as cv
+
+appstate = AppState.get_instance()
 
 
 class VideoResultWidget(QWidget):
     def __init__(self):
         super().__init__()
 
+        self._current_result_player = None
         self._middle_layout = None
         self._file_select_combo = None
         self._input_videos = []
@@ -33,6 +38,7 @@ class VideoResultWidget(QWidget):
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(self.save_json_button_ui())
         bottom_layout.addWidget(self.save_video_button_ui())
+        bottom_layout.addWidget(self.save_frame_button_ui())
 
         # Main layout
         main_layout = QVBoxLayout(self)
@@ -62,6 +68,11 @@ class VideoResultWidget(QWidget):
         save_video_button = QPushButton('Save Video')
         save_video_button.clicked.connect(self.save_video)
         return save_video_button
+
+    def save_frame_button_ui(self) -> QPushButton:
+        save_frame_button = QPushButton('Save Frame')
+        save_frame_button.clicked.connect(self.save_frame)
+        return save_frame_button
 
     ##############################
     #         CONTROLLER         #
@@ -97,6 +108,28 @@ class VideoResultWidget(QWidget):
                 QMessageBox.critical(self, "Error", "An error occurred while saving the video.")
                 logging.error(f'Could not save video to {file_name}')
 
+    def save_frame(self):
+        frame = self._current_result_player.get_current_frame()
+        if frame is None:
+            QMessageBox.critical(self, "Error", "Could not save frame.")
+            logging.error(f'Could not save frame')
+            return
+        if appstate.config.image_format == 'png':
+            file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save PNG", "", "PNG (*.png)")
+        else:
+            file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JPEG", "", "JPEG (*.jpg)")
+        if file_name:
+            if appstate.config.image_format == 'png' and not file_name.lower().endswith('.png'):
+                file_name += ".png"
+            if appstate.config.image_format == 'jpg' and not file_name.lower().endswith('.jpg'):
+                file_name += ".jpg"
+            if cv.imwrite(file_name, frame):
+                QMessageBox.information(self, "Success", "Frame saved successfully!")
+                logging.debug(f'Saved frame to {file_name}')
+            else:
+                QMessageBox.critical(self, "Error", "An error occurred while saving the frame.")
+                logging.error(f'Could not save frame to {file_name}')
+
     def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
         self._input_videos.append(input_video)
         self._result_videos.append(result_video)
@@ -108,7 +141,8 @@ class VideoResultWidget(QWidget):
         input_video = self._input_videos[self._file_select_combo.currentIndex()]
         result_video = self._result_videos[self._file_select_combo.currentIndex()]
         tab.addTab(VideoPlayerWidget(input_video), 'Input')
-        tab.addTab(VideoPlayerWidget(result_video), 'Result')
+        self._current_result_player = VideoPlayerWidget(result_video)
+        tab.addTab(self._current_result_player, 'Result')
         tab.setCurrentIndex(1)
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()

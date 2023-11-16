@@ -58,6 +58,7 @@ class RealtimeDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self.fetcher.request_cancel()
+        appstate.pipelines.remove(self)
 
     def run(self):
         """Starts the video stream and waits for frames to be processed."""

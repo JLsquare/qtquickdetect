@@ -48,6 +48,7 @@ class ImgDetectionPipeline(QThread):
                     self.finished_signal.emit(src, self._json_path(src))
                 except Exception as e:
                     self.error_signal.emit(src, e)
+        appstate.pipelines.remove(self)
 
     def _process_source(self, src: str) -> list:
         """

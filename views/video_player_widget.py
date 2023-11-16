@@ -2,6 +2,8 @@ from PyQt6.QtCore import QUrl, Qt
 from PyQt6.QtMultimedia import QMediaPlayer
 from PyQt6.QtMultimediaWidgets import QVideoWidget
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSlider, QPushButton, QStyle, QHBoxLayout
+import numpy as np
+import cv2
 
 
 class VideoPlayerWidget(QWidget):
@@ -9,8 +11,8 @@ class VideoPlayerWidget(QWidget):
         super().__init__()
         self._position_slider = None
         self._play_button = None
-        self._player = QMediaPlayer()
-        self._player.setSource(QUrl.fromLocalFile(video_path))
+        self._video_path = video_path
+        self._player = None
         self._status = "Playing"
         self.init_ui()
 
@@ -26,6 +28,9 @@ class VideoPlayerWidget(QWidget):
 
     def video_ui(self) -> QVideoWidget:
         video_widget = QVideoWidget()
+
+        self._player = QMediaPlayer()
+        self._player.setSource(QUrl.fromLocalFile(self._video_path))
         self._player.setVideoOutput(video_widget)
         self._player.play()
         self._player.mediaStatusChanged.connect(self.auto_replay)
@@ -82,3 +87,20 @@ class VideoPlayerWidget(QWidget):
 
     def update_position_slider(self):
         self._position_slider.setValue(self._player.position())
+
+    def get_current_frame(self) -> np.ndarray | None:
+        cap = cv2.VideoCapture(self._video_path)
+
+        if not cap.isOpened():
+            return None
+
+        current_time_msec = self._player.position()
+        cap.set(cv2.CAP_PROP_POS_MSEC, current_time_msec)
+
+        ret, frame = cap.read()
+        cap.release()
+
+        if not ret:
+            return None
+
+        return frame

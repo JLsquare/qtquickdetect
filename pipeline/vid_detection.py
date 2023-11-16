@@ -41,6 +41,7 @@ class VidDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self._cancel_requested = True
+        appstate.pipelines.remove(self)
 
     def run(self):
         """Runs detection for all videos in the input list."""
@@ -165,3 +166,4 @@ class VidDetectionPipeline(QThread):
             json.dump(self._results, f, indent=4)
 
         self.finished_signal.emit(src, output_path, json_path)
+        appstate.pipelines.remove(self)

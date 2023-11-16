@@ -346,6 +346,10 @@ class ProjectWidget(QWidget):
     def cancel_current_pipeline(self):
         if self._current_pipeline:
             self._current_pipeline.request_cancel()
+            self._btn_cancel.setEnabled(False)
+            self._btn_run.setEnabled(True)
+            self._callback_count = 0
+            self.update_progress_bar()
 
     def run(self):
         inputs = self._file_list.get_selected_files()
