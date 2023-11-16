@@ -25,6 +25,7 @@ class VidDetectionPipeline(QThread):
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
+        appstate.pipelines.append(self)
         self._cancel_requested = False
         self._device = appstate.device
         self._model = load_model(model_path)

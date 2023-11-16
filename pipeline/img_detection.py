@@ -21,6 +21,8 @@ class ImgDetectionPipeline(QThread):
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
+        appstate.pipelines.append(self)
+        self._cancel_requested = None
         self._device = appstate.device
         self._model = load_model(model_path)
         self._inputs = inputs
@@ -32,15 +34,20 @@ class ImgDetectionPipeline(QThread):
             'results': []
         }
 
+    def request_cancel(self):
+        """Public method to request cancellation of the process."""
+        self._cancel_requested = True
+
     def run(self):
         """Runs detection for all images in the input list."""
         for src in self._inputs:
-            try:
-                results_array = self._process_source(src)
-                self._save_results(src, results_array)
-                self.finished_signal.emit(src, self._json_path(src))
-            except Exception as e:
-                self.error_signal.emit(src, e)
+            if not self._cancel_requested:
+                try:
+                    results_array = self._process_source(src)
+                    self._save_results(src, results_array)
+                    self.finished_signal.emit(src, self._json_path(src))
+                except Exception as e:
+                    self.error_signal.emit(src, e)
 
     def _process_source(self, src: str) -> list:
         """

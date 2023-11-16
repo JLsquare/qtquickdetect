@@ -47,6 +47,7 @@ class RealtimeDetectionPipeline(QThread):
 
     def __init__(self, url: str, model_path: str):
         super().__init__()
+        appstate.pipelines.append(self)
         self._model = load_model(model_path)
         self._url = url
         self._is_processing = False

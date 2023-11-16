@@ -1,6 +1,7 @@
 from models.config_file import ConfigFile
 import torch
 
+
 class AppState:
     _instance = None
 
@@ -11,9 +12,9 @@ class AppState:
         AppState._instance = self
 
         self.config = ConfigFile()
-
         self.device = torch.device(self.config.device)
         self.confidence_threshold = self.config.confidence_threshold
+        self.pipelines = []
 
     @staticmethod
     def get_instance() -> 'AppState':
@@ -25,3 +26,9 @@ class AppState:
         self.config.save()
         self.device = torch.device(self.config.device)
         self.confidence_threshold = self.config.confidence_threshold
+
+    def stop_pipelines(self):
+        for pipeline in self.pipelines:
+            pipeline.request_cancel()
+            pipeline.wait()
+        self.pipelines = []

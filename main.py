@@ -1,23 +1,37 @@
+from PyQt6.QtWidgets import QApplication
+from models.app_state import AppState
+from views.main_window import MainWindow
 import logging
 import os
-from PyQt6.QtWidgets import QApplication
+import sys
 
-from views.main_window import MainWindow
 
-# Configure logging
-log_format = '%(asctime)s - %(levelname)s - %(message)s'
-logging.basicConfig(level=logging.DEBUG, format=log_format)
+def main():
+    # Configure logging
+    log_format = '%(asctime)s - %(levelname)s - %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=log_format)
 
-if not os.path.exists('projects'):
-    os.mkdir('projects')
+    # Ensure 'projects' directory exists
+    try:
+        os.makedirs('projects', exist_ok=True)
+    except Exception as e:
+        logging.error(f"Failed to create 'projects' directory: {e}")
+        sys.exit(1)
 
-# Set up the QApplication
-app = QApplication([])
+    # Set up the QApplication
+    app = QApplication([])
 
-# Show the main window
-window = MainWindow()
-window.show()
+    # Show the main window
+    window = MainWindow()
+    window.show()
 
-# Run the application
-app.exec()
+    # Connect the application's aboutToQuit signal to the AppState's stop_pipelines method
+    appstate = AppState.get_instance()
+    app.aboutToQuit.connect(appstate.stop_pipelines)
 
+    # Run the application
+    return app.exec()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
