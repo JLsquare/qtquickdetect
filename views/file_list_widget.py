@@ -135,7 +135,7 @@ class FileListWidget(QWidget):
         cap.release()
 
     def set_live_preview(self, live_url):
-        self._media_fetcher = MediaFetcher(live_url, 5)
+        self._media_fetcher = MediaFetcher(live_url, 1)
 
         def update_frame(frame, frame_available):
             if frame_available:
@@ -143,7 +143,8 @@ class FileListWidget(QWidget):
                 bytes_per_line = 3 * width
                 q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
                 pixmap = QPixmap.fromImage(q_img)
-                self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(),
+                                                            Qt.AspectRatioMode.KeepAspectRatio))
 
         self._media_fetcher.frame_signal.connect(update_frame)
         self._media_fetcher.start()

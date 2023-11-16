@@ -4,6 +4,7 @@ from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt, QDir, QFile
 from views.file_list_widget import FileListWidget
 from views.image_result_widget import ImageResultWidget
+from views.live_result_widget import LiveResultWidget
 from views.video_result_widget import VideoResultWidget
 from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
@@ -420,8 +421,10 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'live' and task == 'detect':
-            # TODO: Implement live detection
-            pass
+            result_widget = LiveResultWidget(self._live_url, model_path)
+            self._add_new_tab(result_widget, f"{self._project_name} : Live detection", False)
+            self._btn_cancel.setEnabled(False)
+            self._btn_run.setEnabled(True)
 
     def update_progress_bar(self, extra: float = 0.0):
         inputs = self._file_list.get_selected_files()

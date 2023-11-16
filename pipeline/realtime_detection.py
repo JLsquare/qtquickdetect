@@ -18,19 +18,22 @@ class RealtimeDetectionPipeline(QThread):
 
     def __init__(self, url: str, model_path: str):
         super().__init__()
-        self._model, self._names = self.load_model(model_path)
+        self._model = self.load_model(model_path)
         self._url = url
-        self._fetcher = MediaFetcher(url, 5)
+        self._fetcher = MediaFetcher(url, 60)
         self._fetcher.frame_signal.connect(self.process_frame)
 
-    def load_model(self, model_path):
+    def request_cancel(self):
+        """Public method to request cancellation of the process."""
+        self._fetcher.request_cancel()
+
+    def load_model(self, model_path) -> ultralytics.YOLO:
         try:
             model = ultralytics.YOLO(model_path).to(appstate.device)
             if model.task != 'detect':
                 raise ValueError(f'Model task ({model.task}) does not match pipeline task')
 
-            names = model.names  # Get class names from the model
-            return model, names
+            return model
 
         except Exception as e:
             logging.error(f'Failed to load model: {e}')
@@ -46,7 +49,7 @@ class RealtimeDetectionPipeline(QThread):
                 flat = box.xyxy.flatten()
                 topleft = (int(flat[0]), int(flat[1]))
                 bottomright = (int(flat[2]), int(flat[3]))
-                classname = self._names[int(box.cls)]
+                classname = self._model.names[int(box.cls)]
                 conf = box.conf[0]
 
                 config = appstate.config

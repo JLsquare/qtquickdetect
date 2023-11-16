@@ -35,5 +35,7 @@ class AppTabWidget(QTabWidget):
 
     def close_tab(self, index: int):
         if self.count() > 1:
+            if hasattr(self.widget(index), 'stop'):
+                self.widget(index).stop()
             self.removeTab(index)
             self.setCurrentIndex(self.count() - 2)
