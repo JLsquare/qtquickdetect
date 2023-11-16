@@ -1,7 +1,6 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 from models.app_state import AppState
-import logging
-import ultralytics
+from utils.model_loader import load_model
 import os
 import json
 
@@ -23,7 +22,7 @@ class ImgDetectionPipeline(QThread):
         """
         super().__init__()
         self._device = appstate.device
-        self._model = self._load_model(model_path)
+        self._model = load_model(model_path)
         self._inputs = inputs
         self._results_path = results_path
         self._results = {
@@ -32,22 +31,6 @@ class ImgDetectionPipeline(QThread):
             'classes': self._model.names,
             'results': []
         }
-
-    def _load_model(self, model_path: str) -> ultralytics.YOLO:
-        """
-        Loads the model from the given path.
-
-        :param model_path: Path to the model.
-        :return: Loaded model.
-        """
-        try:
-            model = ultralytics.YOLO(model_path).to(self._device)
-            if model.task != 'detect':
-                raise ValueError(f'Model task ({model.task}) does not match pipeline task')
-            return model
-        except Exception as e:
-            logging.error(f'Failed to load model: {e}')
-            raise
 
     def run(self):
         """Runs detection for all images in the input list."""
