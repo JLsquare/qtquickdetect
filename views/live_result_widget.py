@@ -11,6 +11,7 @@ class LiveResultWidget(QWidget):
     def __init__(self, live_url: str, model_path: str):
         super().__init__()
 
+        self._buffer_rate_label = None
         self._buffer_size_label = None
         self._fetcher_fps_label = None
         self._real_fps_label = None
@@ -58,6 +59,7 @@ class LiveResultWidget(QWidget):
         self._buffer_size_label = buffer_size_label
         buffer_max_size_label = QLabel(f'Buffer Max Size: {self._frame_buffer.maxlen}')
         buffer_rate_label = QLabel(f'Buffer Rate: {self._buffer_rate}')
+        self._buffer_rate_label = buffer_rate_label
 
         stats_layout = QVBoxLayout()
         stats_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -90,8 +92,8 @@ class LiveResultWidget(QWidget):
 
     def receive_frame(self, frame):
         """
-        Receive frame from pipeline and add to buffer if buffer is not full,
-        otherwise update the frame.
+        Receive frame from pipeline and add to buffer if buffer is not full, otherwise update the frame.
+        Adjust the buffer rate according to the buffer size.
         """
         if not self._timer.isActive():
             self._timer.start(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
@@ -100,6 +102,12 @@ class LiveResultWidget(QWidget):
         else:
             self.update_frame()
             self._frame_buffer.append(frame)
+        if len(self._frame_buffer) < 20 and self._buffer_rate > 0.5:
+            self._buffer_rate -= 0.005
+            self._timer.setInterval(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
+        elif len(self._frame_buffer) > 25 and self._buffer_rate < 0.95:
+            self._buffer_rate += 0.005
+            self._timer.setInterval(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
 
     def update_frame(self):
         """
@@ -150,3 +158,4 @@ class LiveResultWidget(QWidget):
         self._real_fps_label.setText(f'FPS: {self._real_fps}')
         self._fetcher_fps_label.setText(f'Fetcher FPS: {fetcher_fps:.2f}')
         self._buffer_size_label.setText(f'Buffer Size: {buffer_size}')
+        self._buffer_rate_label.setText(f'Buffer Rate: {self._buffer_rate:.2f}')
