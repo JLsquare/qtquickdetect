@@ -16,6 +16,9 @@ class AppState:
         self.confidence_threshold = self.config.confidence_threshold
         self.pipelines = []
 
+        with open('ressources/qss/stylesheet.qss', 'r') as file:
+            self.qss = file.read()
+
     @staticmethod
     def get_instance() -> 'AppState':
         if AppState._instance is None:

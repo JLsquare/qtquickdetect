@@ -4,8 +4,6 @@ from utils.model_loader import load_model
 import os
 import json
 
-appstate = AppState.get_instance()
-
 
 class ImgDetectionPipeline(QThread):
     finished_signal = pyqtSignal(str, str)  # Source file, data
@@ -21,9 +19,10 @@ class ImgDetectionPipeline(QThread):
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
-        appstate.pipelines.append(self)
+        self._appstate = AppState.get_instance()
+        self._appstate.pipelines.append(self)
         self._cancel_requested = None
-        self._device = appstate.device
+        self._device = self._appstate.device
         self._model = load_model(model_path)
         self._inputs = inputs
         self._results_path = results_path
@@ -48,7 +47,7 @@ class ImgDetectionPipeline(QThread):
                     self.finished_signal.emit(src, self._json_path(src))
                 except Exception as e:
                     self.error_signal.emit(src, e)
-        appstate.pipelines.remove(self)
+        self._appstate.pipelines.remove(self)
 
     def _process_source(self, src: str) -> list:
         """

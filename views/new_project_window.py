@@ -2,13 +2,14 @@ import os
 from typing import Callable
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QGridLayout
-
+from models.app_state import AppState
 from views.project_widget import ProjectWidget
 
 
 class NewProjectWindow(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
+        self._appstate = AppState.get_instance()
         self._project_name_error = None
         self._project_name_input = None
         self._add_new_tab = add_new_tab
@@ -21,9 +22,7 @@ class NewProjectWindow(QWidget):
     def init_ui(self):
         self.setWindowTitle('QTQuickDetect New Project')
         self.setGeometry(100, 100, 480, 240)
-
-        with open('ressources/qss/stylesheet.qss', 'r') as file:
-            self.setStyleSheet(file.read())
+        self.setStyleSheet(self._appstate.qss)
 
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)

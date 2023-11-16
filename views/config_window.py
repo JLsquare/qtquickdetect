@@ -20,8 +20,7 @@ class ConfigWindow(QWidget):
     def init_ui(self):
         self.setWindowTitle('QTQuickDetect Settings')
         self.setGeometry(100, 100, 480, 480)
-        with open('ressources/qss/stylesheet.qss', 'r') as file:
-            self.setStyleSheet(file.read())
+        self.setStyleSheet(self._appstate.qss)
 
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)

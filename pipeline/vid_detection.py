@@ -6,8 +6,6 @@ import cv2 as cv
 import os
 import json
 
-appstate = AppState.get_instance()
-
 
 class VidDetectionPipeline(QThread):
     progress_signal = pyqtSignal(int, int)  # Current frame, total frames
@@ -25,9 +23,10 @@ class VidDetectionPipeline(QThread):
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
-        appstate.pipelines.append(self)
+        self._appstate = AppState.get_instance()
+        self._appstate.pipelines.append(self)
         self._cancel_requested = False
-        self._device = appstate.device
+        self._device = self._appstate.device
         self._model = load_model(model_path)
         self._inputs = inputs
         self._results_path = results_path
@@ -41,7 +40,7 @@ class VidDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self._cancel_requested = True
-        appstate.pipelines.remove(self)
+        self._appstate.pipelines.remove(self)
 
     def run(self):
         """Runs detection for all videos in the input list."""
@@ -118,7 +117,7 @@ class VidDetectionPipeline(QThread):
             int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         )
 
-        codec = 'XVID' if appstate.config.video_format == 'avi' else 'mp4v'
+        codec = 'XVID' if self._appstate.config.video_format == 'avi' else 'mp4v'
         writer = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*codec), fps, (width, height))
         return cap, writer, frame_count
 
@@ -140,8 +139,8 @@ class VidDetectionPipeline(QThread):
 
             draw_bounding_box(
                 frame, topleft, bottomright, classname, conf,
-                appstate.config.video_box_color, appstate.config.video_text_color,
-                appstate.config.video_box_thickness, appstate.config.video_text_size
+                self._appstate.config.video_box_color, self._appstate.config.video_text_color,
+                self._appstate.config.video_box_thickness, self._appstate.config.video_text_size
             )
 
             results_array.append({
@@ -166,4 +165,4 @@ class VidDetectionPipeline(QThread):
             json.dump(self._results, f, indent=4)
 
         self.finished_signal.emit(src, output_path, json_path)
-        appstate.pipelines.remove(self)
+        self._appstate.pipelines.remove(self)

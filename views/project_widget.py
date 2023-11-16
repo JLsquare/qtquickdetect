@@ -1,7 +1,9 @@
 from typing import Callable
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, QProgressBar
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, \
+    QProgressBar, QMessageBox
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt, QDir, QFile
+from models.app_state import AppState
 from views.file_list_widget import FileListWidget
 from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
@@ -16,6 +18,7 @@ import urllib.request
 class ProjectWidget(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project_name: str):
         super().__init__()
+        self._appstate = AppState.get_instance()
 
         self._project_name = project_name
         self._current_pipeline = None
@@ -248,37 +251,60 @@ class ProjectWidget(QWidget):
         if video_paths:
             self.open_video(file_paths=video_paths)
 
-    def open_image(self, _: bool = False, file_paths: list[str] = None):
+    def open_media(self, media_type: str, file_mime_types: list[str], file_extensions: tuple[str, ...],
+                   file_paths: list[str] = None) -> list[str]:
         if file_paths is None:
-            filenames = QFileDialog.getOpenFileNames(self, 'Open Image', '/', 'Images (*.png *.jpg *.jpeg)')[0]
+            msg_box = QMessageBox()
+            msg_box.setStyleSheet(self._appstate.qss)
+            msg_box.setText("What do you want to open?")
+            files_btn = msg_box.addButton("Files", QMessageBox.ButtonRole.YesRole)
+            msg_box.addButton("Folder", QMessageBox.ButtonRole.NoRole)
+            msg_box.exec()
+
+            if msg_box.clickedButton() == files_btn:
+                dialog = QFileDialog(self, f"Open {media_type.capitalize()}(s)", "/")
+                dialog.setMimeTypeFilters(file_mime_types)
+                dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
+                filenames = dialog.selectedFiles() if dialog.exec() else []
+            else:
+                dialog = QFileDialog(self, "Select Folder", "/")
+                dialog.setFileMode(QFileDialog.FileMode.Directory)
+                dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
+                if dialog.exec():
+                    folder_path = dialog.selectedFiles()[0]
+                    filenames = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
+                                 if any(f.lower().endswith(ext) for ext in file_extensions)]
+                else:
+                    filenames = []
         else:
             filenames = file_paths
+
+        return filenames
+
+    def process_media_files(self, media_type: str, filenames: list[str]):
         if len(filenames) > 0:
-            if self._media_type != 'image':
+            if self._media_type != media_type:
                 self.reset_input_folder()
-            self._media_type = 'image'
-            logging.debug('Image(s) opened : ' + str(filenames))
-            if filenames[0].startswith('http://') or filenames[0].startswith('https://'):
-                filenames[0] = self.download_file_to_input(filenames[0])
-            else:
-                self.copy_files(filenames)
+            self._media_type = media_type
+            logging.debug(f'{media_type.capitalize()}(s) opened : {filenames}')
+
+            for filename in filenames:
+                if filename.startswith(('http://', 'https://')):
+                    self.download_file_to_input(filename)
+                else:
+                    self.copy_files(filenames)
+
             self.check_enable_run()
 
+    def open_image(self, _: bool = False, file_paths: list[str] = None):
+        image_files = self.open_media('image', ["image/png", "image/jpeg"],
+                                      ('.png', '.jpg', '.jpeg'), file_paths)
+        self.process_media_files('image', image_files)
+
     def open_video(self, _: bool = False, file_paths: list[str] = None):
-        if file_paths is None:
-            filenames = QFileDialog.getOpenFileNames(self, 'Open Video', '/', 'Videos (*.mp4 *.avi *.mov *.webm)')[0]
-        else:
-            filenames = file_paths
-        if len(filenames) > 0:
-            if self._media_type != 'video':
-                self.reset_input_folder()
-            self._media_type = 'video'
-            logging.debug('Video(s) opened : ' + str(filenames))
-            if filenames[0].startswith('http://') or filenames[0].startswith('https://'):
-                filenames[0] = self.download_file_to_input(filenames[0])
-            else:
-                self.copy_files(filenames)
-            self.check_enable_run()
+        video_files = self.open_media('video', ["video/mp4", "video/avi", "video/mov", "video/webm"],
+                                      ('.mp4', '.avi', '.mov', '.webm'), file_paths)
+        self.process_media_files('video', video_files)
 
     def open_live(self, url: str):
         if self._media_type != 'live':

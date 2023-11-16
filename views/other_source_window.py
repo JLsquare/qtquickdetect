@@ -1,10 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QLabel
+from models.app_state import AppState
 from utils.url_handler import *
 
 
 class OtherSourceWindow(QWidget):
     def __init__(self, callback: Callable[[str, bool, bool, bool], None]):
         super().__init__()
+        self._appstate = AppState.get_instance()
 
         self._url_input = None
         self._format_display = None
@@ -25,9 +27,7 @@ class OtherSourceWindow(QWidget):
     def init_ui(self):
         self.setWindowTitle('QTQuickDetect Other Source')
         self.setGeometry(100, 100, 480, 240)
-
-        with open('ressources/qss/stylesheet.qss', 'r') as file:
-            self.setStyleSheet(file.read())
+        self.setStyleSheet(self._appstate.qss)
 
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)

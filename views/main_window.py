@@ -1,6 +1,7 @@
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
+from models.app_state import AppState
 from views.app_tab_widget import AppTabWidget
 from views.config_window import ConfigWindow
 import logging
@@ -10,7 +11,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self._settings_window = None
-
+        self._appstate = AppState.get_instance()
         self.init_window()
         self.init_ui()
 
@@ -21,8 +22,7 @@ class MainWindow(QWidget):
     def init_window(self):
         self.setWindowTitle('QTQuickDetect')
         self.setGeometry(100, 100, 1280, 720)
-        with open('ressources/qss/stylesheet.qss', 'r') as file:
-            self.setStyleSheet(file.read())
+        self.setStyleSheet(self._appstate.qss)
 
     def init_ui(self):
         top_layout = QHBoxLayout()

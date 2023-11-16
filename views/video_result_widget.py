@@ -7,13 +7,11 @@ import logging
 import os
 import cv2 as cv
 
-appstate = AppState.get_instance()
-
 
 class VideoResultWidget(QWidget):
     def __init__(self):
         super().__init__()
-
+        self._appstate = AppState.get_instance()
         self._current_result_player = None
         self._middle_layout = None
         self._file_select_combo = None
@@ -114,14 +112,14 @@ class VideoResultWidget(QWidget):
             QMessageBox.critical(self, "Error", "Could not save frame.")
             logging.error(f'Could not save frame')
             return
-        if appstate.config.image_format == 'png':
+        if self._appstate.config.image_format == 'png':
             file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save PNG", "", "PNG (*.png)")
         else:
             file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JPEG", "", "JPEG (*.jpg)")
         if file_name:
-            if appstate.config.image_format == 'png' and not file_name.lower().endswith('.png'):
+            if self._appstate.config.image_format == 'png' and not file_name.lower().endswith('.png'):
                 file_name += ".png"
-            if appstate.config.image_format == 'jpg' and not file_name.lower().endswith('.jpg'):
+            if self._appstate.config.image_format == 'jpg' and not file_name.lower().endswith('.jpg'):
                 file_name += ".jpg"
             if cv.imwrite(file_name, frame):
                 QMessageBox.information(self, "Success", "Frame saved successfully!")

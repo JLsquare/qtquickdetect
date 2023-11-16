@@ -10,12 +10,11 @@ import os
 import numpy as np
 import logging
 
-appstate = AppState.get_instance()
-
 
 class ImageResultWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self._appstate = AppState.get_instance()
 
         self._input_images = []
         self._result_jsons = []
@@ -155,7 +154,7 @@ class ImageResultWidget(QWidget):
 
         painter.end()
 
-        if appstate.config.image_format == 'png':
+        if self._appstate.config.image_format == 'png':
             file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save PNG", "", "PNG (*.png)")
         else:
             file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JPEG", "", "JPEG (*.jpg)")
@@ -233,7 +232,7 @@ class ImageResultWidget(QWidget):
     def draw_bounding_box_on_layer(self, scene, result, img_size, index, classes):
         # Utility function for drawing bounding boxes
 
-        config = appstate.config
+        config = self._appstate.config
         top_left = (int(result['x1']), int(result['y1']))
         bottom_right = (int(result['x2']), int(result['y2']))
         classname = classes[str(result['classid'])]

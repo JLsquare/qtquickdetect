@@ -5,8 +5,6 @@ from utils.media_fetcher import MediaFetcher
 from utils.model_loader import load_model
 import numpy as np
 
-appstate = AppState.get_instance()
-
 
 class FrameProcessorSignals(QObject):
     """Signals for the FrameProcessor class who can't inherit from QThread."""
@@ -17,6 +15,7 @@ class FrameProcessor(QRunnable):
     """Processes a single frame from a video stream asynchronously."""
     def __init__(self, frame, model):
         super().__init__()
+        self._appstate = AppState.get_instance()
         self._frame = frame
         self._model = model
         self.signals = FrameProcessorSignals()
@@ -32,7 +31,7 @@ class FrameProcessor(QRunnable):
             classname = self._model.names[int(box.cls)]
             conf = box.conf[0]
 
-            config = appstate.config
+            config = self._appstate.config
             draw_bounding_box(self._frame, topleft, bottomright, classname, conf, config.video_box_color,
                               config.video_text_color, config.video_box_thickness, config.video_text_size)
 
@@ -47,7 +46,8 @@ class RealtimeDetectionPipeline(QThread):
 
     def __init__(self, url: str, model_path: str):
         super().__init__()
-        appstate.pipelines.append(self)
+        self._appstate = AppState.get_instance()
+        self._appstate.pipelines.append(self)
         self._model = load_model(model_path)
         self._url = url
         self._is_processing = False
@@ -58,7 +58,7 @@ class RealtimeDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self.fetcher.request_cancel()
-        appstate.pipelines.remove(self)
+        self._appstate.pipelines.remove(self)
 
     def run(self):
         """Starts the video stream and waits for frames to be processed."""
