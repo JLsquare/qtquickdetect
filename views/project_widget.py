@@ -389,7 +389,7 @@ class ProjectWidget(QWidget):
             pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
-            result_widget = ImageResultWidget()
+            result_widget = ImageResultWidget(self._project_name)
             self._add_new_tab(result_widget, f"{self._project_name} : Image detection", len(inputs) == 1)
 
             def callback_ok(input_path: str, output_json_path: str) -> None:
@@ -415,7 +415,7 @@ class ProjectWidget(QWidget):
             pipeline = vid_detection.VidDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
             self._callback_count = 0
             self.update_progress_bar()
-            result_widget = VideoResultWidget()
+            result_widget = VideoResultWidget(self._project_name)
             self._add_new_tab(result_widget, f"{self._project_name} : Video detection", False)
             
             def callback_progress(current_frame: int, total_frames: int) -> None:

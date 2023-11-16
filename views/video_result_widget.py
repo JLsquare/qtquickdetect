@@ -6,18 +6,24 @@ from views.video_player_widget import VideoPlayerWidget
 import logging
 import os
 import cv2 as cv
+import subprocess
+import sys
 
 
 class VideoResultWidget(QWidget):
-    def __init__(self):
+    def __init__(self, project_name: str):
         super().__init__()
         self._appstate = AppState.get_instance()
+        self._project_name = project_name
+
         self._current_result_player = None
         self._middle_layout = None
         self._file_select_combo = None
+
         self._input_videos = []
         self._result_videos = []
         self._result_jsons = []
+
         self.init_ui()
 
     ##############################
@@ -37,6 +43,7 @@ class VideoResultWidget(QWidget):
         bottom_layout.addWidget(self.save_json_button_ui())
         bottom_layout.addWidget(self.save_video_button_ui())
         bottom_layout.addWidget(self.save_frame_button_ui())
+        bottom_layout.addWidget(self.open_project_folder_button_ui())
 
         # Main layout
         main_layout = QVBoxLayout(self)
@@ -72,11 +79,20 @@ class VideoResultWidget(QWidget):
         save_frame_button.clicked.connect(self.save_frame)
         return save_frame_button
 
+    def open_project_folder_button_ui(self) -> QPushButton:
+        open_project_folder_button = QPushButton('Open Project Folder')
+        open_project_folder_button.clicked.connect(self.open_project_folder)
+        return open_project_folder_button
+
     ##############################
     #         CONTROLLER         #
     ##############################
 
     def save_json(self):
+        if self._current_result_player is None:
+            QMessageBox.critical(self, "Error", "No video loaded.")
+            logging.error(f'No video loaded')
+            return
         file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON (*.json)")
         if file_name:
             if not file_name.lower().endswith('.json'):
@@ -89,6 +105,10 @@ class VideoResultWidget(QWidget):
                 logging.error(f'Could not save JSON to {file_name}')
 
     def save_video(self):
+        if self._current_result_player is None:
+            QMessageBox.critical(self, "Error", "No video loaded.")
+            logging.error(f'No video loaded')
+            return
         if self._result_videos[self._file_select_combo.currentIndex()].lower().endswith('.avi'):
             format_filter = 'AVI (*.avi)'
         else:
@@ -107,6 +127,10 @@ class VideoResultWidget(QWidget):
                 logging.error(f'Could not save video to {file_name}')
 
     def save_frame(self):
+        if self._current_result_player is None:
+            QMessageBox.critical(self, "Error", "No video loaded.")
+            logging.error(f'No video loaded')
+            return
         frame = self._current_result_player.get_current_frame()
         if frame is None:
             QMessageBox.critical(self, "Error", "Could not save frame.")
@@ -127,6 +151,25 @@ class VideoResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, "Error", "An error occurred while saving the frame.")
                 logging.error(f'Could not save frame to {file_name}')
+
+    def open_project_folder(self):
+        path = f'projects/{self._project_name}'
+        if os.path.exists(path):
+            try:
+                if sys.platform == 'win32':
+                    subprocess.run(['explorer', path], check=True)
+                elif sys.platform == 'darwin':
+                    subprocess.run(['open', path], check=True)
+                elif sys.platform.startswith('linux'):
+                    subprocess.run(['xdg-open', path], check=True)
+                else:
+                    raise Exception(f'Unsupported platform: {sys.platform}')
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to open folder: {e}")
+                logging.error(f'Failed to open project folder: {path}, Error: {e}')
+        else:
+            QMessageBox.critical(self, "Error", "Project folder does not exist.")
+            logging.error(f'Project folder does not exist: {path}')
 
     def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
         self._input_videos.append(input_video)

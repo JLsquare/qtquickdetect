@@ -9,12 +9,15 @@ import json
 import os
 import numpy as np
 import logging
+import subprocess
+import sys
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self):
+    def __init__(self, project_name: str):
         super().__init__()
         self._appstate = AppState.get_instance()
+        self._project_name = project_name
 
         self._input_images = []
         self._result_jsons = []
@@ -44,6 +47,7 @@ class ImageResultWidget(QWidget):
         bottom_layout.addStretch(1)
         bottom_layout.addWidget(self.save_json_button_ui())
         bottom_layout.addWidget(self.save_image_button_ui())
+        bottom_layout.addWidget(self.open_project_folder_button_ui())
 
         # Main layout
         main_layout = QVBoxLayout(self)
@@ -132,11 +136,20 @@ class ImageResultWidget(QWidget):
         save_image_button.clicked.connect(self.save_image)
         return save_image_button
 
+    def open_project_folder_button_ui(self) -> QPushButton:
+        open_project_folder_button = QPushButton('Open Project Folder')
+        open_project_folder_button.clicked.connect(self.open_project_folder)
+        return open_project_folder_button
+
     ##############################
     #         CONTROLLER         #
     ##############################
 
     def save_image(self):
+        if len(self._input_images) == 0:
+            QMessageBox.critical(self, "Error", "No result image to save.")
+            logging.error('No result image to save.')
+            return
         base_image_path = self._input_images[self._file_select_combo.currentIndex()]
         base_pixmap = QPixmap(base_image_path)
         canvas = QPixmap(base_pixmap.size())
@@ -172,6 +185,10 @@ class ImageResultWidget(QWidget):
                 logging.error(f'Could not save image to {file_name}')
 
     def save_json(self):
+        if len(self._result_jsons) == 0:
+            QMessageBox.critical(self, "Error", "No JSON to save.")
+            logging.error('No JSON to save.')
+            return
         file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON (*.json)")
         if file_name:
             if not file_name.lower().endswith('.json'):
@@ -182,6 +199,25 @@ class ImageResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, "Error", "An error occurred while saving the JSON.")
                 logging.error(f'Could not save JSON to {file_name}')
+
+    def open_project_folder(self):
+        path = f'projects/{self._project_name}'
+        if os.path.exists(path):
+            try:
+                if sys.platform == 'win32':
+                    subprocess.run(['explorer', path], check=True)
+                elif sys.platform == 'darwin':
+                    subprocess.run(['open', path], check=True)
+                elif sys.platform.startswith('linux'):
+                    subprocess.run(['xdg-open', path], check=True)
+                else:
+                    raise Exception(f'Unsupported platform: {sys.platform}')
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to open folder: {e}")
+                logging.error(f'Failed to open project folder: {path}, Error: {e}')
+        else:
+            QMessageBox.critical(self, "Error", "Project folder does not exist.")
+            logging.error(f'Project folder does not exist: {path}')
 
     def add_input_and_result(self, input_image: str, result_json: str):
         self._input_images.append(input_image)
