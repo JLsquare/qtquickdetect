@@ -7,7 +7,7 @@ from pipeline.realtime_detection import RealtimeDetectionPipeline
 class LiveResultWidget(QWidget):
     def __init__(self, live_url: str, model_path: str):
         super().__init__()
-        self.pipeline = RealtimeDetectionPipeline(live_url, model_path)
+        self._pipeline = RealtimeDetectionPipeline(live_url, model_path)
         self._live_label = None
         self.init_ui()
         self.start()
@@ -32,8 +32,8 @@ class LiveResultWidget(QWidget):
     ##############################
 
     def start(self):
-        self.pipeline.progress_signal.connect(self.update_frame)
-        self.pipeline.start()
+        self._pipeline.progress_signal.connect(self.update_frame)
+        self._pipeline.start()
 
     def update_frame(self, frame):
         height, width, channel = frame.shape
@@ -43,5 +43,5 @@ class LiveResultWidget(QWidget):
         self._live_label.setPixmap(pixmap.scaled(self._live_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
     def stop(self):
-        self.pipeline.request_cancel()
+        self._pipeline.request_cancel()
         

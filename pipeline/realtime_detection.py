@@ -44,7 +44,7 @@ class RealtimeDetectionPipeline(QThread):
 
     def process_frame(self, frame, frame_available):
         if frame_available:
-            results = self._model(frame)[0].cpu()
+            results = self._model(frame, verbose=False)[0].cpu()
             for box in results.boxes:
                 flat = box.xyxy.flatten()
                 topleft = (int(flat[0]), int(flat[1]))

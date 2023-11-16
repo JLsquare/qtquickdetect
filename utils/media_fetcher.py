@@ -12,6 +12,7 @@ class MediaFetcher(QThread):
         self._cancel_requested = False
         self._url = url
         self.max_fps = max_fps
+        self._last_frame = None
 
     def request_cancel(self):
         self._cancel_requested = True
@@ -23,13 +24,19 @@ class MediaFetcher(QThread):
 
         while not self._cancel_requested:
             frame_available, frame = cap.read()
-            if frame_available:
-                current_time = time.time()
-                elapsed_since_last_frame = current_time - last_frame_time
+            current_time = time.time()
+            elapsed_since_last_frame = current_time - last_frame_time
 
-                if elapsed_since_last_frame >= frame_interval:
+            if elapsed_since_last_frame >= frame_interval:
+                if frame_available:
+                    self._last_frame = frame
                     self.frame_signal.emit(frame, True)
-                    last_frame_time = current_time
+                elif self._last_frame is not None:
+                    self.frame_signal.emit(self._last_frame, False)
+                last_frame_time = current_time
 
-                time_to_wait = int(frame_interval - (time.time() - current_time))
-                time.sleep(max(0, time_to_wait))
+            time_to_wait = frame_interval - (time.time() - current_time)
+            time.sleep(max(0.0, time_to_wait))
+
+        cap.release()
+        
