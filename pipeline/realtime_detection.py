@@ -20,12 +20,12 @@ class RealtimeDetectionPipeline(QThread):
         super().__init__()
         self._model = self.load_model(model_path)
         self._url = url
-        self._fetcher = MediaFetcher(url, 60)
-        self._fetcher.frame_signal.connect(self.process_frame)
+        self.fetcher = MediaFetcher(url, 60)
+        self.fetcher.frame_signal.connect(self.process_frame)
 
     def request_cancel(self):
         """Public method to request cancellation of the process."""
-        self._fetcher.request_cancel()
+        self.fetcher.request_cancel()
 
     def load_model(self, model_path) -> ultralytics.YOLO:
         try:
@@ -40,7 +40,7 @@ class RealtimeDetectionPipeline(QThread):
             raise e
 
     def run(self):
-        self._fetcher.start()
+        self.fetcher.start()
 
     def process_frame(self, frame, frame_available):
         if frame_available:
