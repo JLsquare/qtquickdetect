@@ -1,8 +1,9 @@
 from collections import deque
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QHBoxLayout
 from pipeline.realtime_detection import RealtimeDetectionPipeline
+from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import logging
 
 
@@ -10,8 +11,11 @@ class LiveResultWidget(QWidget):
     def __init__(self, live_url: str, model_path: str):
         super().__init__()
 
+        self._buffer_size_label = None
+        self._fetcher_fps_label = None
+        self._real_fps_label = None
+        self._scene = None
         self._info_label = None
-        self._live_label = None
 
         self._timer = None
         self._pipeline = RealtimeDetectionPipeline(live_url, model_path)
@@ -32,20 +36,43 @@ class LiveResultWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        live_label = QLabel('Live loading...')
-        live_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        live_label.setFixedSize(640, 480)
-        self._live_label = live_label
+        container_widget = QWidget(self)
+        container_layout = QHBoxLayout(container_widget)
+        container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        info_label = QLabel('FPS: 0, Buffer Size: 0, Buffer Rate: 0.80')
-        info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._info_label = info_label
+        scene = QGraphicsScene(container_widget)
+        self._scene = scene
 
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(live_label)
-        layout.addWidget(info_label)
-        self.setLayout(layout)
+        view = ResizeableGraphicsWidget(scene, container_widget)
+        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        container_layout.addWidget(view, 1)
+        container_widget.setLayout(container_layout)
+
+        stats_label = QLabel('Live stats: ')
+        real_fps_label = QLabel('FPS: 0')
+        self._real_fps_label = real_fps_label
+        fetcher_fps_label = QLabel(f'Fetcher FPS: 0')
+        self._fetcher_fps_label = fetcher_fps_label
+        buffer_size_label = QLabel('Buffer Size: 0')
+        self._buffer_size_label = buffer_size_label
+        buffer_max_size_label = QLabel(f'Buffer Max Size: {self._frame_buffer.maxlen}')
+        buffer_rate_label = QLabel(f'Buffer Rate: {self._buffer_rate}')
+
+        stats_layout = QVBoxLayout()
+        stats_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        stats_layout.addWidget(stats_label)
+        stats_layout.addWidget(real_fps_label)
+        stats_layout.addWidget(fetcher_fps_label)
+        stats_layout.addWidget(buffer_size_label)
+        stats_layout.addWidget(buffer_max_size_label)
+        stats_layout.addWidget(buffer_rate_label)
+
+        main_layout = QHBoxLayout()
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(container_widget)
+        main_layout.addLayout(stats_layout)
+        self.setLayout(main_layout)
 
     ##############################
     #         CONTROLLER         #
@@ -89,9 +116,21 @@ class LiveResultWidget(QWidget):
         bytes_per_line = 3 * width
         q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
         pixmap = QPixmap.fromImage(q_img)
-        self._live_label.setPixmap(pixmap.scaled(self._live_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.resize_and_add_pixmap(pixmap)
 
         self.update_info_label()
+
+    def resize_and_add_pixmap(self, pixmap):
+        view = self._scene.views()[0]
+        view_size = view.size()
+
+        scale_factor = min(view_size.width() / pixmap.width(), view_size.height() / pixmap.height())
+
+        frame_item = QGraphicsPixmapItem(pixmap)
+        frame_item.setScale(scale_factor)
+
+        self._scene.clear()
+        self._scene.addItem(frame_item)
 
     def stop(self):
         """Stop the pipeline and timer"""
@@ -108,5 +147,6 @@ class LiveResultWidget(QWidget):
         """Update the info label"""
         fetcher_fps = self._pipeline.fetcher.fps
         buffer_size = len(self._frame_buffer)
-        self._info_label.setText(f'Real FPS: {self._real_fps}, Fetcher FPS: {fetcher_fps:.2f}, '
-                                 f'Buffer Size: {buffer_size}, Buffer Rate: {self._buffer_rate:.2f}')
+        self._real_fps_label.setText(f'FPS: {self._real_fps}')
+        self._fetcher_fps_label.setText(f'Fetcher FPS: {fetcher_fps:.2f}')
+        self._buffer_size_label.setText(f'Buffer Size: {buffer_size}')
