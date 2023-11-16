@@ -24,7 +24,9 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
 
     text = '{} : {:.2f}%'.format(classname, confidence * 100)
     (text_width, text_height), _ = cv.getTextSize(text, FONT, text_size, 1)
-    box_coords = ((top_left[0], top_left[1]), (top_left[0] + text_width + 2, top_left[1] - text_height - 9))
+
+    text_top_left_y = max(0, top_left[1] - text_height - 9)
+    box_coords = ((top_left[0], text_top_left_y - 2), (top_left[0] + text_width + 2, text_top_left_y + text_height + 7))
 
     cv.rectangle(img, box_coords[0], box_coords[1], box_color, cv.FILLED)
-    cv.putText(img, text, (top_left[0], top_left[1] - 5), FONT, text_size, text_color, 2)
+    cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 2)
