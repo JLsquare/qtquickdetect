@@ -279,6 +279,14 @@ class ProjectWidget(QWidget):
                 self.copy_files(filenames)
             self.check_enable_run()
 
+    def open_live(self, url: str):
+        if self._media_type != 'live':
+            self.reset_input_folder()
+        self._media_type = 'live'
+        self._live_url = url
+        self._file_list.set_live_preview(url)
+        self.check_enable_run()
+
     def download_file_to_input(self, url: str):
         media = urllib.request.urlopen(url)
         media_name = os.path.basename(url)
@@ -302,14 +310,12 @@ class ProjectWidget(QWidget):
         logging.debug('Window opened : Other Source')
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
-        self._media_type = 'image' if image else 'video' if video else 'live' if live else 'unknown'
-        logging.debug(f'Other source opened: {url}, type: {self._media_type}')
         if image:
             self.open_image(file_paths=[url])
         elif video:
             self.open_video(file_paths=[url])
         elif live:
-            self._live_url = url
+            self.open_live(url)
         self.check_enable_run()
 
     def check_functionality_selected(self, index: int):
@@ -329,8 +335,8 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if (len(self._file_list.get_selected_files()) > 0) and self._model_selected and self._functionality_selected \
-                or self._live_url is not None:
+        if ((len(self._file_list.get_selected_files()) > 0 or self._live_url is not None) and self._model_selected
+                and self._functionality_selected):
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)

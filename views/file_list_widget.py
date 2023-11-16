@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QLabel, QWidget, QVBoxLayout
+from pipeline.realtime_detection import MediaFetcher
 import logging
 import os
 import cv2
@@ -37,18 +38,19 @@ class FileListWidget(QWidget):
     def __init__(self, file_dir: str):
         super().__init__()
 
+        self._preview_label = None
         self._file_dir = file_dir
-        self._preview_label = QLabel("Select a file to see its preview.")
-        self._preview_label.setWordWrap(True)
-        self._preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         logging.debug('FileListWidget: ' + self._file_dir)
+
         self.model = CheckableFileSystemModel()
         self.model.setRootPath(self._file_dir)
+
         self._qtree_view = QTreeView()
         self._qtree_view.setModel(self.model)
         self._qtree_view.setRootIndex(self.model.index(self._file_dir))
         self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
+
+        self._media_fetcher = None
 
         self.init_ui()
 
@@ -60,6 +62,11 @@ class FileListWidget(QWidget):
         for i in range(1, self.model.columnCount()):
             self._qtree_view.hideColumn(i)
         self._qtree_view.setHeaderHidden(True)
+
+        preview_label = QLabel("Select a file to see its preview.")
+        preview_label.setWordWrap(True)
+        preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preview_label = preview_label
 
         layout = QVBoxLayout()
         layout.addWidget(self._qtree_view, 1)
@@ -96,17 +103,25 @@ class FileListWidget(QWidget):
             return
 
         if file_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
-            self._set_image_preview(file_path)
+            self.set_image_preview(file_path)
         elif file_path.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
-            self._set_video_preview(file_path)
+            self.set_video_preview(file_path)
         else:
             self._preview_label.setText("Cannot preview this file type.")
 
-    def _set_image_preview(self, file_path):
+    def set_image_preview(self, file_path):
+        if self._media_fetcher is not None:
+            self._media_fetcher.request_cancel()
+            self._media_fetcher.wait()
+            self._media_fetcher = None
         pixmap = QPixmap(file_path)
         self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
-    def _set_video_preview(self, file_path):
+    def set_video_preview(self, file_path):
+        if self._media_fetcher is not None:
+            self._media_fetcher.request_cancel()
+            self._media_fetcher.wait()
+            self._media_fetcher = None
         cap = cv2.VideoCapture(file_path)
         success, frame = cap.read()
         if success:
@@ -118,3 +133,17 @@ class FileListWidget(QWidget):
         else:
             self._preview_label.setText("Cannot preview video.")
         cap.release()
+
+    def set_live_preview(self, live_url):
+        self._media_fetcher = MediaFetcher(live_url, 5)
+
+        def update_frame(frame, frame_available):
+            if frame_available:
+                height, width, channel = frame.shape
+                bytes_per_line = 3 * width
+                q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
+                pixmap = QPixmap.fromImage(q_img)
+                self._preview_label.setPixmap(pixmap.scaled(self._preview_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+
+        self._media_fetcher.frame_signal.connect(update_frame)
+        self._media_fetcher.start()

@@ -1,5 +1,4 @@
 from pipeline.realtime_detection import RealtimeDetectionPipeline
-from PyQt6.QtCore import pyqtSignal, QThread, QMutex
 from PyQt6.QtWidgets import QMainWindow, QApplication
 import cv2 as cv
 
@@ -15,7 +14,7 @@ class TestApp(QMainWindow):
         self.setWindowTitle('Test')
         self.setGeometry(100, 100, 480, 240)
 
-        self._pipeline = RealtimeDetectionPipeline('http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4', 'yolov8x.pt')
+        self._pipeline = RealtimeDetectionPipeline('https://cdn.flowplayer.com/a30bd6bc-f98b-47bc-abf5-97633d4faea0/hls/de3f6ca7-2db3-4689-8160-0f574a5996ad/playlist.m3u8', 'yolov8x.pt')
 
         def show_img_signal_cb(img):
             cv.imshow('Test', img)
