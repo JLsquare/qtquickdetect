@@ -18,6 +18,7 @@ class VideoResultWidget(QWidget):
         self._appstate = AppState.get_instance()
         self._project_name = project_name
 
+        self._current_tab = None
         self._current_result_player = None
         self._middle_layout = None
         self._file_select_combo = None
@@ -95,11 +96,15 @@ class VideoResultWidget(QWidget):
             QMessageBox.critical(self, "Error", "No video loaded.")
             logging.error(f'No video loaded')
             return
+        if self._current_tab == 0:
+            QMessageBox.critical(self, "Error", "Cannot save input JSON.")
+            logging.error(f'Cannot save input JSON')
+            return
         file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON (*.json)")
         if file_name:
             if not file_name.lower().endswith('.json'):
                 file_name += ".json"
-            if QFile.copy(self._result_jsons[self._file_select_combo.currentIndex()], file_name):
+            if QFile.copy(self._result_jsons[self._file_select_combo.currentData()][self._current_tab - 1], file_name):
                 QMessageBox.information(self, "Success", "JSON saved successfully!")
                 logging.debug(f'Saved JSON to {file_name}')
             else:
@@ -111,17 +116,21 @@ class VideoResultWidget(QWidget):
             QMessageBox.critical(self, "Error", "No video loaded.")
             logging.error(f'No video loaded')
             return
-        if self._result_videos[self._file_select_combo.currentIndex()].lower().endswith('.avi'):
+        if self._current_tab == 0:
+            QMessageBox.critical(self, "Error", "Cannot save input video.")
+            logging.error(f'Cannot save input video')
+            return
+        if self._appstate.config.video_format == 'avi':
             format_filter = 'AVI (*.avi)'
         else:
             format_filter = 'MP4 (*.mp4)'
-        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save Video", "", format_filter)
+        file_name, _ = QFileDialog.getSaveFileName(self, "Save Video", "", format_filter)
         if file_name:
-            if selected_filter == 'AVI (*.avi)' and not file_name.lower().endswith('.avi'):
+            if format_filter == 'AVI (*.avi)' and not file_name.lower().endswith('.avi'):
                 file_name += ".avi"
-            if selected_filter == 'MP4 (*.mp4)' and not file_name.lower().endswith('.mp4'):
+            if format_filter == 'MP4 (*.mp4)' and not file_name.lower().endswith('.mp4'):
                 file_name += ".mp4"
-            if QFile.copy(self._result_videos[self._file_select_combo.currentIndex()], file_name):
+            if QFile.copy(self._result_videos[self._file_select_combo.currentData()][self._current_tab - 1], file_name):
                 QMessageBox.information(self, "Success", "Video saved successfully!")
                 logging.debug(f'Saved video to {file_name}')
             else:
@@ -178,7 +187,7 @@ class VideoResultWidget(QWidget):
             self._input_videos.append(input_video)
             self._result_videos[input_video] = []
             self._result_jsons[input_video] = []
-            self._file_select_combo.addItem(os.path.basename(input_video))
+            self._file_select_combo.addItem(os.path.basename(input_video), input_video)
 
         self._result_videos[input_video].append(result_video)
         self._result_jsons[input_video].append(result_json)
@@ -200,6 +209,11 @@ class VideoResultWidget(QWidget):
                     data = json.load(f)
                 tab.addTab(result_player, data['model_name'])
 
+        tab.currentChanged.connect(self.on_tab_changed)
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()
         self._middle_layout.addWidget(tab, 1)
+
+    def on_tab_changed(self, index):
+        self._current_result_player = self._middle_layout.itemAt(1).widget().widget(index)
+        self._current_tab = index
