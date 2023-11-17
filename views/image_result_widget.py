@@ -20,7 +20,7 @@ class ImageResultWidget(QWidget):
         self._project_name = project_name
 
         self._input_images = []
-        self._result_jsons = []
+        self._result_jsons = {}
         self._layer_visibility = {}
 
         self._file_select_combo = None
@@ -220,33 +220,60 @@ class ImageResultWidget(QWidget):
             logging.error(f'Project folder does not exist: {path}')
 
     def add_input_and_result(self, input_image: str, result_json: str):
-        self._input_images.append(input_image)
-        self._result_jsons.append(result_json)
-        self._file_select_combo.addItem(os.path.basename(input_image), result_json)
+        if input_image not in self._input_images:
+            self._input_images.append(input_image)
+            self._result_jsons[input_image] = []
+            self._file_select_combo.addItem(os.path.basename(input_image), input_image)
+        self._result_jsons[input_image].append(result_json)
+        logging.debug(f'Added input image {input_image} and result JSON {result_json}')
+        logging.debug(f'_result_jsons: {self._result_jsons}')
+        if self._file_select_combo.currentIndex() == self._file_select_combo.count() - 1:
+            self.open_current_file()
 
     def open_current_file(self):
         # Handler for opening and displaying the selected file and its results
 
         tab = QTabWidget()
         current_index = self._file_select_combo.currentIndex()
+        input_image = self._input_images[current_index]
 
-        tab.addTab(self.input_image_ui(self._input_images[current_index]), 'Input')
-        tab.addTab(self.result_image_ui(self._input_images[current_index], self._result_jsons[current_index]), 'Result')
-        tab.setCurrentIndex(1)
+        tab.addTab(self.input_image_ui(input_image), 'Input')
+
+        if input_image in self._result_jsons and self._result_jsons[input_image]:
+            for result_json in self._result_jsons[input_image]:
+                result_tab = self.result_image_ui(input_image, result_json)
+                with open(result_json, 'r') as file:
+                    result_data = json.load(file)
+                tab.addTab(result_tab, result_data['model_name'])
+
+            tab.currentChanged.connect(self.on_tab_changed)
+            with open(self._result_jsons[input_image][0], 'r') as file:
+                data = json.load(file)
+            self.populate_layer_list(data)
+            tab.setCurrentIndex(1)
+        else:
+            logging.error(f"No result JSONs found for the input image {input_image}")
 
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()
         self._middle_layout.addWidget(tab, 1)
 
-        self.populate_layer_list(self._result_jsons[current_index])
+    def on_tab_changed(self, index):
+        if index == 0:
+            return
 
-    def populate_layer_list(self, result_json):
+        current_index = self._file_select_combo.currentIndex()
+        input_image = self._input_images[current_index]
+
+        if input_image in self._result_jsons and index <= len(self._result_jsons[input_image]):
+            with open(self._result_jsons[input_image][index - 1], 'r') as file:
+                data = json.load(file)
+            self.populate_layer_list(data)
+
+    def populate_layer_list(self, result_json: dict):
         self._layer_list.clear()
-        with open(result_json, 'r') as file:
-            data = json.load(file)
-
-        for index, result in enumerate(data['results']):
-            item_text = f"{data['classes'][str(result['classid'])]} ({index}) : {round(result['confidence'] * 100, 2)}%"
+        for index, result in enumerate(result_json['results']):
+            item_text = f"{result_json['classes'][str(result['classid'])]} ({index}) : {round(result['confidence'] * 100, 2)}%"
             self.add_layer_list_item(result['classid'], index, item_text)
 
     def add_layer_list_item(self, class_id, index, text):
@@ -285,7 +312,6 @@ class ImageResultWidget(QWidget):
         layer_item = QGraphicsPixmapItem(layer_pixmap)
         scene.addItem(layer_item)
 
-        # Update layer visibility mapping
         self._layer_visibility[(result['classid'], index)] = {
             'item': layer_item,
             'visible': True,

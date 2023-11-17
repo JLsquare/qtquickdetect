@@ -1,3 +1,5 @@
+import json
+
 from PyQt6.QtCore import QFile, Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QPushButton, QLabel, QComboBox, \
     QFileDialog, QMessageBox
@@ -21,8 +23,8 @@ class VideoResultWidget(QWidget):
         self._file_select_combo = None
 
         self._input_videos = []
-        self._result_videos = []
-        self._result_jsons = []
+        self._result_videos = {}
+        self._result_jsons = {}
 
         self.init_ui()
 
@@ -172,19 +174,32 @@ class VideoResultWidget(QWidget):
             logging.error(f'Project folder does not exist: {path}')
 
     def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
-        self._input_videos.append(input_video)
-        self._result_videos.append(result_video)
-        self._result_jsons.append(result_json)
-        self._file_select_combo.addItem(os.path.basename(input_video))
+        if input_video not in self._input_videos:
+            self._input_videos.append(input_video)
+            self._result_videos[input_video] = []
+            self._result_jsons[input_video] = []
+            self._file_select_combo.addItem(os.path.basename(input_video))
+
+        self._result_videos[input_video].append(result_video)
+        self._result_jsons[input_video].append(result_json)
+
+        if self._file_select_combo.currentIndex() == len(self._input_videos) - 1:
+            self.open_current_file()
 
     def open_current_file(self):
         tab = QTabWidget()
-        input_video = self._input_videos[self._file_select_combo.currentIndex()]
-        result_video = self._result_videos[self._file_select_combo.currentIndex()]
+        current_index = self._file_select_combo.currentIndex()
+        input_video = self._input_videos[current_index]
+
         tab.addTab(VideoPlayerWidget(input_video), 'Input')
-        self._current_result_player = VideoPlayerWidget(result_video)
-        tab.addTab(self._current_result_player, 'Result')
-        tab.setCurrentIndex(1)
+
+        if input_video in self._result_videos:
+            for index, result_video in enumerate(self._result_videos[input_video]):
+                result_player = VideoPlayerWidget(result_video)
+                with open(self._result_jsons[input_video][index], 'r') as f:
+                    data = json.load(f)
+                tab.addTab(result_player, data['model_name'])
+
         if self._middle_layout.count() > 1:
             self._middle_layout.itemAt(1).widget().deleteLater()
         self._middle_layout.addWidget(tab, 1)

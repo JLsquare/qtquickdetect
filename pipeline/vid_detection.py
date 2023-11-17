@@ -8,17 +8,17 @@ import json
 
 
 class VidDetectionPipeline(QThread):
-    progress_signal = pyqtSignal(int, int)  # Current frame, total frames
+    progress_signal = pyqtSignal(float)  # Progress percentage
     finished_signal = pyqtSignal(str, str, str)  # Source file, video output, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
     cleanup_signal = pyqtSignal()
 
-    def __init__(self, inputs: list[str], model_path: str, results_path: str):
+    def __init__(self, inputs: list[str], model_paths: list[str], results_path: str):
         """
         Initializes the Video Detection Pipeline.
 
         :param inputs: List of input paths.
-        :param model_path: Path to the model.
+        :param model_paths: List of paths to the models.
         :param results_path: Path for saving results.
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
@@ -27,15 +27,9 @@ class VidDetectionPipeline(QThread):
         self._appstate.pipelines.append(self)
         self._cancel_requested = False
         self._device = self._appstate.device
-        self._model = load_model(model_path)
         self._inputs = inputs
+        self._model_paths = model_paths
         self._results_path = results_path
-        self._results = {
-            'model_name': os.path.basename(model_path),
-            'task': "detection",
-            'classes': self._model.names,
-            'results': []
-        }
 
     def request_cancel(self):
         """Public method to request cancellation of the process."""
@@ -44,23 +38,41 @@ class VidDetectionPipeline(QThread):
 
     def run(self):
         """Runs detection for all videos in the input list."""
-        for src in self._inputs:
-            try:
-                self._process_video(src)
-            except Exception as e:
-                self.error_signal.emit(src, e)
+        for model_path in self._model_paths:
+            if self._cancel_requested:
+                break
 
-    def _process_video(self, src: str):
+            model = load_model(model_path)
+            results = {
+                'model_name': os.path.basename(model_path),
+                'task': "detection",
+                'classes': model.names,
+                'results': []
+            }
+            for src in self._inputs:
+                try:
+                    output_path, result_array = self._process_source(src, results['model_name'], model)
+                    json_name = os.path.basename(src).split('.')[0] + '.json'
+                    json_path = os.path.join(self._results_path, json_name)
+
+                    self._save_json(result_array, results, json_path)
+                    self.finished_signal.emit(src, output_path, json_path)
+                except Exception as e:
+                    self.error_signal.emit(src, e)
+
+    def _process_source(self, src: str, model_name: str, model):
         """
         Processes a single video file.
 
         :param src: Source video file path.
         """
-        video_name = os.path.basename(src)
-        output_path = os.path.join(self._results_path, video_name)
+        video_name = os.path.basename(src).split('.')[0]
+        output_path = os.path.join(self._results_path, f"{video_name}_{model_name}.{self._appstate.config.video_format}")
         cap, writer, frame_count = self._setup_video(src, output_path)
 
         frame_index = 0
+        results_array = []
+
         while cap.isOpened():
             if self._cancel_requested:
                 break
@@ -69,12 +81,11 @@ class VidDetectionPipeline(QThread):
             if not ret:
                 break
 
-            results_array = self._process_frame(frame)
-            self._results['results'].append(results_array)
+            results_array = self._process_frame(frame, model)
             writer.write(frame)
 
             frame_index += 1
-            self.progress_signal.emit(frame_index, frame_count)
+            self.progress_signal.emit(frame_index / frame_count)
 
         cap.release()
         writer.release()
@@ -83,7 +94,7 @@ class VidDetectionPipeline(QThread):
             self._cleanup()
             return
 
-        self._save_results(src, output_path)
+        return output_path, results_array
 
     def _cleanup(self):
         """
@@ -121,20 +132,20 @@ class VidDetectionPipeline(QThread):
         writer = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*codec), fps, (width, height))
         return cap, writer, frame_count
 
-    def _process_frame(self, frame) -> list:
+    def _process_frame(self, frame, model) -> list:
         """
         Processes a single frame of the video.
 
         :param frame: The frame to process.
         :return: Array of detection results for the frame.
         """
-        results = self._model(frame)[0].cpu()
+        results = model(frame)[0].cpu()
         results_array = []
 
         for box in results.boxes:
             flat = box.xyxy.flatten()
             topleft, bottomright = (int(flat[0]), int(flat[1])), (int(flat[2]), int(flat[3]))
-            classid, classname = int(box.cls), self._model.names[int(box.cls)]
+            classid, classname = int(box.cls), model.names[int(box.cls)]
             conf = float(box.conf[0])
 
             draw_bounding_box(
@@ -151,18 +162,12 @@ class VidDetectionPipeline(QThread):
 
         return results_array
 
-    def _save_results(self, src: str, output_path: str):
+    def _save_json(self, results_array: list, results_dict: dict, json_path: str):
         """
-        Saves the results to a JSON file and emits the finished signal.
+        Saves the results to a JSON file.
 
-        :param src: Source video file path.
-        :param output_path: Output video file path.
+        :param results_array: Array of results.
         """
-        json_name = os.path.basename(src).split('.')[0] + '.json'
-        json_path = os.path.join(self._results_path, json_name)
-
+        results_dict['results'] = results_array
         with open(json_path, 'w') as f:
-            json.dump(self._results, f, indent=4)
-
-        self.finished_signal.emit(src, output_path, json_path)
-        self._appstate.pipelines.remove(self)
+            json.dump(results_dict, f, indent=4)

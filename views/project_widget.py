@@ -1,6 +1,6 @@
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, \
-    QProgressBar, QMessageBox
+    QProgressBar, QMessageBox, QListWidget, QAbstractItemView
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
 from PyQt6.QtCore import Qt, QDir, QFile
 from models.app_state import AppState
@@ -38,7 +38,7 @@ class ProjectWidget(QWidget):
         self._btn_import_video = None
         self._btn_other_source = None
         self._functionality_combo = None
-        self._model_combo = None
+        self._model_list = None
         self._btn_run = None
         self._btn_cancel = None
 
@@ -153,21 +153,17 @@ class ProjectWidget(QWidget):
         model_icon_layout.addWidget(model_icon)
         model_icon_layout.addStretch()
 
-        # Model Combo
-        model_combo = QComboBox()
-        model_combo.addItem('Model')
-        model_combo.addItem('YOLOv8n', 'yolov8n.pt')
-        model_combo.addItem('YOLOv8s', 'yolov8s.pt')
-        model_combo.addItem('YOLOv8m', 'yolov8m.pt')
-        model_combo.addItem('YOLOv8l', 'yolov8l.pt')
-        model_combo.addItem('YOLOv8x', 'yolov8x.pt')
-        model_combo.currentIndexChanged.connect(self.check_model_selected)
-        self._model_combo = model_combo
+        # Model List
+        model_list = QListWidget()
+        model_list.addItems(['yolov8n.pt', 'yolov8s.pt', 'yolov8m.pt', 'yolov8l.pt', 'yolov8x.pt'])
+        model_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        model_list.itemSelectionChanged.connect(self.check_model_selected)
+        self._model_list = model_list
 
         # Model Layout
         model_layout = QVBoxLayout()
         model_layout.addLayout(model_icon_layout)
-        model_layout.addWidget(model_combo)
+        model_layout.addWidget(model_list)
         model_layout.addStretch()
 
         model_widget = QWidget()
@@ -353,12 +349,10 @@ class ProjectWidget(QWidget):
         logging.debug('Functionality selected : ' + self._functionality_combo.currentData())
         self.check_enable_run()
 
-    def check_model_selected(self, index: int):
-        if index != 0:
-            self._model_selected = True
-        else:
-            self._model_selected = False
-        logging.debug('Model selected : ' + self._model_combo.currentData())
+    def check_model_selected(self):
+        selected_items = self._model_list.selectedItems()
+        self._model_selected = len(selected_items) > 0
+        logging.debug('Models selected: ' + ', '.join([item.text() for item in selected_items]))
         self.check_enable_run()
 
     def check_enable_run(self):
@@ -375,20 +369,21 @@ class ProjectWidget(QWidget):
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
             self._callback_count = 0
-            self.update_progress_bar()
+            self.update_progress_bar(0, 1, 0)
 
     def run(self):
         inputs = self._file_list.get_selected_files()
-        model_path = self._model_combo.currentData()
+        model_paths = [item.text() for item in self._model_list.selectedItems()]
         task = self._functionality_combo.currentData()
-        logging.info(f'Run with : {str(inputs)}, {str(model_path)}, {str(task)}, {str(self._media_type)}')
+        logging.info(f'Run with: {inputs}, {model_paths}, {task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
+        result_path = os.path.abspath(f'projects/{self._project_name}/result/')
 
         if self._media_type == 'image' and task == 'detect':
-            pipeline = img_detection.ImgDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
+            pipeline = img_detection.ImgDetectionPipeline(inputs, model_paths, result_path)
             self._callback_count = 0
-            self.update_progress_bar()
+            self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
             result_widget = ImageResultWidget(self._project_name)
             self._add_new_tab(result_widget, f"{self._project_name} : Image detection", len(inputs) == 1)
 
@@ -396,8 +391,8 @@ class ProjectWidget(QWidget):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
                 result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar()
-                if self._callback_count == len(inputs):
+                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), 0)
+                if self._callback_count == len(inputs) * len(model_paths):
                     pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -412,21 +407,21 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'video' and task == 'detect':
-            pipeline = vid_detection.VidDetectionPipeline(inputs, model_path, f'projects/{self._project_name}/result/')
+            pipeline = vid_detection.VidDetectionPipeline(inputs, model_paths, f'projects/{self._project_name}/result/')
             self._callback_count = 0
-            self.update_progress_bar()
+            self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
             result_widget = VideoResultWidget(self._project_name)
             self._add_new_tab(result_widget, f"{self._project_name} : Video detection", False)
             
-            def callback_progress(current_frame: int, total_frames: int) -> None:
-                self.update_progress_bar(current_frame / total_frames)
+            def callback_progress(progress: float) -> None:
+                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), progress)
 
             def callback_ok(input_path: str, output_media_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget.add_input_and_result(input_path, output_media_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar()
-                if self._callback_count == len(inputs):
+                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), 0)
+                if self._callback_count == len(inputs) * len(model_paths):
                     pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -437,7 +432,7 @@ class ProjectWidget(QWidget):
 
             def callback_cleanup() -> None:
                 self._callback_count = 0
-                self.update_progress_bar()
+                self.update_progress_bar(0, 1, 0)
                 pipeline.deleteLater()
                 self._current_pipeline = None
                 self._btn_cancel.setEnabled(False)
@@ -451,14 +446,10 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'live' and task == 'detect':
-            result_widget = LiveResultWidget(self._live_url, model_path)
+            result_widget = LiveResultWidget(self._live_url, model_paths[0])
             self._add_new_tab(result_widget, f"{self._project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
 
-    def update_progress_bar(self, extra: float = 0.0):
-        inputs = self._file_list.get_selected_files()
-        base = self._callback_count / len(inputs)
-        extra = extra / len(inputs)
-
-        self._progress_bar.setValue(int((base + extra) * 100))
+    def update_progress_bar(self, progress: int, total: int, extra: float):
+        self._progress_bar.setValue(int(((progress + extra) / total) * 100))
