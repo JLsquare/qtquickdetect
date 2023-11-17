@@ -9,6 +9,7 @@ class ConfigFile:
     def __init__(self):
         self.device = 'cpu'
         self.confidence_threshold = 0.8
+        self.half_precision = False
 
         self.image_format = 'png'
         self.image_box_color = (0, 255, 0, 255)

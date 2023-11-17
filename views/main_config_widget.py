@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QSlider, QLineEdit
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QSlider, QLineEdit, QRadioButton
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
 import torch
@@ -23,6 +23,7 @@ class MainConfigWidget(QWidget):
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         main_layout.addLayout(self.device_selection_ui())
         main_layout.addLayout(self.confidence_tresh_ui())
+        main_layout.addLayout(self.half_precision_ui())
         main_layout.addLayout(self.clear_cache_ui())
         self.setLayout(main_layout)
 
@@ -58,6 +59,26 @@ class MainConfigWidget(QWidget):
         confidence_tresh_layout.addWidget(confidence_tresh_input)
 
         return confidence_tresh_layout
+    
+    def half_precision_ui(self):
+        half_precision_label = QLabel('Half Precision (GPU):')
+        half_precision_enabled = QRadioButton('Enabled')
+        half_precision_disabled = QRadioButton('Disabled')
+
+        if self.get_half_precision():
+            half_precision_enabled.setChecked(True)
+        else:
+            half_precision_disabled.setChecked(True)
+
+        half_precision_enabled.toggled.connect(lambda: self.set_half_precision(True))
+        half_precision_disabled.toggled.connect(lambda: self.set_half_precision(False))
+
+        half_precision_layout = QVBoxLayout()
+        half_precision_layout.addWidget(half_precision_label)
+        half_precision_layout.addWidget(half_precision_enabled)
+        half_precision_layout.addWidget(half_precision_disabled)
+    
+        return half_precision_layout
 
     def clear_cache_ui(self):
         clear_cache_label = QLabel('Clear cache:')
@@ -113,6 +134,12 @@ class MainConfigWidget(QWidget):
         self._appstate.config.confidence_threshold = float_value
         self._confidence_tresh_slider.setValue(int(float_value * 100.0))
         logging.debug('Set confidence threshold to {}'.format(value))
+
+    def get_half_precision(self) -> bool:
+        return self._appstate.config.half_precision
+    
+    def set_half_precision(self, value: bool):
+        self._appstate.config.half_precision = value
 
     def clear_cache(self):
         for file in os.listdir('tmp'):
