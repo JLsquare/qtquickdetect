@@ -139,7 +139,12 @@ class VidDetectionPipeline(QThread):
         :param frame: The frame to process.
         :return: Array of detection results for the frame.
         """
-        results = model(frame)[0].cpu()
+        results = None
+
+        if self._device.type == 'cuda' and self._appstate.config.half_precision:
+            results = model(frame, half=True, verbose=False)[0].cpu()
+        else:
+            results = model(frame, verbose=False)[0].cpu()
         results_array = []
 
         for box in results.boxes:

@@ -19,10 +19,17 @@ class FrameProcessor(QRunnable):
         self._frame = frame
         self._model = model
         self.signals = FrameProcessorSignals()
+        self._device = self._appstate.device
 
     def run(self):
         """Runs the model on the frame and emits the result."""
-        results = self._model(self._frame, verbose=False)[0].cpu()
+        results = None
+        device = self._appstate.device # Avoid concurrent access to the device
+
+        if self._device == 'cuda' and self._appstate.config.half_precision:
+            results = self._model(self._frame, verbose=False, half=True)[0].cpu()
+        else:
+            results = self._model(self._frame, verbose=False)[0].cpu()
 
         for box in results.boxes:
             flat = box.xyxy.flatten()
