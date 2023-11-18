@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, \
     QProgressBar, QMessageBox, QListWidget, QAbstractItemView
@@ -195,11 +197,16 @@ class ProjectWidget(QWidget):
         btn_cancel.setEnabled(False)
         self._btn_cancel = btn_cancel
 
+        # Project folder button
+        btn_project_folder = QPushButton('Project Folder')
+        btn_project_folder.clicked.connect(self.open_project_folder)
+
         # Run Layout
         run_layout = QVBoxLayout()
         run_layout.addLayout(run_icon_layout)
         run_layout.addWidget(btn_run)
         run_layout.addWidget(btn_cancel)
+        run_layout.addWidget(btn_project_folder)
         run_layout.addStretch()
 
         run_widget = QWidget()
@@ -331,6 +338,25 @@ class ProjectWidget(QWidget):
         self._other_source_window = OtherSourceWindow(self.callback_other_source)
         self._other_source_window.show()
         logging.debug('Window opened : Other Source')
+
+    def open_project_folder(self):
+        path = f'projects/{self._project_name}'
+        if os.path.exists(path):
+            try:
+                if sys.platform == 'win32':
+                    subprocess.run(['explorer', path], check=True)
+                elif sys.platform == 'darwin':
+                    subprocess.run(['open', path], check=True)
+                elif sys.platform.startswith('linux'):
+                    subprocess.run(['xdg-open', path], check=True)
+                else:
+                    raise Exception(f'Unsupported platform: {sys.platform}')
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to open folder: {e}")
+                logging.error(f'Failed to open project folder: {path}, Error: {e}')
+        else:
+            QMessageBox.critical(self, "Error", "Project folder does not exist.")
+            logging.error(f'Project folder does not exist: {path}')
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         if image:
