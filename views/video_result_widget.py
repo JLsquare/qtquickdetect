@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, QFile
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, QFileDialog
 from models.app_state import AppState
+from models.project import Project
 from views.video_player_widget import VideoPlayerWidget
 import os
 import json
@@ -8,10 +9,9 @@ import cv2 as cv
 
 
 class VideoResultWidget(QWidget):
-    def __init__(self, project_name: str):
+    def __init__(self, project: Project):
         super().__init__()
-        self._appstate = AppState.get_instance()
-        self._project_name = project_name
+        self._project = project
 
         self._current_result_player = None
         self._middle_layout = None
@@ -118,7 +118,7 @@ class VideoResultWidget(QWidget):
             return
 
         # Save the video
-        if self._appstate.config.video_format == 'mp4':
+        if self._project.config.video_format == 'mp4':
             format_filter = "MP4 (*.mp4)"
         else:
             format_filter = "AVI (*.avi)"
@@ -145,7 +145,7 @@ class VideoResultWidget(QWidget):
             return
 
         # Save the frame
-        if self._appstate.config.image_format == 'png':
+        if self._project.config.image_format == 'png':
             format_filter = "PNG (*.png)"
         else:
             format_filter = "JPG (*.jpg)"

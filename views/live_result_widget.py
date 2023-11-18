@@ -2,13 +2,14 @@ from collections import deque
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QHBoxLayout
+from models.project import Project
 from pipeline.realtime_detection import RealtimeDetectionPipeline
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import logging
 
 
 class LiveResultWidget(QWidget):
-    def __init__(self, live_url: str, model_path: str):
+    def __init__(self, live_url: str, model_path: str, project: Project):
         super().__init__()
 
         self._buffer_rate_label = None
@@ -19,7 +20,7 @@ class LiveResultWidget(QWidget):
         self._info_label = None
 
         self._timer = None
-        self._pipeline = RealtimeDetectionPipeline(live_url, model_path)
+        self._pipeline = RealtimeDetectionPipeline(live_url, model_path, project)
         self._frame_buffer = deque(maxlen=30)
         self._buffer_rate = 0.80
 

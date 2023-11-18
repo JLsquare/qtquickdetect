@@ -1,5 +1,6 @@
 from PyQt6.QtCore import QThread, pyqtSignal
 from models.app_state import AppState
+from models.project import Project
 from utils.model_loader import load_model
 import os
 import json
@@ -9,20 +10,21 @@ class ImgDetectionPipeline(QThread):
     finished_signal = pyqtSignal(str, str)  # Source file, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
 
-    def __init__(self, inputs: list[str], model_paths: list[str], results_path: str):
+    def __init__(self, inputs: list[str], model_paths: list[str], results_path: str, project: Project):
         """
         Initializes the Image Detection Pipeline.
 
         :param inputs: List of input paths or URLs.
         :param model_paths: List of paths to the models.
         :param results_path: Path for saving results.
+        :param project: Project object.
         :raises Exception: If the model fails to load or if its task does not match the pipeline task.
         """
         super().__init__()
         self._appstate = AppState.get_instance()
         self._appstate.pipelines.append(self)
+        self._project = project
         self._cancel_requested = False
-        self._device = self._appstate.device
         self._inputs = inputs
         self._model_paths = model_paths
         self._results_path = results_path
@@ -37,7 +39,7 @@ class ImgDetectionPipeline(QThread):
             if self._cancel_requested:
                 break
 
-            model = load_model(model_path)
+            model = load_model(model_path, self._project.device)
             results = {
                 'model_name': os.path.basename(model_path),
                 'task': "detection",
@@ -66,7 +68,7 @@ class ImgDetectionPipeline(QThread):
         :param src: Source file path.
         :return: Array of results.
         """
-        if self._device.type == 'cuda' and self._appstate.config.half_precision:
+        if self._project.device.type == 'cuda' and self._project.config.half_precision:
             result = model(src, half=True, verbose=False)[0].cpu()
         else:
             result = model(src, verbose=False)[0].cpu()

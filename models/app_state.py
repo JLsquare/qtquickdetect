@@ -1,7 +1,3 @@
-from models.config_file import ConfigFile
-import torch
-
-
 class AppState:
     _instance = None
 
@@ -11,10 +7,8 @@ class AppState:
         
         AppState._instance = self
 
-        self.config = ConfigFile()
-        self.device = torch.device(self.config.device)
-        self.confidence_threshold = self.config.confidence_threshold
         self.pipelines = []
+        self.opened_projects = []
 
         with open('ressources/qss/stylesheet.qss', 'r') as file:
             self.qss = file.read()
@@ -24,11 +18,6 @@ class AppState:
         if AppState._instance is None:
             AppState()
         return AppState._instance
-
-    def save(self):
-        self.config.save()
-        self.device = torch.device(self.config.device)
-        self.confidence_threshold = self.config.confidence_threshold
 
     def stop_pipelines(self):
         for pipeline in self.pipelines:

@@ -1,17 +1,14 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QSlider, QLineEdit, QRadioButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton
 from PyQt6.QtCore import Qt
-from models.app_state import AppState
+from models.config_file import ConfigFile
 import torch
 import logging
-import os
 
 
 class MainConfigWidget(QWidget):
-    def __init__(self, appstate: AppState):
+    def __init__(self, config: ConfigFile):
         super().__init__()
-        self._appstate = appstate
-        self._confidence_tresh_input = None
-        self._confidence_tresh_slider = None
+        self._config = config
         self.init_ui()
 
     ##############################
@@ -22,9 +19,7 @@ class MainConfigWidget(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         main_layout.addLayout(self.device_selection_ui())
-        main_layout.addLayout(self.confidence_tresh_ui())
         main_layout.addLayout(self.half_precision_ui())
-        main_layout.addLayout(self.clear_cache_ui())
         self.setLayout(main_layout)
 
     def device_selection_ui(self):
@@ -40,25 +35,6 @@ class MainConfigWidget(QWidget):
         device_selection_layout.addWidget(devices_combo)
 
         return device_selection_layout
-
-    def confidence_tresh_ui(self):
-        confidence_tresh_label = QLabel('Confidence Threshold:')
-        confidence_tresh_slider = QSlider(Qt.Orientation.Horizontal)
-        confidence_tresh_slider.setRange(0, 100)
-        confidence_tresh_slider.setValue(self.get_thresh())
-        confidence_tresh_slider.valueChanged.connect(self.set_thresh)
-        self._confidence_tresh_slider = confidence_tresh_slider
-        confidence_tresh_input = QLineEdit()
-        confidence_tresh_input.setText("{:.2f}".format(self.get_thresh_float()))
-        confidence_tresh_input.textChanged.connect(self.set_thresh_float)
-        self._confidence_tresh_input = confidence_tresh_input
-
-        confidence_tresh_layout = QVBoxLayout()
-        confidence_tresh_layout.addWidget(confidence_tresh_label)
-        confidence_tresh_layout.addWidget(confidence_tresh_slider)
-        confidence_tresh_layout.addWidget(confidence_tresh_input)
-
-        return confidence_tresh_layout
     
     def half_precision_ui(self):
         half_precision_label = QLabel('Half Precision (GPU):')
@@ -80,17 +56,6 @@ class MainConfigWidget(QWidget):
     
         return half_precision_layout
 
-    def clear_cache_ui(self):
-        clear_cache_label = QLabel('Clear cache:')
-        clear_cache_button = QPushButton('Clear')
-        clear_cache_button.clicked.connect(self.clear_cache)
-
-        clear_cache_layout = QVBoxLayout()
-        clear_cache_layout.addWidget(clear_cache_label)
-        clear_cache_layout.addWidget(clear_cache_button)
-
-        return clear_cache_layout
-
     ##############################
     #         CONTROLLER         #
     ##############################
@@ -104,7 +69,7 @@ class MainConfigWidget(QWidget):
         return gpu_devices
 
     def get_device(self) -> str:
-        if self._appstate.config.device == 'cpu':
+        if self._config.device == 'cpu':
             return 'CPU'
         else:
             device_id = torch.cuda.current_device()
@@ -112,36 +77,14 @@ class MainConfigWidget(QWidget):
 
     def set_device(self, value: str):
         if value == 'CPU':
-            self._appstate.config.device = 'cpu'
+            self._config.device = 'cpu'
         else:
             device_id = int(value.split('-')[1].split(' ')[0])
-            self._appstate.config.device = 'cuda:{}'.format(device_id)
+            self._config.device = 'cuda:{}'.format(device_id)
         logging.debug('Set device to {}'.format(value))
 
-    def get_thresh(self) -> int:
-        return int(self._appstate.config.confidence_threshold * 100)
-
-    def set_thresh(self, value: int):
-        self._appstate.config.confidence_threshold = value / 100.0
-        self._confidence_tresh_input.setText("{:.2f}".format(value / 100.0))
-        logging.debug('Set confidence threshold to {}'.format(value / 100.0))
-
-    def get_thresh_float(self) -> float:
-        return self._appstate.config.confidence_threshold
-
-    def set_thresh_float(self, value: float):
-        float_value = float(value)
-        self._appstate.config.confidence_threshold = float_value
-        self._confidence_tresh_slider.setValue(int(float_value * 100.0))
-        logging.debug('Set confidence threshold to {}'.format(value))
-
     def get_half_precision(self) -> bool:
-        return self._appstate.config.half_precision
+        return self._config.half_precision
     
     def set_half_precision(self, value: bool):
-        self._appstate.config.half_precision = value
-
-    def clear_cache(self):
-        for file in os.listdir('tmp'):
-            os.remove(os.path.join('tmp', file))
-        logging.debug('Cleared cache')
+        self._config.half_precision = value

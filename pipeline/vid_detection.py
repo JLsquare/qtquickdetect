@@ -1,5 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, QThread
 from models.app_state import AppState
+from models.project import Project
 from utils.image_helpers import draw_bounding_box
 from utils.model_loader import load_model
 import cv2 as cv
@@ -13,7 +14,7 @@ class VidDetectionPipeline(QThread):
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
     cleanup_signal = pyqtSignal()
 
-    def __init__(self, inputs: list[str], model_paths: list[str], results_path: str):
+    def __init__(self, inputs: list[str], model_paths: list[str], results_path: str, project: Project):
         """
         Initializes the Video Detection Pipeline.
 
@@ -26,10 +27,10 @@ class VidDetectionPipeline(QThread):
         self._appstate = AppState.get_instance()
         self._appstate.pipelines.append(self)
         self._cancel_requested = False
-        self._device = self._appstate.device
         self._inputs = inputs
         self._model_paths = model_paths
         self._results_path = results_path
+        self._project = project
 
     def request_cancel(self):
         """Public method to request cancellation of the process."""
@@ -42,7 +43,7 @@ class VidDetectionPipeline(QThread):
             if self._cancel_requested:
                 break
 
-            model = load_model(model_path)
+            model = load_model(model_path, self._project.device)
             results = {
                 'model_name': os.path.basename(model_path),
                 'task': "detection",
@@ -54,7 +55,7 @@ class VidDetectionPipeline(QThread):
                     model_name = results['model_name']
                     file_name = os.path.basename(src).split('.')[0:-1]
                     file_path = os.path.join(self._results_path, f'{file_name}_{model_name}')
-                    video_path = f'{file_path}.{self._appstate.config.video_format}'
+                    video_path = f'{file_path}.{self._project.config.video_format}'
                     json_path = f'{file_path}.json'
 
                     result_array = self._process_source(src, model, video_path)
@@ -132,7 +133,7 @@ class VidDetectionPipeline(QThread):
             int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         )
 
-        codec = 'XVID' if self._appstate.config.video_format == 'avi' else 'mp4v'
+        codec = 'XVID' if self._project.config.video_format == 'avi' else 'mp4v'
         writer = cv.VideoWriter(output_path, cv.VideoWriter_fourcc(*codec), fps, (width, height))
         return cap, writer, frame_count
 
@@ -143,7 +144,7 @@ class VidDetectionPipeline(QThread):
         :param frame: The frame to process.
         :return: Array of detection results for the frame.
         """
-        if self._device.type == 'cuda' and self._appstate.config.half_precision:
+        if self._project.device.type == 'cuda' and self._project.config.half_precision:
             results = model(frame, half=True, verbose=False)[0].cpu()
         else:
             results = model(frame, verbose=False)[0].cpu()
@@ -157,8 +158,8 @@ class VidDetectionPipeline(QThread):
 
             draw_bounding_box(
                 frame, topleft, bottomright, classname, conf,
-                self._appstate.config.video_box_color, self._appstate.config.video_text_color,
-                self._appstate.config.video_box_thickness, self._appstate.config.video_text_size
+                self._project.config.video_box_color, self._project.config.video_text_color,
+                self._project.config.video_box_thickness, self._project.config.video_text_size
             )
 
             results_array.append({

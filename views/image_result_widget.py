@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGra
     QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile
-from models.app_state import AppState
+from models.project import Project
 from utils.image_helpers import draw_bounding_box
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import json
@@ -11,10 +11,9 @@ import numpy as np
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self, project_name: str):
+    def __init__(self, project: Project):
         super().__init__()
-        self._appstate = AppState.get_instance()
-        self._project_name = project_name
+        self._project = project
 
         self._input_images = []
         self._result_jsons = {}
@@ -142,7 +141,7 @@ class ImageResultWidget(QWidget):
         painter.end()
 
         # Save the image
-        if self._appstate.config.image_format == 'png':
+        if self._project.config.image_format == 'png':
             format_filter = 'PNG (*.png)'
         else:
             format_filter = 'JPEG (*.jpg)'
@@ -206,7 +205,6 @@ class ImageResultWidget(QWidget):
             return
 
         result_json = self._result_jsons[input_image][index - 1]
-        config = self._appstate.config
         img_size = QPixmap(input_image).size()
 
         with open(result_json, 'r') as file:
@@ -227,9 +225,11 @@ class ImageResultWidget(QWidget):
             top_left = (int(result['x1']), int(result['y1']))
             bottom_right = (int(result['x2']), int(result['y2']))
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
-            draw_bounding_box(layer, top_left, bottom_right, class_name, confidence,
-                              config.video_box_color, config.video_text_color,
-                              config.video_box_thickness, config.video_text_size)
+            draw_bounding_box(
+                layer, top_left, bottom_right, class_name, confidence,
+                self._project.config.video_box_color, self._project.config.video_text_color,
+                self._project.config.video_box_thickness, self._project.config.video_text_size
+            )
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)

@@ -1,4 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, QThread, QRunnable, QThreadPool, QObject
+
+from models.project import Project
 from utils.image_helpers import *
 from models.app_state import AppState
 from utils.media_fetcher import MediaFetcher
@@ -13,20 +15,19 @@ class FrameProcessorSignals(QObject):
 
 class FrameProcessor(QRunnable):
     """Processes a single frame from a video stream asynchronously."""
-    def __init__(self, frame, model):
+
+    def __init__(self, frame, model, project: Project):
         super().__init__()
         self._appstate = AppState.get_instance()
         self._frame = frame
         self._model = model
+        self._project = project
         self.signals = FrameProcessorSignals()
-        self._device = self._appstate.device
 
     def run(self):
         """Runs the model on the frame and emits the result."""
-        results = None
-        device = self._appstate.device # Avoid concurrent access to the device
 
-        if self._device == 'cuda' and self._appstate.config.half_precision:
+        if self._project.device.type == 'cuda' and self._project.config.half_precision:
             results = self._model(self._frame, verbose=False, half=True)[0].cpu()
         else:
             results = self._model(self._frame, verbose=False)[0].cpu()
@@ -38,9 +39,11 @@ class FrameProcessor(QRunnable):
             classname = self._model.names[int(box.cls)]
             conf = box.conf[0]
 
-            config = self._appstate.config
-            draw_bounding_box(self._frame, topleft, bottomright, classname, conf, config.video_box_color,
-                              config.video_text_color, config.video_box_thickness, config.video_text_size)
+            draw_bounding_box(
+                self._frame, topleft, bottomright, classname, conf,
+                self._project.config.video_box_color, self._project.config.video_text_color,
+                self._project.config.video_box_thickness, self._project.config.video_text_size
+            )
 
         self.signals.finished.emit(self._frame)
 
@@ -51,12 +54,13 @@ class RealtimeDetectionPipeline(QThread):
     finished_signal = pyqtSignal(str, str)
     error_signal = pyqtSignal(str, Exception)
 
-    def __init__(self, url: str, model_path: str):
+    def __init__(self, url: str, model_path: str, project: Project):
         super().__init__()
         self._appstate = AppState.get_instance()
         self._appstate.pipelines.append(self)
-        self._model = load_model(model_path)
         self._url = url
+        self._project = project
+        self._model = load_model(model_path, self._project.device)
         self._is_processing = False
         self._thread_pool = QThreadPool()
         self.fetcher = MediaFetcher(url, 60)
@@ -72,10 +76,10 @@ class RealtimeDetectionPipeline(QThread):
         self.fetcher.start()
 
     def process_frame(self, frame, frame_available):
-        """Try to process a frame if it's available and we're not already processing one."""
+        """Try to process a frame if it's available, and we're not already processing one."""
         if frame_available and not self._is_processing:
             self._is_processing = True
-            processor = FrameProcessor(frame, self._model)
+            processor = FrameProcessor(frame, self._model, self._project)
             processor.signals.finished.connect(self.on_frame_processed)
             self._thread_pool.start(processor)
 

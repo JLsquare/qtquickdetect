@@ -3,9 +3,11 @@ import sys
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, \
     QProgressBar, QMessageBox, QListWidget, QAbstractItemView
-from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent
-from PyQt6.QtCore import Qt, QDir, QFile
+from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QIcon
+from PyQt6.QtCore import Qt, QDir, QFile, QSize
 from models.app_state import AppState
+from models.project import Project
+from views.config_window import ConfigWindow
 from views.file_list_widget import FileListWidget
 from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
@@ -18,17 +20,18 @@ import urllib.request
 
 
 class ProjectWidget(QWidget):
-    def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project_name: str):
+    def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project: Project):
         super().__init__()
         self._appstate = AppState.get_instance()
 
-        self._project_name = project_name
+        self._add_new_tab = add_new_tab
+        self._project = project
         self._current_pipeline = None
         self._callback_count = 0
-        self._add_new_tab = add_new_tab
         self._other_source_window = None
+        self._settings_window = None
         self._progress_bar = None
-        self._file_list = FileListWidget(f'{QDir.currentPath()}/projects/{self._project_name}/input')
+        self._file_list = FileListWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
         self._file_list.model.selection_changed_signal.connect(self.check_enable_run)
 
         self._media_type = None
@@ -52,6 +55,11 @@ class ProjectWidget(QWidget):
     ##############################
 
     def init_ui(self):
+        # Top Layout
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(1)
+        top_layout.addWidget(self.settings_ui())
+
         # Right Layout
         right_layout = QHBoxLayout()
         right_layout.addWidget(self.input_ui())
@@ -64,18 +72,28 @@ class ProjectWidget(QWidget):
         right_vertical_layout.addLayout(right_layout)
         right_vertical_layout.addStretch()
 
-        # Middle Layout
-        middle_layout = QHBoxLayout()
-        middle_layout.addWidget(self._file_list)
-        middle_layout.addStretch()
-        middle_layout.addLayout(right_vertical_layout)
-        middle_layout.addStretch()
+        # Left Layout
+        left_layout = QHBoxLayout()
+        left_layout.addWidget(self._file_list)
+        left_layout.addStretch()
+        left_layout.addLayout(right_vertical_layout)
+        left_layout.addStretch()
 
         # Main Layout
         main_layout = QVBoxLayout(self)
-        main_layout.addLayout(middle_layout)
+        main_layout.addLayout(top_layout)
+        main_layout.addLayout(left_layout)
         main_layout.addWidget(self.progress_bar_ui())
         self.setLayout(main_layout)
+
+    def settings_ui(self) -> QPushButton:
+        btn_settings = QPushButton()
+        btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
+        btn_settings.setIconSize(QSize(32, 32))
+        btn_settings.setFixedWidth(32)
+        btn_settings.setProperty('class', 'settings')
+        btn_settings.clicked.connect(self.open_settings)
+        return btn_settings
 
     def input_ui(self) -> QWidget:
         # Input icon
@@ -320,7 +338,7 @@ class ProjectWidget(QWidget):
     def download_file_to_input(self, url: str):
         media = urllib.request.urlopen(url)
         media_name = os.path.basename(url)
-        file_path = f'projects/{self._project_name}/input/{media_name}'
+        file_path = f'projects/{self._project.project_name}/input/{media_name}'
         with open(file_path, 'wb') as f:
             f.write(media.read())
         return file_path
@@ -328,11 +346,11 @@ class ProjectWidget(QWidget):
     def copy_files(self, file_paths: list[str]):
         for file_path in file_paths:
             file_name = file_path.split('/')[-1]
-            QFile.copy(file_path, f'projects/{self._project_name}/input/{file_name}')
+            QFile.copy(file_path, f'projects/{self._project.project_name}/input/{file_name}')
 
     def reset_input_folder(self):
-        for file in os.listdir(f'projects/{self._project_name}/input'):
-            os.remove(f'projects/{self._project_name}/input/{file}')
+        for file in os.listdir(f'projects/{self._project.project_name}/input'):
+            os.remove(f'projects/{self._project.project_name}/input/{file}')
 
     def open_other_source(self):
         self._other_source_window = OtherSourceWindow(self.callback_other_source)
@@ -340,7 +358,7 @@ class ProjectWidget(QWidget):
         logging.debug('Window opened : Other Source')
 
     def open_project_folder(self):
-        path = f'projects/{self._project_name}'
+        path = f'projects/{self._project.project_name}'
         if os.path.exists(path):
             try:
                 if sys.platform == 'win32':
@@ -357,6 +375,11 @@ class ProjectWidget(QWidget):
         else:
             QMessageBox.critical(self, "Error", "Project folder does not exist.")
             logging.error(f'Project folder does not exist: {path}')
+
+    def open_settings(self):
+        self._settings_window = ConfigWindow(self._project)
+        self._settings_window.show()
+        logging.debug('Window opened : Settings')
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         if image:
@@ -404,14 +427,14 @@ class ProjectWidget(QWidget):
         logging.info(f'Run with: {inputs}, {model_paths}, {task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
-        result_path = os.path.abspath(f'projects/{self._project_name}/result/')
+        result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
 
         if self._media_type == 'image' and task == 'detect':
-            pipeline = img_detection.ImgDetectionPipeline(inputs, model_paths, result_path)
+            pipeline = img_detection.ImgDetectionPipeline(inputs, model_paths, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
-            result_widget = ImageResultWidget(self._project_name)
-            self._add_new_tab(result_widget, f"{self._project_name} : Image detection", len(inputs) == 1)
+            result_widget = ImageResultWidget(self._project)
+            self._add_new_tab(result_widget, f"{self._project.project_name} : Image detection", len(inputs) == 1)
 
             def callback_ok(input_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
@@ -433,11 +456,11 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'video' and task == 'detect':
-            pipeline = vid_detection.VidDetectionPipeline(inputs, model_paths, f'projects/{self._project_name}/result/')
+            pipeline = vid_detection.VidDetectionPipeline(inputs, model_paths, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
-            result_widget = VideoResultWidget(self._project_name)
-            self._add_new_tab(result_widget, f"{self._project_name} : Video detection", False)
+            result_widget = VideoResultWidget(self._project)
+            self._add_new_tab(result_widget, f"{self._project.project_name} : Video detection", False)
             
             def callback_progress(progress: float) -> None:
                 self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), progress)
@@ -472,8 +495,8 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'live' and task == 'detect':
-            result_widget = LiveResultWidget(self._live_url, model_paths[0])
-            self._add_new_tab(result_widget, f"{self._project_name} : Live detection", False)
+            result_widget = LiveResultWidget(self._live_url, model_paths[0], self._project)
+            self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
 

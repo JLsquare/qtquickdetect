@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QTabWidget, QGridLayout, QPushButton
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
+from models.project import Project
 from views.image_config_widget import ImageConfigWidget
 from views.main_config_widget import MainConfigWidget
 from views.video_config_widget import VideoConfigWidget
@@ -8,9 +9,10 @@ import logging
 
 
 class ConfigWindow(QWidget):
-    def __init__(self):
+    def __init__(self, project: Project):
         super().__init__()
         self._appstate = AppState.get_instance()
+        self._project = project
         self.init_ui()
 
     ##############################
@@ -18,7 +20,7 @@ class ConfigWindow(QWidget):
     ##############################
 
     def init_ui(self):
-        self.setWindowTitle('QTQuickDetect Settings')
+        self.setWindowTitle(f'{self._project.project_name} Settings')
         self.setGeometry(100, 100, 480, 480)
         self.setStyleSheet(self._appstate.qss)
 
@@ -27,9 +29,9 @@ class ConfigWindow(QWidget):
 
         tab = QTabWidget(self)
 
-        tab.addTab(MainConfigWidget(self._appstate), "General")
-        tab.addTab(ImageConfigWidget(self._appstate), "Image")
-        tab.addTab(VideoConfigWidget(self._appstate), "Video")
+        tab.addTab(MainConfigWidget(self._project.config), "General")
+        tab.addTab(ImageConfigWidget(self._project.config), "Image")
+        tab.addTab(VideoConfigWidget(self._project.config), "Video")
         tab.addTab(QWidget(), "Live")
 
         main_layout.addWidget(tab, 0, 0, 2, 1)
@@ -53,7 +55,7 @@ class ConfigWindow(QWidget):
     ##############################
 
     def save_settings(self):
-        self._appstate.save()
+        self._project.save()
 
         logging.debug('Saved settings')
         self.close()

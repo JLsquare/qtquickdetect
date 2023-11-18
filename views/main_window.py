@@ -64,6 +64,4 @@ class MainWindow(QWidget):
     ##############################
 
     def open_settings(self):
-        self._settings_window = ConfigWindow()
-        self._settings_window.show()
-        logging.debug('Window opened : Settings')
+        pass
