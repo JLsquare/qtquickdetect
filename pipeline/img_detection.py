@@ -66,8 +66,6 @@ class ImgDetectionPipeline(QThread):
         :param src: Source file path.
         :return: Array of results.
         """
-        result = None
-
         if self._device.type == 'cuda' and self._appstate.config.half_precision:
             result = model(src, half=True, verbose=False)[0].cpu()
         else:

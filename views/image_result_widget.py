@@ -160,7 +160,7 @@ class ImageResultWidget(QWidget):
     def save_json(self):
         result_json = self._model_select_combo.currentData()
 
-        if not result_json:
+        if result_json is None:
             QMessageBox.critical(self, "Error", "No model selected.")
             return
 

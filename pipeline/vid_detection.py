@@ -51,23 +51,27 @@ class VidDetectionPipeline(QThread):
             }
             for src in self._inputs:
                 try:
-                    output_path, result_array = self._process_source(src, results['model_name'], model)
-                    json_name = os.path.basename(src).split('.')[0] + '.json'
-                    json_path = os.path.join(self._results_path, json_name)
+                    model_name = results['model_name']
+                    file_name = os.path.basename(src).split('.')[0:-1]
+                    file_path = os.path.join(self._results_path, f'{file_name}_{model_name}')
+                    video_path = f'{file_path}.{self._appstate.config.video_format}'
+                    json_path = f'{file_path}.json'
 
+                    result_array = self._process_source(src, model, video_path)
                     self._save_json(result_array, results, json_path)
-                    self.finished_signal.emit(src, output_path, json_path)
+
+                    self.finished_signal.emit(src, video_path, json_path)
                 except Exception as e:
                     self.error_signal.emit(src, e)
 
-    def _process_source(self, src: str, model_name: str, model):
+        self._appstate.pipelines.remove(self)
+
+    def _process_source(self, src: str, model, output_path: str):
         """
         Processes a single video file.
 
         :param src: Source video file path.
         """
-        video_name = os.path.basename(src).split('.')[0]
-        output_path = os.path.join(self._results_path, f"{video_name}_{model_name}.{self._appstate.config.video_format}")
         cap, writer, frame_count = self._setup_video(src, output_path)
 
         frame_index = 0
@@ -81,7 +85,7 @@ class VidDetectionPipeline(QThread):
             if not ret:
                 break
 
-            results_array = self._process_frame(frame, model)
+            results_array.append(self._process_frame(frame, model))
             writer.write(frame)
 
             frame_index += 1
@@ -94,7 +98,7 @@ class VidDetectionPipeline(QThread):
             self._cleanup()
             return
 
-        return output_path, results_array
+        return results_array
 
     def _cleanup(self):
         """
@@ -139,8 +143,6 @@ class VidDetectionPipeline(QThread):
         :param frame: The frame to process.
         :return: Array of detection results for the frame.
         """
-        results = None
-
         if self._device.type == 'cuda' and self._appstate.config.half_precision:
             results = model(frame, half=True, verbose=False)[0].cpu()
         else:
