@@ -1,21 +1,15 @@
-from PyQt6.QtCore import QRectF, Qt
-from PyQt6.QtWidgets import QGraphicsView, QGraphicsPixmapItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QGraphicsView
 
 
 class ResizeableGraphicsWidget(QGraphicsView):
     def __init__(self, scene, parent=None):
         super().__init__(scene, parent)
-        self._initial_pixmaps = {}
-        for item in self.scene().items():
-            if isinstance(item, QGraphicsPixmapItem):
-                self._initial_pixmaps[item] = item.pixmap()
+        self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def resizeEvent(self, event):
-        self.scene().setSceneRect(QRectF(self.viewport().rect()))
-        for item in self.scene().items():
-            if isinstance(item, QGraphicsPixmapItem):
-                initial_pixmap = self._initial_pixmaps.get(item)
-                if initial_pixmap:
-                    item.setPixmap(initial_pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
-                                                         Qt.TransformationMode.SmoothTransformation))
-        QGraphicsView.resizeEvent(self, event)
+        super().resizeEvent(event)
+        self.fitInView(self.scene().itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
