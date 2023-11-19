@@ -23,13 +23,13 @@ class MainWindow(QWidget):
         self.setWindowTitle('QTQuickDetect')
         self.setGeometry(100, 100, 1280, 720)
         self.setStyleSheet(self._appstate.qss)
+        self.setProperty('class', 'dark-bg')
 
     def init_ui(self):
         top_layout = QHBoxLayout()
         top_layout.addStretch(1)
         top_layout.addLayout(self.title_ui())
         top_layout.addStretch(1)
-        top_layout.addWidget(self.settings_ui())
 
         main_layout = QGridLayout(self)
         main_layout.addLayout(top_layout, 0, 0)
@@ -48,20 +48,3 @@ class MainWindow(QWidget):
         title_layout.addWidget(title_label)
 
         return title_layout
-
-    def settings_ui(self) -> QPushButton:
-        btn_settings = QPushButton()
-        btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
-        btn_settings.setIconSize(QSize(32, 32))
-        btn_settings.setFixedWidth(32)
-        btn_settings.setProperty('class', 'settings')
-        btn_settings.clicked.connect(self.open_settings)
-
-        return btn_settings
-
-    ##############################
-    #         CONTROLLER         #
-    ##############################
-
-    def open_settings(self):
-        pass

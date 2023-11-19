@@ -68,10 +68,17 @@ class VideoResultWidget(QWidget):
 
         return left_layout
 
-    def video_ui(self, video_path: str) -> VideoPlayerWidget:
+    def video_ui(self, video_path: str) -> QWidget:
         video_player = VideoPlayerWidget(video_path)
         self._current_result_player = video_player
-        return video_player
+
+        video_container = QWidget()
+        video_layout = QVBoxLayout()
+        video_layout.addWidget(video_player)
+        video_container.setLayout(video_layout)
+        video_container.setProperty('class', 'border')
+
+        return video_container
 
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')

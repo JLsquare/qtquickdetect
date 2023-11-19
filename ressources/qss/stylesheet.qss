@@ -6,6 +6,17 @@
 QWidget {
     background-color: #5D5D65;
     color: white;
+    border-radius: 16px;
+}
+
+.dark-bg {
+    background-color: #494A51;
+}
+
+.border {
+    border: 1px solid #797979;
+    border-radius: 8px;
+    margin: 4px;
 }
 
 /* ==== QPushButton ==== */
@@ -99,21 +110,27 @@ QLineEdit {
 
 /* ==== QTabBar et QTabWidget ==== */
 QTabBar {
-    background-color: #5D5D65;
+    background-color: #494A51;
+    margin: 0px;
 }
 QTabBar::tab {
     background-color: #494A51;
     border: 1px solid #797979;
     border-radius: 16px;
     padding: 8px 16px;
-    margin: 5px;
+    margin: 8px 4px;
     margin-top: 0px;
+}
+QTabBar::tab:unselected {
+    background-color: #5D5D65;
 }
 QTabBar::tab:selected, QTabBar::tab:hover {
     background-color: #36363b;
 }
 QTabWidget::pane {
     border: 1px solid #797979;
+    margin: 0px;
+    border-radius: 16px;
 }
 QTabBar::close-button {
     image: url('ressources/images/close_icon.png');
@@ -173,16 +190,11 @@ QProgressBar::chunk:indeterminate {
     border-radius: 8px;
 }
 
-/* ==== QGraphicsScene et QGraphicsView ==== */
+/* ==== QGraphicsScene ==== */
 QGraphicsScene {
     margin: 0px;
     padding: 0px;
     border: 0px;
-}
-QGraphicsView {
-    border: 0px;
-    margin: 0px;
-    padding: 0px;
 }
 
 /* ==== QListWidget et QListWidgetItem ==== */
@@ -195,10 +207,9 @@ QListWidget {
 }
 QListWidget::item {
     background-color: #5D5D65;
-    border: 1px solid #797979;
     border-radius: 8px;
     padding: 4px 8px;
-    margin: 4px;
+    margin: 2px;
 }
 QListWidget::item:hover {
     background-color: #494A51;
@@ -252,10 +263,9 @@ QTreeView {
 }
 QTreeView::item {
     background-color: #5D5D65;
-    border: 1px solid #797979;
     border-radius: 8px;
     padding: 4px 8px;
-    margin: 4px 8px 4px 0px;
+    margin: 2px 4px 2px 0px;
 }
 QTreeView::item:hover {
     background-color: #494A51;
@@ -272,4 +282,20 @@ QTreeView::indicator:unchecked {
     background-color: #5D5D65;
     border: 1px solid #797979;
     border-radius: 4px;
+}
+
+/* ==== QRadioButton ==== */
+QRadioButton {
+    background-color: #5D5D65;
+    padding: 4px 8px;
+    margin: 4px;
+}
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    border: 1px solid #797979;
+}
+QRadioButton::indicator:checked {
+    image: url('ressources/images/radio_icon.png');
 }

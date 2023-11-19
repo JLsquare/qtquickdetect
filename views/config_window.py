@@ -23,6 +23,7 @@ class ConfigWindow(QWidget):
         self.setWindowTitle(f'{self._project.project_name} Settings')
         self.setGeometry(100, 100, 480, 480)
         self.setStyleSheet(self._appstate.qss)
+        self.setProperty('class', 'dark-bg')
 
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)

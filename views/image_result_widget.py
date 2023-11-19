@@ -100,6 +100,7 @@ class ImageResultWidget(QWidget):
         container_layout.addWidget(view)
 
         container_widget.setLayout(container_layout)
+        container_widget.setProperty('class', 'border')
         return container_widget
 
     def save_json_button_ui(self) -> QPushButton:

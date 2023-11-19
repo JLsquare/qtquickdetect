@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt, QDir, QFile, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
 from views.config_window import ConfigWindow
-from views.file_list_widget import FileListWidget
+from views.input_info_widget import InputInfoWidget
 from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
 from views.video_result_widget import VideoResultWidget
@@ -31,7 +31,7 @@ class ProjectWidget(QWidget):
         self._other_source_window = None
         self._settings_window = None
         self._progress_bar = None
-        self._file_list = FileListWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
+        self._file_list = InputInfoWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
         self._file_list.model.selection_changed_signal.connect(self.check_enable_run)
 
         self._media_type = project.config.current_media_type
@@ -165,12 +165,6 @@ class ProjectWidget(QWidget):
         task_radio_tracking.toggled.connect(self.check_task_selected)
         task_radio_posing.toggled.connect(self.check_task_selected)
 
-        task_radio_layout.addWidget(task_radio_detection)
-        task_radio_layout.addWidget(task_radio_segmentation)
-        task_radio_layout.addWidget(task_radio_classification)
-        task_radio_layout.addWidget(task_radio_tracking)
-        task_radio_layout.addWidget(task_radio_posing)
-
         if self._task == 'detect':
             task_radio_detection.setChecked(True)
         elif self._task == 'segment':
@@ -182,12 +176,21 @@ class ProjectWidget(QWidget):
         elif self._task == 'pose':
             task_radio_posing.setChecked(True)
 
+        task_radio_layout.addWidget(task_radio_detection)
+        task_radio_layout.addWidget(task_radio_segmentation)
+        task_radio_layout.addWidget(task_radio_classification)
+        task_radio_layout.addWidget(task_radio_tracking)
+        task_radio_layout.addWidget(task_radio_posing)
         self._task_radios = task_radio_layout
+
+        task_radio_widget = QWidget()
+        task_radio_widget.setLayout(task_radio_layout)
+        task_radio_widget.setProperty('class', 'border')
 
         # Task Layout
         task_layout = QVBoxLayout()
         task_layout.addLayout(task_icon_layout)
-        task_layout.addLayout(task_radio_layout)
+        task_layout.addWidget(task_radio_widget)
         task_layout.addStretch()
 
         task_widget = QWidget()
@@ -219,7 +222,7 @@ class ProjectWidget(QWidget):
         for model_name in model_names:
             item = QListWidgetItem(model_name)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            if model_name in self._models:
+            if self._models and model_name in self._models:
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
