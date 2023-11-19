@@ -184,3 +184,92 @@ QGraphicsView {
     margin: 0px;
     padding: 0px;
 }
+
+/* ==== QListWidget et QListWidgetItem ==== */
+QListWidget {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 4px;
+}
+QListWidget::item {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 4px;
+}
+QListWidget::item:hover {
+    background-color: #494A51;
+}
+QListWidget::item:selected {
+    background-color: #494A51;
+}
+QListWidget::indicator:checked {
+    background-color: #FFFFFF;
+    border: 1px solid #797979;
+    border-radius: 4px;
+}
+QListWidget::indicator:unchecked {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 4px;
+}
+
+/* ==== ScrollBar ==== */
+QScrollBar:vertical {
+    background: #5D5D65;
+    width: 10px;
+    margin: 0px;
+    border: 1px solid #797979;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical {
+    background: #494A51;
+    min-height: 20px;
+    border-radius: 4px;
+
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    border: none;
+    background: none;
+}
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* ==== QTreeView ==== */
+QTreeView {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 4px;
+}
+QTreeView::item {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 4px 8px 4px 0px;
+}
+QTreeView::item:hover {
+    background-color: #494A51;
+}
+QTreeView::item:selected {
+    background-color: #494A51;
+}
+QTreeView::indicator:checked {
+    background-color: #FFFFFF;
+    border: 1px solid #797979;
+    border-radius: 4px;
+}
+QTreeView::indicator:unchecked {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 4px;
+}

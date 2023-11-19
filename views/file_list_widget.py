@@ -20,6 +20,8 @@ class CheckableFileSystemModel(QFileSystemModel):
                 return -1
             else:
                 return self.checks.get(index, 2)
+        if role == Qt.ItemDataRole.DecorationRole:
+            return QPixmap()
         return super().data(index, role)
 
     def setData(self, index: QModelIndex, value, role: int = None):
@@ -46,9 +48,12 @@ class FileListWidget(QWidget):
         self.model.setRootPath(self._file_dir)
 
         self._qtree_view = QTreeView()
+        self._qtree_view.setRootIsDecorated(False)
         self._qtree_view.setModel(self.model)
         self._qtree_view.setRootIndex(self.model.index(self._file_dir))
         self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
+        self._qtree_view.doubleClicked.connect(self.on_item_clicked)
+
 
         self._media_fetcher = None
 
@@ -148,3 +153,15 @@ class FileListWidget(QWidget):
 
         self._media_fetcher.frame_signal.connect(update_frame)
         self._media_fetcher.start()
+
+    def on_item_double_clicked(self, index):
+        if not self.model.isDir(index):
+            current_state = self.model.data(index, Qt.ItemDataRole.CheckStateRole)
+            new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
+            self.model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
+
+    def on_item_clicked(self, index):
+        if not self.model.isDir(index):
+            current_state = self.model.data(index, Qt.ItemDataRole.CheckStateRole)
+            new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
+            self.model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)

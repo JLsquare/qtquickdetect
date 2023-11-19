@@ -23,6 +23,9 @@ class ConfigFile:
         self.video_box_thickness = 2
         self.video_text_size = 1.5
 
+        self.current_media_type = None
+        self.current_task = 'detect'
+        self.current_models = None
         self.path = os.path.join('projects', project_name, 'config.json')
 
         if os.path.exists(self.path):
@@ -118,6 +121,16 @@ class ConfigFile:
         if self.video_text_size < 0:
             logging.warning(f'Invalid video text size in config: {self.video_text_size}')
             self.video_text_size = 1.5
+            changed = True
+
+        if self.current_media_type not in ['image', 'video', 'live'] and self.current_media_type is not None:
+            logging.warning(f'Invalid current media type in config: {self.current_media_type}')
+            self.current_media_type = None
+            changed = True
+
+        if self.current_task not in ['detect', 'classify', 'segment', 'track', 'pose']:
+            logging.warning(f'Invalid current functionality in config: {self.current_task}')
+            self.current_task = None
             changed = True
 
         return changed

@@ -1,10 +1,8 @@
-import subprocess
-import sys
 from typing import Callable
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QFileDialog, \
-    QProgressBar, QMessageBox, QListWidget, QAbstractItemView
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QProgressBar, \
+    QMessageBox, QListWidget, QListWidgetItem, QRadioButton
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QIcon
-from PyQt6.QtCore import Qt, QDir, QFile, QSize
+from PyQt6.QtCore import Qt, QDir, QFile, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
 from views.config_window import ConfigWindow
@@ -17,6 +15,8 @@ from pipeline import img_detection, vid_detection
 import logging
 import os
 import urllib.request
+import subprocess
+import sys
 
 
 class ProjectWidget(QWidget):
@@ -34,21 +34,22 @@ class ProjectWidget(QWidget):
         self._file_list = FileListWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
         self._file_list.model.selection_changed_signal.connect(self.check_enable_run)
 
-        self._media_type = None
-        self._functionality_selected = None
-        self._model_selected = None
+        self._media_type = project.config.current_media_type
+        self._task = project.config.current_task
+        self._models = project.config.current_models
         self._live_url = None
 
         self._btn_import_image = None
         self._btn_import_video = None
         self._btn_other_source = None
-        self._functionality_combo = None
+        self._task_radios = None
         self._model_list = None
         self._btn_run = None
         self._btn_cancel = None
 
         self.setAcceptDrops(True)
         self.init_ui()
+        QTimer.singleShot(1000, self.check_enable_run)
 
     ##############################
     #            VIEW            #
@@ -63,7 +64,7 @@ class ProjectWidget(QWidget):
         # Right Layout
         right_layout = QHBoxLayout()
         right_layout.addWidget(self.input_ui())
-        right_layout.addWidget(self.functionality_ui())
+        right_layout.addWidget(self.task_ui())
         right_layout.addWidget(self.model_ui())
         right_layout.addWidget(self.run_ui())
 
@@ -133,34 +134,66 @@ class ProjectWidget(QWidget):
         input_widget.setFixedSize(240, 240)
         return input_widget
 
-    def functionality_ui(self) -> QWidget:
-        # Functionality icon
-        functionality_icon_layout = QHBoxLayout()
-        functionality_icon_layout.addStretch()
-        functionality_icon = QLabel()
-        functionality_icon.setPixmap(
-            QPixmap('ressources/images/functionality_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                                       Qt.TransformationMode.SmoothTransformation))
-        functionality_icon_layout.addWidget(functionality_icon)
-        functionality_icon_layout.addStretch()
+    def task_ui(self) -> QWidget:
+        # Task icon
+        task_icon_layout = QHBoxLayout()
+        task_icon_layout.addStretch()
+        task_icon = QLabel()
+        task_icon.setPixmap(
+            QPixmap('ressources/images/task_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
+                                                              Qt.TransformationMode.SmoothTransformation))
+        task_icon_layout.addWidget(task_icon)
+        task_icon_layout.addStretch()
 
-        # Functionality Combo
-        functionality_combo = QComboBox()
-        functionality_combo.addItem('Functionality')
-        functionality_combo.addItem('Detection', 'detect')
-        functionality_combo.currentIndexChanged.connect(self.check_functionality_selected)
-        self._functionality_combo = functionality_combo
+        # Task Radio Buttons
+        task_radio_layout = QVBoxLayout()
+        task_radio_detection = QRadioButton('Detect')
+        task_radio_segmentation = QRadioButton('Segment')
+        task_radio_classification = QRadioButton('Classify')
+        task_radio_tracking = QRadioButton('Track')
+        task_radio_posing = QRadioButton('Pose')
 
-        # Functionality Layout
-        functionality_layout = QVBoxLayout()
-        functionality_layout.addLayout(functionality_icon_layout)
-        functionality_layout.addWidget(functionality_combo)
-        functionality_layout.addStretch()
+        task_radio_detection.setObjectName('detect')
+        task_radio_segmentation.setObjectName('segment')
+        task_radio_classification.setObjectName('classify')
+        task_radio_tracking.setObjectName('track')
+        task_radio_posing.setObjectName('pose')
 
-        functionality_widget = QWidget()
-        functionality_widget.setLayout(functionality_layout)
-        functionality_widget.setFixedSize(240, 240)
-        return functionality_widget
+        task_radio_detection.toggled.connect(self.check_task_selected)
+        task_radio_segmentation.toggled.connect(self.check_task_selected)
+        task_radio_classification.toggled.connect(self.check_task_selected)
+        task_radio_tracking.toggled.connect(self.check_task_selected)
+        task_radio_posing.toggled.connect(self.check_task_selected)
+
+        task_radio_layout.addWidget(task_radio_detection)
+        task_radio_layout.addWidget(task_radio_segmentation)
+        task_radio_layout.addWidget(task_radio_classification)
+        task_radio_layout.addWidget(task_radio_tracking)
+        task_radio_layout.addWidget(task_radio_posing)
+
+        if self._task == 'detect':
+            task_radio_detection.setChecked(True)
+        elif self._task == 'segment':
+            task_radio_segmentation.setChecked(True)
+        elif self._task == 'classify':
+            task_radio_classification.setChecked(True)
+        elif self._task == 'track':
+            task_radio_tracking.setChecked(True)
+        elif self._task == 'pose':
+            task_radio_posing.setChecked(True)
+
+        self._task_radios = task_radio_layout
+
+        # Task Layout
+        task_layout = QVBoxLayout()
+        task_layout.addLayout(task_icon_layout)
+        task_layout.addLayout(task_radio_layout)
+        task_layout.addStretch()
+
+        task_widget = QWidget()
+        task_widget.setLayout(task_layout)
+        task_widget.setFixedSize(240, 240)
+        return task_widget
 
     def model_ui(self) -> QWidget:
         # Model icon
@@ -174,10 +207,26 @@ class ProjectWidget(QWidget):
         model_icon_layout.addStretch()
 
         # Model List
+        def on_item_clicked(clicked_item):
+            if clicked_item.checkState() == Qt.CheckState.Unchecked:
+                new_state = Qt.CheckState.Checked
+            else:
+                new_state = Qt.CheckState.Unchecked
+            clicked_item.setCheckState(new_state)
+
         model_list = QListWidget()
-        model_list.addItems(['yolov8n.pt', 'yolov8s.pt', 'yolov8m.pt', 'yolov8l.pt', 'yolov8x.pt'])
-        model_list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        model_list.itemSelectionChanged.connect(self.check_model_selected)
+        model_names = ['yolov8n.pt', 'yolov8s.pt', 'yolov8m.pt', 'yolov8l.pt', 'yolov8x.pt']
+        for model_name in model_names:
+            item = QListWidgetItem(model_name)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            if model_name in self._models:
+                item.setCheckState(Qt.CheckState.Checked)
+            else:
+                item.setCheckState(Qt.CheckState.Unchecked)
+            model_list.addItem(item)
+
+        model_list.itemChanged.connect(self.check_model_selected)
+        model_list.itemDoubleClicked.connect(on_item_clicked)
         self._model_list = model_list
 
         # Model Layout
@@ -307,6 +356,8 @@ class ProjectWidget(QWidget):
             if self._media_type != media_type:
                 self.reset_input_folder()
             self._media_type = media_type
+            self._project.config.current_media_type = media_type
+            self._project.save()
             logging.debug(f'{media_type.capitalize()}(s) opened : {filenames}')
 
             for filename in filenames:
@@ -331,6 +382,8 @@ class ProjectWidget(QWidget):
         if self._media_type != 'live':
             self.reset_input_folder()
         self._media_type = 'live'
+        self._project.config.current_media_type = 'live'
+        self._project.save()
         self._live_url = url
         self._file_list.set_live_preview(url)
         self.check_enable_run()
@@ -390,23 +443,31 @@ class ProjectWidget(QWidget):
             self.open_live(url)
         self.check_enable_run()
 
-    def check_functionality_selected(self, index: int):
-        if index != 0:
-            self._functionality_selected = True
-        else:
-            self._functionality_selected = False
-        logging.debug('Functionality selected : ' + self._functionality_combo.currentData())
+    def check_task_selected(self):
+        if self._task_radios is None:
+            return
+        for i in reversed(range(self._task_radios.count())):
+            if self._task_radios.itemAt(i).widget().isChecked():
+                task = self._task_radios.itemAt(i).widget().objectName()
+                self._task = task
+                self._project.config.current_task = task
+                self._project.save()
+                break
         self.check_enable_run()
 
     def check_model_selected(self):
-        selected_items = self._model_list.selectedItems()
-        self._model_selected = len(selected_items) > 0
-        logging.debug('Models selected: ' + ', '.join([item.text() for item in selected_items]))
+        self._models = []
+        for i in range(self._model_list.count()):
+            if self._model_list.item(i).checkState() == Qt.CheckState.Checked:
+                self._models.append(self._model_list.item(i).text())
+        self._project.config.current_models = self._models
+        self._project.save()
+        logging.debug('Models selected: ' + ', '.join(self._models))
         self.check_enable_run()
 
     def check_enable_run(self):
-        if ((len(self._file_list.get_selected_files()) > 0 or self._live_url is not None) and self._model_selected
-                and self._functionality_selected):
+        if (len(self._file_list.get_selected_files()) > 0 or self._live_url is not None) and self._models is not None \
+                and len(self._models) > 0 and self._task is not None:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
@@ -422,17 +483,15 @@ class ProjectWidget(QWidget):
 
     def run(self):
         inputs = self._file_list.get_selected_files()
-        model_paths = [item.text() for item in self._model_list.selectedItems()]
-        task = self._functionality_combo.currentData()
-        logging.info(f'Run with: {inputs}, {model_paths}, {task}, {self._media_type}')
+        logging.info(f'Run with: {inputs}, {self._models}, {self._task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
         result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
 
-        if self._media_type == 'image' and task == 'detect':
-            pipeline = img_detection.ImgDetectionPipeline(inputs, model_paths, result_path, self._project)
+        if self._media_type == 'image' and self._task == 'detect':
+            pipeline = img_detection.ImgDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
-            self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
+            self.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = ImageResultWidget(self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Image detection", len(inputs) == 1)
 
@@ -440,8 +499,8 @@ class ProjectWidget(QWidget):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
                 result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), 0)
-                if self._callback_count == len(inputs) * len(model_paths):
+                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
+                if self._callback_count == len(inputs) * len(self._models):
                     pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -455,22 +514,22 @@ class ProjectWidget(QWidget):
             pipeline.start()
             self._current_pipeline = pipeline
 
-        elif self._media_type == 'video' and task == 'detect':
-            pipeline = vid_detection.VidDetectionPipeline(inputs, model_paths, result_path, self._project)
+        elif self._media_type == 'video' and self._task == 'detect':
+            pipeline = vid_detection.VidDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
-            self.update_progress_bar(0, len(inputs) * len(model_paths), 0)
+            self.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = VideoResultWidget(self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Video detection", False)
-            
+
             def callback_progress(progress: float) -> None:
-                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), progress)
+                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), progress)
 
             def callback_ok(input_path: str, output_media_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget.add_input_and_result(input_path, output_media_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar(self._callback_count, len(inputs) * len(model_paths), 0)
-                if self._callback_count == len(inputs) * len(model_paths):
+                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
+                if self._callback_count == len(inputs) * len(self._models):
                     pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -494,11 +553,16 @@ class ProjectWidget(QWidget):
             pipeline.start()
             self._current_pipeline = pipeline
 
-        elif self._media_type == 'live' and task == 'detect':
-            result_widget = LiveResultWidget(self._live_url, model_paths[0], self._project)
+        elif self._media_type == 'live' and self._task == 'detect':
+            result_widget = LiveResultWidget(self._live_url, self._models[0], self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
+
+        else:
+            QMessageBox.critical(self, "Error",
+                                 f'Invalid combination of media type and task: {self._media_type}, {self._task}')
+            logging.error(f'Invalid combination of media type and task: {self._media_type}, {self._task}')
 
     def update_progress_bar(self, progress: int, total: int, extra: float):
         self._progress_bar.setValue(int(((progress + extra) / total) * 100))
