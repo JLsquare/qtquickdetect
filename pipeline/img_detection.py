@@ -1,13 +1,16 @@
+from datetime import datetime
 from PyQt6.QtCore import QThread, pyqtSignal
 from models.app_state import AppState
 from models.project import Project
+from utils.image_helpers import draw_bounding_box
 from utils.model_loader import load_model
 import os
 import json
+import cv2 as cv
 
 
 class ImgDetectionPipeline(QThread):
-    finished_signal = pyqtSignal(str, str)  # Source file, JSON path
+    finished_signal = pyqtSignal(str, str, str)  # Source file, image output, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
 
     def __init__(self, inputs: list[str], model_paths: list[str], results_path: str, project: Project):
@@ -49,40 +52,58 @@ class ImgDetectionPipeline(QThread):
 
             for src in self._inputs:
                 try:
-                    results_array = self._process_source(src, model)
-                    base_name = os.path.basename(src).split('.')[0]
-                    json_name = f"{base_name}_{results['model_name']}.json"
-                    json_path = os.path.join(self._results_path, json_name)
+                    model_name = results['model_name']
+                    model_result_path = os.path.join(self._results_path, model_name)
+                    if not os.path.exists(model_result_path):
+                        os.mkdir(model_result_path)
+                    file_name = os.path.basename(src).split('.')[0:-1][0]
+                    file_path = os.path.join(model_result_path, file_name)
+                    image_path = f'{file_path}.{self._project.config.image_format}'
+                    json_path = f'{file_path}.json'
 
+                    results_array = self._process_source(src, model, image_path)
                     self._save_json(results_array, results, json_path)
-                    self.finished_signal.emit(src, json_path)
+
+                    self.finished_signal.emit(src, image_path, json_path)
                 except Exception as e:
                     self.error_signal.emit(src, e)
 
         self._appstate.pipelines.remove(self)
 
-    def _process_source(self, src: str, model) -> list:
+    def _process_source(self, src: str, model, output_path: str) -> list:
         """
         Processes a single source file.
 
         :param src: Source file path.
         :return: Array of results.
         """
+        image = cv.imread(src)
         if self._project.device.type == 'cuda' and self._project.config.half_precision:
-            result = model(src, half=True, verbose=False)[0].cpu()
+            result = model(image, half=True, verbose=False)[0].cpu()
         else:
-            result = model(src, verbose=False)[0].cpu()
+            result = model(image, verbose=False)[0].cpu()
 
-        return [
-            {
-                'x1': int(box.xyxy.flatten()[0]),
-                'y1': int(box.xyxy.flatten()[1]),
-                'x2': int(box.xyxy.flatten()[2]),
-                'y2': int(box.xyxy.flatten()[3]),
-                'classid': int(box.cls),
-                'confidence': float(box.conf[0])
-            } for box in result.boxes
-        ]
+        results_array = []
+        for box in result.boxes:
+            flat = box.xyxy.flatten()
+            top_left, bottom_right = (int(flat[0]), int(flat[1])), (int(flat[2]), int(flat[3]))
+            class_id, class_name = int(box.cls), model.names[int(box.cls)]
+            conf = float(box.conf[0])
+
+            draw_bounding_box(
+                image, top_left, bottom_right, class_name, conf,
+                self._project.config.video_box_color, self._project.config.video_text_color,
+                self._project.config.video_box_thickness, self._project.config.video_text_size
+            )
+
+            results_array.append({
+                'x1': top_left[0], 'y1': top_left[1],
+                'x2': bottom_right[0], 'y2': bottom_right[1],
+                'classid': class_id, 'confidence': conf
+            })
+
+        cv.imwrite(output_path, image)
+        return results_array
 
     def _save_json(self, results_array: list, results_dict: dict, json_path: str):
         """

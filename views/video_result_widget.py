@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt, QFile
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, QFileDialog
-from models.app_state import AppState
 from models.project import Project
+from utils.file_explorer import open_file_explorer
 from views.video_player_widget import VideoPlayerWidget
 import os
 import json
@@ -9,9 +9,10 @@ import cv2 as cv
 
 
 class VideoResultWidget(QWidget):
-    def __init__(self, project: Project):
+    def __init__(self, project: Project, result_path: str):
         super().__init__()
         self._project = project
+        self._result_path = result_path
 
         self._current_result_player = None
         self._middle_layout = None
@@ -38,6 +39,7 @@ class VideoResultWidget(QWidget):
         # Bottom layout
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch(1)
+        bottom_layout.addWidget(self.open_result_folder_button_ui())
         bottom_layout.addWidget(self.save_json_button_ui())
         bottom_layout.addWidget(self.save_video_button_ui())
         bottom_layout.addWidget(self.save_frame_button_ui())
@@ -80,6 +82,11 @@ class VideoResultWidget(QWidget):
 
         return video_container
 
+    def open_result_folder_button_ui(self) -> QPushButton:
+        open_result_folder_button = QPushButton('Open Result Folder')
+        open_result_folder_button.clicked.connect(self.open_result_folder)
+        return open_result_folder_button
+
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
         save_json_button.clicked.connect(self.save_json)
@@ -98,6 +105,12 @@ class VideoResultWidget(QWidget):
     ##############################
     #         CONTROLLER         #
     ##############################
+
+    def open_result_folder(self):
+        try:
+            open_file_explorer(self._result_path)
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', str(e))
 
     def save_json(self):
         result_json = self._model_select_combo.currentData()

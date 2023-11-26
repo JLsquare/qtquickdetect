@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Callable
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QProgressBar, \
     QMessageBox, QListWidget, QListWidgetItem, QRadioButton
@@ -15,8 +16,6 @@ from pipeline import img_detection, vid_detection
 import logging
 import os
 import urllib.request
-import subprocess
-import sys
 
 
 class ProjectWidget(QWidget):
@@ -267,9 +266,8 @@ class ProjectWidget(QWidget):
         btn_cancel.setEnabled(False)
         self._btn_cancel = btn_cancel
 
-        # Project folder button
-        btn_project_folder = QPushButton('Project Folder')
-        btn_project_folder.clicked.connect(self.open_project_folder)
+        # Result history button
+        btn_project_folder = QPushButton('Result History')
 
         # Run Layout
         run_layout = QVBoxLayout()
@@ -413,25 +411,6 @@ class ProjectWidget(QWidget):
         self._other_source_window.show()
         logging.debug('Window opened : Other Source')
 
-    def open_project_folder(self):
-        path = f'projects/{self._project.project_name}'
-        if os.path.exists(path):
-            try:
-                if sys.platform == 'win32':
-                    subprocess.run(['explorer', path], check=True)
-                elif sys.platform == 'darwin':
-                    subprocess.run(['open', path], check=True)
-                elif sys.platform.startswith('linux'):
-                    subprocess.run(['xdg-open', path], check=True)
-                else:
-                    raise Exception(f'Unsupported platform: {sys.platform}')
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to open folder: {e}")
-                logging.error(f'Failed to open project folder: {path}, Error: {e}')
-        else:
-            QMessageBox.critical(self, "Error", "Project folder does not exist.")
-            logging.error(f'Project folder does not exist: {path}')
-
     def open_settings(self):
         self._settings_window = ConfigWindow(self._project)
         self._settings_window.show()
@@ -489,16 +468,23 @@ class ProjectWidget(QWidget):
         logging.info(f'Run with: {inputs}, {self._models}, {self._task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
-        result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
+
+        current_date = datetime.now()
+        formatted_date = current_date.strftime("%Y-%m-%d_%H:%M:%S")
 
         if self._media_type == 'image' and self._task == 'detect':
+            folder_name = f'image_detection_{formatted_date}'
+            result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
+            result_path = os.path.join(result_path, folder_name)
+            os.mkdir(result_path)
+
             pipeline = img_detection.ImgDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(self._models), 0)
-            result_widget = ImageResultWidget(self._project)
+            result_widget = ImageResultWidget(self._project, result_path)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Image detection", len(inputs) == 1)
 
-            def callback_ok(input_path: str, output_json_path: str) -> None:
+            def callback_ok(input_path: str, _: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
                 result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
@@ -518,10 +504,15 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'video' and self._task == 'detect':
+            folder_name = f'video_detection_{formatted_date}'
+            result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
+            result_path = os.path.join(result_path, folder_name)
+            os.mkdir(result_path)
+
             pipeline = vid_detection.VidDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(self._models), 0)
-            result_widget = VideoResultWidget(self._project)
+            result_widget = VideoResultWidget(self._project, result_path)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Video detection", False)
 
             def callback_progress(progress: float) -> None:

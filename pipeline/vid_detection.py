@@ -1,3 +1,4 @@
+from datetime import datetime
 from PyQt6.QtCore import pyqtSignal, QThread
 from models.app_state import AppState
 from models.project import Project
@@ -53,8 +54,11 @@ class VidDetectionPipeline(QThread):
             for src in self._inputs:
                 try:
                     model_name = results['model_name']
-                    file_name = os.path.basename(src).split('.')[0:-1]
-                    file_path = os.path.join(self._results_path, f'{file_name}_{model_name}')
+                    model_result_path = os.path.join(self._results_path, model_name)
+                    if not os.path.exists(model_result_path):
+                        os.mkdir(model_result_path)
+                    file_name = os.path.basename(src).split('.')[0:-1][0]
+                    file_path = os.path.join(model_result_path, file_name)
                     video_path = f'{file_path}.{self._project.config.video_format}'
                     json_path = f'{file_path}.json'
 
@@ -67,7 +71,7 @@ class VidDetectionPipeline(QThread):
 
         self._appstate.pipelines.remove(self)
 
-    def _process_source(self, src: str, model, output_path: str):
+    def _process_source(self, src: str, model, output_path: str) -> list | None:
         """
         Processes a single video file.
 
@@ -152,20 +156,20 @@ class VidDetectionPipeline(QThread):
 
         for box in results.boxes:
             flat = box.xyxy.flatten()
-            topleft, bottomright = (int(flat[0]), int(flat[1])), (int(flat[2]), int(flat[3]))
-            classid, classname = int(box.cls), model.names[int(box.cls)]
+            top_left, bottom_right = (int(flat[0]), int(flat[1])), (int(flat[2]), int(flat[3]))
+            class_id, class_name = int(box.cls), model.names[int(box.cls)]
             conf = float(box.conf[0])
 
             draw_bounding_box(
-                frame, topleft, bottomright, classname, conf,
+                frame, top_left, bottom_right, class_name, conf,
                 self._project.config.video_box_color, self._project.config.video_text_color,
                 self._project.config.video_box_thickness, self._project.config.video_text_size
             )
 
             results_array.append({
-                'x1': topleft[0], 'y1': topleft[1],
-                'x2': bottomright[0], 'y2': bottomright[1],
-                'classid': classid, 'confidence': conf
+                'x1': top_left[0], 'y1': top_left[1],
+                'x2': bottom_right[0], 'y2': bottom_right[1],
+                'classid': class_id, 'confidence': conf
             })
 
         return results_array

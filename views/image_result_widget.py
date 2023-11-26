@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGra
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile
 from models.project import Project
+from utils.file_explorer import open_file_explorer
 from utils.image_helpers import draw_bounding_box
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import json
@@ -11,9 +12,10 @@ import numpy as np
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self, project: Project):
+    def __init__(self, project: Project, result_path: str):
         super().__init__()
         self._project = project
+        self._result_path = result_path
 
         self._input_images = []
         self._result_jsons = {}
@@ -43,6 +45,7 @@ class ImageResultWidget(QWidget):
         # Bottom layout
         bottom_layout = QHBoxLayout()
         bottom_layout.addStretch(1)
+        bottom_layout.addWidget(self.open_result_folder_button_ui())
         bottom_layout.addWidget(self.save_json_button_ui())
         bottom_layout.addWidget(self.save_image_button_ui())
 
@@ -103,6 +106,11 @@ class ImageResultWidget(QWidget):
         container_widget.setProperty('class', 'border')
         return container_widget
 
+    def open_result_folder_button_ui(self) -> QPushButton:
+        open_result_folder_button = QPushButton('Open Result Folder')
+        open_result_folder_button.clicked.connect(self.open_result_folder)
+        return open_result_folder_button
+
     def save_json_button_ui(self) -> QPushButton:
         save_json_button = QPushButton('Save JSON')
         save_json_button.clicked.connect(self.save_json)
@@ -116,6 +124,12 @@ class ImageResultWidget(QWidget):
     ##############################
     #         CONTROLLER         #
     ##############################
+
+    def open_result_folder(self):
+        try:
+            open_file_explorer(self._result_path)
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', str(e))
 
     def save_image(self):
         input_image = self._file_select_combo.currentData()
@@ -228,8 +242,8 @@ class ImageResultWidget(QWidget):
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
             draw_bounding_box(
                 layer, top_left, bottom_right, class_name, confidence,
-                self._project.config.video_box_color, self._project.config.video_text_color,
-                self._project.config.video_box_thickness, self._project.config.video_text_size
+                self._project.config.image_box_color, self._project.config.image_text_color,
+                self._project.config.image_box_thickness, self._project.config.image_text_size
             )
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
