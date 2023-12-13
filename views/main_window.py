@@ -22,6 +22,7 @@ class MainWindow(QWidget):
     def init_window(self):
         self.setWindowTitle('QTQuickDetect')
         self.setGeometry(100, 100, 1280, 720)
+        self.setMinimumSize(QSize(1280, 600))
         self.setStyleSheet(self._appstate.qss)
         self.setProperty('class', 'dark-bg')
 
