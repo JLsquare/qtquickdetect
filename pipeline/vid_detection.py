@@ -53,12 +53,10 @@ class VidDetectionPipeline(QThread):
             }
             for src in self._inputs:
                 try:
-                    model_name = results['model_name']
-                    model_result_path = os.path.join(self._results_path, model_name)
-                    if not os.path.exists(model_result_path):
-                        os.mkdir(model_result_path)
+                    if not os.path.exists(self._results_path):
+                        os.mkdir(self._results_path)
                     file_name = os.path.basename(src).split('.')[0:-1][0]
-                    file_path = os.path.join(model_result_path, file_name)
+                    file_path = os.path.join(self._results_path, file_name)
                     video_path = f'{file_path}.{self._project.config.video_format}'
                     json_path = f'{file_path}.json'
 

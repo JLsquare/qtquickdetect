@@ -26,6 +26,7 @@ class ConfigFile:
         self.current_media_type = None
         self.current_task = 'detect'
         self.current_models = None
+
         self.path = os.path.join('projects', project_name, 'config.json')
 
         if os.path.exists(self.path):

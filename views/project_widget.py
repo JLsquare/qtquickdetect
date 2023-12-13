@@ -7,6 +7,7 @@ from PyQt6.QtCore import Qt, QDir, QFile, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
 from views.config_window import ConfigWindow
+from views.history_result_window import HistoryResultWindow
 from views.input_info_widget import InputInfoWidget
 from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
@@ -29,6 +30,7 @@ class ProjectWidget(QWidget):
         self._callback_count = 0
         self._other_source_window = None
         self._settings_window = None
+        self._history_window = None
         self._progress_bar = None
         self._input_info = None
 
@@ -273,14 +275,15 @@ class ProjectWidget(QWidget):
         self._btn_cancel = btn_cancel
 
         # Result history button
-        btn_project_folder = QPushButton('Result History')
+        btn_history = QPushButton('Result History')
+        btn_history.clicked.connect(self.open_history)
 
         # Run Layout
         run_layout = QVBoxLayout()
         run_layout.addLayout(run_icon_layout)
         run_layout.addWidget(btn_run)
         run_layout.addWidget(btn_cancel)
-        run_layout.addWidget(btn_project_folder)
+        run_layout.addWidget(btn_history)
         run_layout.addStretch()
 
         run_widget = QWidget()
@@ -421,6 +424,11 @@ class ProjectWidget(QWidget):
         self._settings_window = ConfigWindow(self._project)
         self._settings_window.show()
         logging.debug('Window opened : Settings')
+
+    def open_history(self):
+        self._history_window = HistoryResultWindow(self._add_new_tab, self._project)
+        self._history_window.show()
+        logging.debug('Window opened : History')
 
     def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
         if image:
@@ -568,5 +576,5 @@ class ProjectWidget(QWidget):
         self._progress_bar.setValue(int(((progress + extra) / total) * 100))
 
     def stop(self):
-        prj_name = self._project.project_name
-        self._appstate.opened_projects.remove(prj_name)
+        project_name = self._project.project_name
+        self._appstate.opened_projects.remove(project_name)

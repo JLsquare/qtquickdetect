@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsPixmapItem, QGraphicsScene, \
-    QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox
+    QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSplitter, QSizePolicy
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile
 from models.project import Project
@@ -37,9 +37,10 @@ class ImageResultWidget(QWidget):
         # Initialize user interface layout and widgets
 
         # Middle layout
-        middle_layout = QHBoxLayout()
-        middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        middle_layout.addLayout(self.left_ui(), 1)
+        middle_layout = QSplitter(Qt.Orientation.Horizontal)
+        middle_layout.addWidget(self.left_ui())
+        middle_layout.addWidget(self.image_ui(''))
+        middle_layout.setSizes([self.width() // 2, self.width() // 2])
         self._middle_layout = middle_layout
 
         # Bottom layout
@@ -51,15 +52,16 @@ class ImageResultWidget(QWidget):
 
         # Main layout
         main_layout = QVBoxLayout(self)
-        main_layout.addLayout(middle_layout)
+        main_layout.addWidget(middle_layout)
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
-    def left_ui(self) -> QVBoxLayout:
+    def left_ui(self) -> QWidget:
         # UI elements for file selection and layer visibility
 
         file_select_label = QLabel('Select file:')
         file_select = QComboBox()
+        file_select.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         file_select.currentIndexChanged.connect(self.change_current_file)
         self._file_select_combo = file_select
 
@@ -82,7 +84,10 @@ class ImageResultWidget(QWidget):
         left_layout.addWidget(layer_select_label)
         left_layout.addWidget(layer_list)
 
-        return left_layout
+        left_widget = QWidget(self)
+        left_widget.setLayout(left_layout)
+
+        return left_widget
 
     def image_ui(self, input_image: str) -> QWidget:
         # Create UI for displaying input images
@@ -194,9 +199,7 @@ class ImageResultWidget(QWidget):
         # Update the image
         input_image = self._input_images[index]
         image_widget = self.image_ui(input_image)
-        if self._middle_layout.count() > 1:
-            self._middle_layout.itemAt(1).widget().deleteLater()
-        self._middle_layout.addWidget(image_widget, 1)
+        self._middle_layout.replaceWidget(1, image_widget)
 
         # Update the model selection
         self._model_select_combo.clear()
