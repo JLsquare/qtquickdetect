@@ -566,3 +566,7 @@ class ProjectWidget(QWidget):
 
     def update_progress_bar(self, progress: int, total: int, extra: float):
         self._progress_bar.setValue(int(((progress + extra) / total) * 100))
+
+    def stop(self):
+        prj_name = self._project.project_name
+        self._appstate.opened_projects.remove(prj_name)
