@@ -30,8 +30,7 @@ class ProjectWidget(QWidget):
         self._other_source_window = None
         self._settings_window = None
         self._progress_bar = None
-        self._file_list = InputInfoWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
-        self._file_list.model.selection_changed_signal.connect(self.check_enable_run)
+        self._input_info = None
 
         self._media_type = project.config.current_media_type
         self._task = project.config.current_task
@@ -74,7 +73,7 @@ class ProjectWidget(QWidget):
 
         # Left Layout
         left_layout = QHBoxLayout()
-        left_layout.addWidget(self._file_list)
+        left_layout.addWidget(self.input_info_ui())
         left_layout.addStretch()
         left_layout.addLayout(right_vertical_layout)
         left_layout.addStretch()
@@ -85,6 +84,13 @@ class ProjectWidget(QWidget):
         main_layout.addLayout(left_layout)
         main_layout.addWidget(self.progress_bar_ui())
         self.setLayout(main_layout)
+
+    def input_info_ui(self):
+        input_info = InputInfoWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
+        input_info.setMinimumSize(240, 240)
+        input_info.model.selection_changed_signal.connect(self.check_enable_run)
+        self._input_info = input_info
+        return input_info
 
     def settings_ui(self) -> QPushButton:
         btn_settings = QPushButton()
@@ -386,7 +392,7 @@ class ProjectWidget(QWidget):
         self._project.config.current_media_type = 'live'
         self._project.save()
         self._live_url = url
-        self._file_list.set_live_preview(url)
+        self._input_info.set_live_preview(url)
         self.check_enable_run()
 
     def download_file_to_input(self, url: str):
@@ -448,7 +454,7 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if (len(self._file_list.get_selected_files()) > 0 or self._live_url is not None) and self._models is not None \
+        if (len(self._input_info.get_selected_files()) > 0 or self._live_url is not None) and self._models is not None \
                 and len(self._models) > 0 and self._task is not None:
             self._btn_run.setEnabled(True)
         else:
@@ -464,7 +470,7 @@ class ProjectWidget(QWidget):
             self.update_progress_bar(0, 1, 0)
 
     def run(self):
-        inputs = self._file_list.get_selected_files()
+        inputs = self._input_info.get_selected_files()
         logging.info(f'Run with: {inputs}, {self._models}, {self._task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
