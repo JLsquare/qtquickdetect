@@ -1,12 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton
 from PyQt6.QtCore import Qt
-from models.config_file import ConfigFile
+from models.project_config import ProjectConfig
 import torch
 import logging
 
 
-class MainConfigWidget(QWidget):
-    def __init__(self, config: ConfigFile):
+class GeneralProjectConfigWidget(QWidget):
+    def __init__(self, config: ProjectConfig):
         super().__init__()
         self._config = config
         self.init_ui()

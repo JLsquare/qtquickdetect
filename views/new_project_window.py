@@ -20,7 +20,7 @@ class NewProjectWindow(QWidget):
     ##############################
 
     def init_ui(self):
-        self.setWindowTitle('QTQuickDetect New/Open Project')
+        self.setWindowTitle(self.tr('QTQuickDetect New/Open Project'))
         self.setGeometry(100, 100, 480, 320)
         self.setStyleSheet(self._appstate.qss)
 
@@ -33,7 +33,7 @@ class NewProjectWindow(QWidget):
         main_layout.addLayout(self.open_project_ui(), 2, 0, 1, 2)
 
     def project_name_ui(self) -> QVBoxLayout:
-        project_name_label = QLabel('New Project name:')
+        project_name_label = QLabel(self.tr('New Project name:'))
         project_name_input = QLineEdit()
         project_name_input.setPlaceholderText('MyProject')
         self._project_name_input = project_name_input
@@ -47,7 +47,7 @@ class NewProjectWindow(QWidget):
 
     def open_project_ui(self) -> QVBoxLayout:
         open_project_layout = QVBoxLayout()
-        project_list_label = QLabel('Open Existing Project:')
+        project_list_label = QLabel(self.tr('Open Existing Project:'))
         project_list = QListWidget()
         project_list.addItems(self.get_existing_projects())
         project_list.itemDoubleClicked.connect(self.open_project)
@@ -58,13 +58,13 @@ class NewProjectWindow(QWidget):
         return open_project_layout
 
     def cancel_button_ui(self) -> QPushButton:
-        cancel_button = QPushButton('Cancel')
+        cancel_button = QPushButton(self.tr('Cancel'))
         cancel_button.clicked.connect(self.cancel)
 
         return cancel_button
 
     def create_button_ui(self) -> QPushButton:
-        save_button = QPushButton('Create')
+        save_button = QPushButton(self.tr('Create'))
         save_button.clicked.connect(self.create_project)
 
         return save_button
@@ -76,7 +76,7 @@ class NewProjectWindow(QWidget):
     def create_project(self):
         project_name = self._project_name_input.text()
         if os.path.exists(f'projects/{project_name}'):
-            QMessageBox.critical(self, 'Error', f'Project {project_name} already exists!')
+            QMessageBox.critical(self, self.tr('Error'), f"{self.tr('Project')} {project_name} {self.tr('already exists!')}")
             return
         project = Project(project_name)
         new_tab = ProjectWidget(self._add_new_tab, project)
@@ -100,7 +100,7 @@ class NewProjectWindow(QWidget):
         try:
             project = Project(project_name)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', e.args[0])
+            QMessageBox.critical(self, self.tr('Error'), e.args[0])
 
             return
         new_tab = ProjectWidget(self._add_new_tab, project)

@@ -1,5 +1,5 @@
 from models.app_state import AppState
-from models.config_file import ConfigFile
+from models.project_config import ProjectConfig
 import os
 import torch
 
@@ -18,7 +18,7 @@ class Project:
             os.mkdir(f'projects/{project_name}/input/videos')
             os.mkdir(f'projects/{project_name}/result')
 
-        self.config = ConfigFile(project_name)
+        self.config = ProjectConfig(project_name)
         self.device = torch.device(self.config.device)
         self._appstate.opened_projects.append(self.project_name)
 

@@ -6,7 +6,7 @@ from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QI
 from PyQt6.QtCore import Qt, QDir, QFile, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
-from views.config_window import ConfigWindow
+from views.project_config_window import ProjectConfigWindow
 from views.history_result_window import HistoryResultWindow
 from views.input_info_widget import InputInfoWidget
 from views.image_result_widget import ImageResultWidget
@@ -115,15 +115,15 @@ class ProjectWidget(QWidget):
         input_icon_layout.addStretch()
 
         # Input buttons
-        btn_import_image = QPushButton('Import Image')
+        btn_import_image = QPushButton(self.tr('Import Image'))
         btn_import_image.setProperty('class', 'input')
         btn_import_image.clicked.connect(self.open_image)
         self._btn_import_image = btn_import_image
-        btn_import_video = QPushButton('Import Video')
+        btn_import_video = QPushButton(self.tr('Import Video'))
         btn_import_video.setProperty('class', 'input')
         btn_import_video.clicked.connect(self.open_video)
         self._btn_import_video = btn_import_video
-        btn_other_source = QPushButton('Other Source')
+        btn_other_source = QPushButton(self.tr('Other Source'))
         btn_other_source.setProperty('class', 'input')
         btn_other_source.clicked.connect(self.open_other_source)
         self._btn_other_source = btn_other_source
@@ -154,11 +154,11 @@ class ProjectWidget(QWidget):
 
         # Task Radio Buttons
         task_radio_layout = QVBoxLayout()
-        task_radio_detection = QRadioButton('Detect')
-        task_radio_segmentation = QRadioButton('Segment')
-        task_radio_classification = QRadioButton('Classify')
-        task_radio_tracking = QRadioButton('Track')
-        task_radio_posing = QRadioButton('Pose')
+        task_radio_detection = QRadioButton(self.tr('Detect'))
+        task_radio_segmentation = QRadioButton(self.tr('Segment'))
+        task_radio_classification = QRadioButton(self.tr('Classify'))
+        task_radio_tracking = QRadioButton(self.tr('Track'))
+        task_radio_posing = QRadioButton(self.tr('Pose'))
 
         task_radio_detection.setObjectName('detect')
         task_radio_segmentation.setObjectName('segment')
@@ -261,21 +261,21 @@ class ProjectWidget(QWidget):
         run_icon_layout.addStretch()
 
         # Run button
-        btn_run = QPushButton('Run')
+        btn_run = QPushButton(self.tr('Run'))
         btn_run.setProperty('class', 'run')
         btn_run.setEnabled(False)
         btn_run.clicked.connect(self.run)
         self._btn_run = btn_run
 
         # Cancel button
-        btn_cancel = QPushButton('Cancel')
+        btn_cancel = QPushButton(self.tr('Cancel'))
         btn_cancel.setProperty('class', 'cancel')
         btn_cancel.clicked.connect(self.cancel_current_pipeline)
         btn_cancel.setEnabled(False)
         self._btn_cancel = btn_cancel
 
         # Result history button
-        btn_history = QPushButton('Result History')
+        btn_history = QPushButton(self.tr('Result History'))
         btn_history.clicked.connect(self.open_history)
 
         # Run Layout
@@ -336,18 +336,18 @@ class ProjectWidget(QWidget):
         if file_paths is None:
             msg_box = QMessageBox()
             msg_box.setStyleSheet(self._appstate.qss)
-            msg_box.setText("What do you want to open?")
-            files_btn = msg_box.addButton("Files", QMessageBox.ButtonRole.YesRole)
-            msg_box.addButton("Folder", QMessageBox.ButtonRole.NoRole)
+            msg_box.setText(self.tr('What do you want to open?'))
+            files_btn = msg_box.addButton(self.tr("Files"), QMessageBox.ButtonRole.YesRole)
+            msg_box.addButton(self.tr('Folder'), QMessageBox.ButtonRole.NoRole)
             msg_box.exec()
 
             if msg_box.clickedButton() == files_btn:
-                dialog = QFileDialog(self, f"Open {media_type.capitalize()}(s)", "/")
+                dialog = QFileDialog(self, f"{self.tr('Open')} {media_type.capitalize()}(s)", '/')
                 dialog.setMimeTypeFilters(file_mime_types)
                 dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
                 filenames = dialog.selectedFiles() if dialog.exec() else []
             else:
-                dialog = QFileDialog(self, "Select Folder", "/")
+                dialog = QFileDialog(self, self.tr("Select Folder"), "/")
                 dialog.setFileMode(QFileDialog.FileMode.Directory)
                 dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
                 if dialog.exec():
@@ -416,7 +416,7 @@ class ProjectWidget(QWidget):
         logging.debug('Window opened : Other Source')
 
     def open_settings(self):
-        self._settings_window = ConfigWindow(self._project)
+        self._settings_window = ProjectConfigWindow(self._project)
         self._settings_window.show()
         logging.debug('Window opened : Settings')
 
@@ -568,8 +568,8 @@ class ProjectWidget(QWidget):
             self._btn_run.setEnabled(True)
 
         else:
-            QMessageBox.critical(self, "Error",
-                                 f'Invalid combination of media type and task: {self._media_type}, {self._task}')
+            QMessageBox.critical(self, self.tr('Error'), f"{self.tr('Invalid combination of media type and task')}: "
+                                                         f"{self._media_type}, {self._task}")
             logging.error(f'Invalid combination of media type and task: {self._media_type}, {self._task}')
 
     def update_progress_bar(self, progress: int, total: int, extra: float):

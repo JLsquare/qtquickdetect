@@ -1,3 +1,4 @@
+from PyQt6.QtCore import QTranslator
 from PyQt6.QtWidgets import QApplication
 from models.app_state import AppState
 from views.main_window import MainWindow
@@ -21,13 +22,14 @@ def main():
     # Set up the QApplication
     app = QApplication([])
 
-    # Show the main window
-    window = MainWindow()
-    window.show()
-
     # Connect the application's aboutToQuit signal to the AppState's stop_pipelines method
     appstate = AppState.get_instance()
     app.aboutToQuit.connect(appstate.stop_pipelines)
+    appstate.set_app(app)
+
+    # Show the main window
+    window = MainWindow()
+    window.show()
 
     # Run the application
     return app.exec()

@@ -6,7 +6,7 @@ import re
 DEVICE_VALIDATION_REGEX = re.compile(r'^(cpu|cuda)(:\d+)?$')
 
 
-class ConfigFile:
+class ProjectConfig:
     def __init__(self, project_name):
         self.device = 'cpu'
         self.half_precision = False
@@ -27,13 +27,13 @@ class ConfigFile:
         self.current_task = 'detect'
         self.current_models = None
 
-        self.path = os.path.join('projects', project_name, 'config.json')
+        self.path = os.path.join('projects', project_name, 'project_config.json')
 
         if os.path.exists(self.path):
             if os.path.isfile(self.path):
                 self._read_config()
             else:
-                raise Exception('config.json is a directory!')
+                raise Exception('project_config.json is a directory!')
         else:
             self.save()
 

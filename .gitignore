@@ -4,4 +4,4 @@
 *.pt
 tmp/
 projects/
-config.json
+app_config.json
