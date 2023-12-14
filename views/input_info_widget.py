@@ -92,9 +92,9 @@ class InputInfoWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def get_selected_files(self):
+    def get_selected_files(self, input_dir: str):
         selected_files = []
-        self._get_selected_files_recursive(self.model.index(self._file_dir), selected_files)
+        self._get_selected_files_recursive(self.model.index(f'{self._file_dir}/{input_dir}'), selected_files)
         logging.debug('FileListWidget: ' + str(selected_files))
         return selected_files
 

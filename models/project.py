@@ -14,6 +14,8 @@ class Project:
         if not os.path.exists(f'projects/{project_name}'):
             os.mkdir(f'projects/{project_name}')
             os.mkdir(f'projects/{project_name}/input')
+            os.mkdir(f'projects/{project_name}/input/images')
+            os.mkdir(f'projects/{project_name}/input/videos')
             os.mkdir(f'projects/{project_name}/result')
 
         self.config = ConfigFile(project_name)

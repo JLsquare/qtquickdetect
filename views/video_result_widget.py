@@ -1,5 +1,6 @@
 from PyQt6.QtCore import Qt, QFile
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, QFileDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, \
+    QFileDialog, QSplitter
 from models.project import Project
 from utils.file_explorer import open_file_explorer
 from views.video_player_widget import VideoPlayerWidget
@@ -31,9 +32,10 @@ class VideoResultWidget(QWidget):
 
     def init_ui(self):
         # Middle layout
-        middle_layout = QHBoxLayout()
-        middle_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        middle_layout.addLayout(self.left_ui(), 1)
+        middle_layout = QSplitter(Qt.Orientation.Horizontal)
+        middle_layout.addWidget(self.left_ui())
+        middle_layout.addWidget(self.video_ui(''))
+        middle_layout.setSizes([self.width() // 2, self.width() // 2])
         self._middle_layout = middle_layout
 
         # Bottom layout
@@ -46,11 +48,11 @@ class VideoResultWidget(QWidget):
 
         # Main layout
         main_layout = QVBoxLayout(self)
-        main_layout.addLayout(middle_layout)
+        main_layout.addWidget(middle_layout)
         main_layout.addLayout(bottom_layout)
         self.setLayout(main_layout)
 
-    def left_ui(self) -> QVBoxLayout:
+    def left_ui(self) -> QWidget:
         file_select_label = QLabel('Select file:')
         file_select = QComboBox()
         file_select.currentIndexChanged.connect(self.change_current_file)
@@ -68,7 +70,10 @@ class VideoResultWidget(QWidget):
         left_layout.addWidget(model_select_label)
         left_layout.addWidget(model_select)
 
-        return left_layout
+        left_widget = QWidget()
+        left_widget.setLayout(left_layout)
+
+        return left_widget
 
     def video_ui(self, video_path: str) -> QWidget:
         video_player = VideoPlayerWidget(video_path)
@@ -212,17 +217,9 @@ class VideoResultWidget(QWidget):
         self.change_current_video(result_video)
 
     def change_current_video(self, video_path: str):
-        # Create the video player widget
+        # Update the video
         video_widget = self.video_ui(video_path)
-
-        # Clear the middle layout before adding a new widget
-        while self._middle_layout.count() > 1:
-            widget_to_remove = self._middle_layout.itemAt(1).widget()
-            self._middle_layout.removeWidget(widget_to_remove)
-            widget_to_remove.deleteLater()
-
-        # Add the new video player widget
-        self._middle_layout.addWidget(video_widget, 1)
+        self._middle_layout.replaceWidget(1, video_widget)
 
     def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
         # Add the input if it's not already here

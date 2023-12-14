@@ -49,13 +49,14 @@ class ImgDetectionPipeline(QThread):
                 'classes': model.names,
                 'results': []
             }
+            result_path = os.path.join(self._results_path, results['model_name'])
 
             for src in self._inputs:
                 try:
-                    if not os.path.exists(self._results_path):
-                        os.mkdir(self._results_path)
-                    file_name = os.path.basename(src).split('.')[0:-1][0]
-                    file_path = os.path.join(self._results_path, file_name)
+                    if not os.path.exists(result_path):
+                        os.mkdir(result_path)
+                    file_name = '.'.join(os.path.basename(src).split('.')[0:-1])
+                    file_path = os.path.join(result_path, file_name)
                     image_path = f'{file_path}.{self._project.config.image_format}'
                     json_path = f'{file_path}.json'
 

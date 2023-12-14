@@ -7,6 +7,7 @@ from models.project import Project
 import os
 
 from views.image_result_widget import ImageResultWidget
+from views.video_result_widget import VideoResultWidget
 
 
 class HistoryResultWindow(QWidget):
@@ -29,8 +30,8 @@ class HistoryResultWindow(QWidget):
         main_layout = QGridLayout(self)
         self.setLayout(main_layout)
 
+        main_layout.addLayout(self.open_history_ui(), 0, 0)
         main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-        main_layout.addLayout(self.open_history_ui(), 2, 0, 1, 2)
 
     def open_history_ui(self) -> QVBoxLayout:
         open_project_layout = QVBoxLayout()
@@ -59,7 +60,6 @@ class HistoryResultWindow(QWidget):
 
     def get_history(self) -> list[str]:
         history = []
-        # projets/project_name/result/mediatype_task_date
         for result in os.listdir(f'projects/{self._project.project_name}/result'):
             history.append(result)
         return history
@@ -67,21 +67,41 @@ class HistoryResultWindow(QWidget):
     def open_history(self, item):
         media_type, task, date, time = item.text().split('_')
         project_name = self._project.project_name
-        result_path = f'projects/{project_name}/result/{item.text()}'
-        input_path = f'projects/{project_name}/input/'
+        base_result_path = f'projects/{project_name}/result/{item.text()}'
 
-        if media_type == 'image':
-            image_result_widget = ImageResultWidget(self._project, result_path)
-            for image in os.listdir(input_path):
-                if image.endswith('.png') or image.endswith('.jpg'):
-                    image_path = f'{input_path}/{image}'
-                    json_filename = f'{image.split(".")[0]}.json'
-                    json_path = f'{result_path}/{json_filename}'
+        input_folder = 'images' if media_type == 'image' else 'videos'
+        input_path = f'projects/{project_name}/input/{input_folder}'
+        widget_class = ImageResultWidget if media_type == 'image' else VideoResultWidget
+
+        for model_name in os.listdir(base_result_path):
+            model_result_path = f'{base_result_path}/{model_name}'
+            result_widget = widget_class(self._project, model_result_path)
+
+            for file in os.listdir(input_path):
+                if self._is_valid_file(file, media_type):
+                    file_name, extension = file.rsplit('.', 1)
+                    file_path = f'{input_path}/{file}'
+                    json_path = f'{model_result_path}/{file_name}.json'
                     logging.info(f'Checking {json_path}')
 
-                    if os.path.exists(json_path):
-                        image_result_widget.add_input_and_result(image_path, json_path)
+                    if self._file_exists(json_path, file_path, media_type):
+                        if media_type == 'image':
+                            result_widget.add_input_and_result(file_path, json_path)
+                        else:
+                            result_video_path = f'{model_result_path}/{file}'
+                            result_widget.add_input_and_result(file_path, result_video_path, json_path)
 
-            self._add_new_tab(image_result_widget, f'{media_type.capitalize()} Result', True)
+            tab_title = f'{media_type.capitalize()} Result - {model_name}'
+            self._add_new_tab(result_widget, tab_title, True)
 
         self.close()
+
+    def _is_valid_file(self, file, media_type):
+        if media_type == 'image':
+            return file.endswith('.png') or file.endswith('.jpg')
+        return file.endswith('.mp4') or file.endswith('.avi')
+
+    def _file_exists(self, json_path, file_path, media_type):
+        if media_type == 'image':
+            return os.path.exists(json_path)
+        return os.path.exists(json_path) and os.path.exists(file_path)

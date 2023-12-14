@@ -363,8 +363,6 @@ class ProjectWidget(QWidget):
 
     def process_media_files(self, media_type: str, filenames: list[str]):
         if len(filenames) > 0:
-            if self._media_type != media_type:
-                self.reset_input_folder()
             self._media_type = media_type
             self._project.config.current_media_type = media_type
             self._project.save()
@@ -389,8 +387,6 @@ class ProjectWidget(QWidget):
         self.process_media_files('video', video_files)
 
     def open_live(self, url: str):
-        if self._media_type != 'live':
-            self.reset_input_folder()
         self._media_type = 'live'
         self._project.config.current_media_type = 'live'
         self._project.save()
@@ -401,7 +397,8 @@ class ProjectWidget(QWidget):
     def download_file_to_input(self, url: str):
         media = urllib.request.urlopen(url)
         media_name = os.path.basename(url)
-        file_path = f'projects/{self._project.project_name}/input/{media_name}'
+        subfolder = 'images' if any(url.lower().endswith(ext) for ext in ('.png', '.jpg', '.jpeg')) else 'videos'
+        file_path = f'projects/{self._project.project_name}/input/{subfolder}/{media_name}'
         with open(file_path, 'wb') as f:
             f.write(media.read())
         return file_path
@@ -409,11 +406,9 @@ class ProjectWidget(QWidget):
     def copy_files(self, file_paths: list[str]):
         for file_path in file_paths:
             file_name = file_path.split('/')[-1]
-            QFile.copy(file_path, f'projects/{self._project.project_name}/input/{file_name}')
-
-    def reset_input_folder(self):
-        for file in os.listdir(f'projects/{self._project.project_name}/input'):
-            os.remove(f'projects/{self._project.project_name}/input/{file}')
+            subfolder = 'images' if any(file_path.lower().endswith(ext) for ext in ('.png', '.jpg', '.jpeg')) else 'videos'
+            destination_path = f'projects/{self._project.project_name}/input/{subfolder}/{file_name}'
+            QFile.copy(file_path, destination_path)
 
     def open_other_source(self):
         self._other_source_window = OtherSourceWindow(self.callback_other_source)
@@ -462,8 +457,10 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
-        if (len(self._input_info.get_selected_files()) > 0 or self._live_url is not None) and self._models is not None \
-                and len(self._models) > 0 and self._task is not None:
+        selected_image_len = len(self._input_info.get_selected_files('images'))
+        selected_video_len = len(self._input_info.get_selected_files('videos'))
+        if (selected_image_len > 0 or selected_video_len > 0 or self._live_url is not None) \
+                and self._models is not None and len(self._models) > 0 and self._task is not None:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
@@ -478,8 +475,6 @@ class ProjectWidget(QWidget):
             self.update_progress_bar(0, 1, 0)
 
     def run(self):
-        inputs = self._input_info.get_selected_files()
-        logging.info(f'Run with: {inputs}, {self._models}, {self._task}, {self._media_type}')
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
 
@@ -487,6 +482,8 @@ class ProjectWidget(QWidget):
         formatted_date = current_date.strftime("%Y-%m-%d_%H:%M:%S")
 
         if self._media_type == 'image' and self._task == 'detect':
+            inputs = self._input_info.get_selected_files('images')
+            logging.info(f'Run with: {inputs}, {self._models}, detect, image')
             folder_name = f'image_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
             result_path = os.path.join(result_path, folder_name)
@@ -518,6 +515,8 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'video' and self._task == 'detect':
+            inputs = self._input_info.get_selected_files('videos')
+            logging.info(f'Run with: {inputs}, {self._models}, detect, video')
             folder_name = f'video_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
             result_path = os.path.join(result_path, folder_name)
@@ -562,6 +561,7 @@ class ProjectWidget(QWidget):
             self._current_pipeline = pipeline
 
         elif self._media_type == 'live' and self._task == 'detect':
+            logging.info(f'Run with: {self._live_url}, {self._models}, detect, live')
             result_widget = LiveResultWidget(self._live_url, self._models[0], self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
