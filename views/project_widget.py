@@ -528,7 +528,6 @@ class ProjectWidget(QWidget):
                 self._callback_count += 1
                 self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
-                    self._current_pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
@@ -563,7 +562,6 @@ class ProjectWidget(QWidget):
                 self._callback_count += 1
                 self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
-                    self._current_pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
@@ -574,7 +572,6 @@ class ProjectWidget(QWidget):
             def callback_cleanup() -> None:
                 self._callback_count = 0
                 self.update_progress_bar(0, 1, 0)
-                self._current_pipeline.deleteLater()
                 self._current_pipeline = None
                 self._btn_cancel.setEnabled(False)
                 self._btn_run.setEnabled(True)

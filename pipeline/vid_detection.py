@@ -37,7 +37,6 @@ class VidDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self._cancel_requested = True
-        self._appstate.pipelines.remove(self)
 
     def run(self):
         """Runs detection for all videos in the input list."""
@@ -55,6 +54,8 @@ class VidDetectionPipeline(QThread):
             result_path = os.path.join(self._results_path, results['model_name'])
 
             for src in self._inputs:
+                if self._cancel_requested:
+                    break
                 try:
                     if not os.path.exists(result_path):
                         os.mkdir(result_path)
