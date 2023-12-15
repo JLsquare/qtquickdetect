@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QProgressBar, \
     QMessageBox, QListWidget, QListWidgetItem, QRadioButton
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QIcon
@@ -22,30 +22,59 @@ import urllib.request
 class ProjectWidget(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project: Project):
         super().__init__()
-        self._appstate = AppState.get_instance()
 
+        # PyQT6 Components
+        self._top_layout: Optional[QHBoxLayout] = None
+        self._right_layout: Optional[QHBoxLayout] = None
+        self._right_vertical_layout: Optional[QVBoxLayout] = None
+        self._left_layout: Optional[QHBoxLayout] = None
+        self._main_layout: Optional[QVBoxLayout] = None
+        self._input_icon_layout: Optional[QHBoxLayout] = None
+        self._input_icon: Optional[QLabel] = None
+        self._btn_import_image: Optional[QPushButton] = None
+        self._btn_import_video: Optional[QPushButton] = None
+        self._btn_other_source: Optional[QPushButton] = None
+        self._input_layout: Optional[QVBoxLayout] = None
+        self._input_widget: Optional[QWidget] = None
+        self._task_icon_layout: Optional[QHBoxLayout] = None
+        self._task_icon: Optional[QLabel]= None
+        self._task_radio_layout: Optional[QVBoxLayout] = None
+        self._task_radio_detection: Optional[QRadioButton] = None
+        self._task_radio_segmentation: Optional[QRadioButton] = None
+        self._task_radio_classification: Optional[QRadioButton] = None
+        self._task_radio_tracking: Optional[QRadioButton] = None
+        self._task_radio_posing: Optional[QRadioButton] = None
+        self._task_radio_widget: Optional[QWidget] = None
+        self._task_layout: Optional[QVBoxLayout] = None
+        self._task_widget: Optional[QWidget] = None
+        self._model_icon_layout: Optional[QHBoxLayout] = None
+        self._model_icon: Optional[QLabel] = None
+        self._model_list: Optional[QListWidget] = None
+        self._model_layout: Optional[QVBoxLayout] = None
+        self._model_widget: Optional[QWidget] = None
+        self._run_icon_layout: Optional[QHBoxLayout] = None
+        self._run_icon: Optional[QLabel] = None
+        self._btn_run: Optional[QPushButton] = None
+        self._btn_cancel: Optional[QPushButton] = None
+        self._btn_history: Optional[QPushButton] = None
+        self._run_layout: Optional[QVBoxLayout] = None
+        self._run_widget: Optional[QWidget] = None
+        self._input_info: Optional[InputInfoWidget] = None
+        self._btn_settings: Optional[QPushButton] = None
+        self._other_source_window: Optional[OtherSourceWindow] = None
+        self._settings_window: Optional[ProjectConfigWindow] = None
+        self._history_window: Optional[HistoryResultWindow] = None
+        self._progress_bar: Optional[QProgressBar] = None
+
+        self._appstate = AppState.get_instance()
         self._add_new_tab = add_new_tab
         self._project = project
-        self._current_pipeline = None
+        self._current_pipeline: Optional[img_detection.ImgDetectionPipeline | vid_detection.VidDetectionPipeline] = None
         self._callback_count = 0
-        self._other_source_window = None
-        self._settings_window = None
-        self._history_window = None
-        self._progress_bar = None
-        self._input_info = None
-
         self._media_type = project.config.current_media_type
         self._task = project.config.current_task
         self._models = project.config.current_models
         self._live_url = None
-
-        self._btn_import_image = None
-        self._btn_import_video = None
-        self._btn_other_source = None
-        self._task_radios = None
-        self._model_list = None
-        self._btn_run = None
-        self._btn_cancel = None
 
         self.setAcceptDrops(True)
         self.init_ui()
@@ -57,164 +86,159 @@ class ProjectWidget(QWidget):
 
     def init_ui(self):
         # Top Layout
-        top_layout = QHBoxLayout()
-        top_layout.addStretch(1)
-        top_layout.addWidget(self.settings_ui())
+        self._top_layout = QHBoxLayout()
+        self._top_layout.addStretch(1)
+        self._top_layout.addWidget(self.settings_ui())
 
         # Right Layout
-        right_layout = QHBoxLayout()
-        right_layout.addWidget(self.input_ui())
-        right_layout.addWidget(self.task_ui())
-        right_layout.addWidget(self.model_ui())
-        right_layout.addWidget(self.run_ui())
+        self._right_layout = QHBoxLayout()
+        self._right_layout.addWidget(self.input_ui())
+        self._right_layout.addWidget(self.task_ui())
+        self._right_layout.addWidget(self.model_ui())
+        self._right_layout.addWidget(self.run_ui())
 
-        right_vertical_layout = QVBoxLayout()
-        right_vertical_layout.addStretch()
-        right_vertical_layout.addLayout(right_layout)
-        right_vertical_layout.addStretch()
+        self._right_vertical_layout = QVBoxLayout()
+        self._right_vertical_layout.addStretch()
+        self._right_vertical_layout.addLayout(self._right_layout)
+        self._right_vertical_layout.addStretch()
 
         # Left Layout
-        left_layout = QHBoxLayout()
-        left_layout.addWidget(self.input_info_ui())
-        left_layout.addStretch()
-        left_layout.addLayout(right_vertical_layout)
-        left_layout.addStretch()
+        self._left_layout = QHBoxLayout()
+        self._left_layout.addWidget(self.input_info_ui())
+        self._left_layout.addStretch()
+        self._left_layout.addLayout(self._right_vertical_layout)
+        self._left_layout.addStretch()
 
         # Main Layout
-        main_layout = QVBoxLayout(self)
-        main_layout.addLayout(top_layout)
-        main_layout.addLayout(left_layout)
-        main_layout.addWidget(self.progress_bar_ui())
-        self.setLayout(main_layout)
+        self._main_layout = QVBoxLayout(self)
+        self._main_layout.addLayout(self._top_layout)
+        self._main_layout.addLayout(self._left_layout)
+        self._main_layout.addWidget(self.progress_bar_ui())
+        self.setLayout(self._main_layout)
 
     def input_info_ui(self):
-        input_info = InputInfoWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
-        input_info.setMinimumSize(240, 240)
-        input_info.model.selection_changed_signal.connect(self.check_enable_run)
-        self._input_info = input_info
-        return input_info
+        self._input_info = InputInfoWidget(f'{QDir.currentPath()}/projects/{self._project.project_name}/input')
+        self._input_info.setMinimumSize(240, 240)
+        self._input_info.model.selection_changed_signal.connect(self.check_enable_run)
+        return self._input_info
 
     def settings_ui(self) -> QPushButton:
-        btn_settings = QPushButton()
-        btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
-        btn_settings.setIconSize(QSize(32, 32))
-        btn_settings.setFixedWidth(32)
-        btn_settings.setProperty('class', 'settings')
-        btn_settings.clicked.connect(self.open_settings)
-        return btn_settings
+        self._btn_settings = QPushButton()
+        self._btn_settings.setIcon(QIcon('ressources/images/settings_icon.png'))
+        self._btn_settings.setIconSize(QSize(32, 32))
+        self._btn_settings.setFixedWidth(32)
+        self._btn_settings.setProperty('class', 'settings')
+        self._btn_settings.clicked.connect(self.open_settings)
+        return self._btn_settings
 
     def input_ui(self) -> QWidget:
         # Input icon
-        input_icon_layout = QHBoxLayout()
-        input_icon_layout.addStretch()
-        input_icon = QLabel()
-        input_icon.setPixmap(
+        self._input_icon_layout = QHBoxLayout()
+        self._input_icon_layout.addStretch()
+        self._input_icon = QLabel()
+        self._input_icon.setPixmap(
             QPixmap('ressources/images/input_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                                Qt.TransformationMode.SmoothTransformation))
-        input_icon_layout.addWidget(input_icon)
-        input_icon_layout.addStretch()
+        self._input_icon_layout.addWidget(self._input_icon)
+        self._input_icon_layout.addStretch()
 
         # Input buttons
-        btn_import_image = QPushButton(self.tr('Import Image'))
-        btn_import_image.setProperty('class', 'input')
-        btn_import_image.clicked.connect(self.open_image)
-        self._btn_import_image = btn_import_image
-        btn_import_video = QPushButton(self.tr('Import Video'))
-        btn_import_video.setProperty('class', 'input')
-        btn_import_video.clicked.connect(self.open_video)
-        self._btn_import_video = btn_import_video
-        btn_other_source = QPushButton(self.tr('Other Source'))
-        btn_other_source.setProperty('class', 'input')
-        btn_other_source.clicked.connect(self.open_other_source)
-        self._btn_other_source = btn_other_source
+        self._btn_import_image = QPushButton(self.tr('Import Image'))
+        self._btn_import_image.setProperty('class', 'input')
+        self._btn_import_image.clicked.connect(self.open_image)
+        self._btn_import_video = QPushButton(self.tr('Import Video'))
+        self._btn_import_video.setProperty('class', 'input')
+        self._btn_import_video.clicked.connect(self.open_video)
+        self._btn_other_source = QPushButton(self.tr('Other Source'))
+        self._btn_other_source.setProperty('class', 'input')
+        self._btn_other_source.clicked.connect(self.open_other_source)
 
         # Input Layout
-        input_layout = QVBoxLayout()
-        input_layout.addLayout(input_icon_layout)
-        input_layout.addWidget(btn_import_image)
-        input_layout.addWidget(btn_import_video)
-        input_layout.addWidget(btn_other_source)
-        input_layout.addStretch()
+        self._input_layout = QVBoxLayout()
+        self._input_layout.addLayout(self._input_icon_layout)
+        self._input_layout.addWidget(self._btn_import_image)
+        self._input_layout.addWidget(self._btn_import_video)
+        self._input_layout.addWidget(self._btn_other_source)
+        self._input_layout.addStretch()
 
-        input_widget = QWidget()
-        input_widget.setLayout(input_layout)
-        input_widget.setFixedSize(240, 240)
-        return input_widget
+        self._input_widget = QWidget()
+        self._input_widget.setLayout(self._input_layout)
+        self._input_widget.setFixedSize(240, 240)
+        return self._input_widget
 
     def task_ui(self) -> QWidget:
         # Task icon
-        task_icon_layout = QHBoxLayout()
-        task_icon_layout.addStretch()
-        task_icon = QLabel()
-        task_icon.setPixmap(
+        self._task_icon_layout = QHBoxLayout()
+        self._task_icon_layout.addStretch()
+        self._task_icon = QLabel()
+        self._task_icon.setPixmap(
             QPixmap('ressources/images/task_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                               Qt.TransformationMode.SmoothTransformation))
-        task_icon_layout.addWidget(task_icon)
-        task_icon_layout.addStretch()
+        self._task_icon_layout.addWidget(self._task_icon)
+        self._task_icon_layout.addStretch()
 
         # Task Radio Buttons
-        task_radio_layout = QVBoxLayout()
-        task_radio_detection = QRadioButton(self.tr('Detect'))
-        task_radio_segmentation = QRadioButton(self.tr('Segment'))
-        task_radio_classification = QRadioButton(self.tr('Classify'))
-        task_radio_tracking = QRadioButton(self.tr('Track'))
-        task_radio_posing = QRadioButton(self.tr('Pose'))
+        self._task_radio_layout = QVBoxLayout()
+        self._task_radio_detection = QRadioButton(self.tr('Detect'))
+        self._task_radio_segmentation = QRadioButton(self.tr('Segment'))
+        self._task_radio_classification = QRadioButton(self.tr('Classify'))
+        self._task_radio_tracking = QRadioButton(self.tr('Track'))
+        self._task_radio_posing = QRadioButton(self.tr('Pose'))
 
-        task_radio_detection.setObjectName('detect')
-        task_radio_segmentation.setObjectName('segment')
-        task_radio_classification.setObjectName('classify')
-        task_radio_tracking.setObjectName('track')
-        task_radio_posing.setObjectName('pose')
+        self._task_radio_detection.setObjectName('detect')
+        self._task_radio_segmentation.setObjectName('segment')
+        self._task_radio_classification.setObjectName('classify')
+        self._task_radio_tracking.setObjectName('track')
+        self._task_radio_posing.setObjectName('pose')
 
-        task_radio_detection.toggled.connect(self.check_task_selected)
-        task_radio_segmentation.toggled.connect(self.check_task_selected)
-        task_radio_classification.toggled.connect(self.check_task_selected)
-        task_radio_tracking.toggled.connect(self.check_task_selected)
-        task_radio_posing.toggled.connect(self.check_task_selected)
+        self._task_radio_detection.toggled.connect(self._check_task_selected)
+        self._task_radio_segmentation.toggled.connect(self._check_task_selected)
+        self._task_radio_classification.toggled.connect(self._check_task_selected)
+        self._task_radio_tracking.toggled.connect(self._check_task_selected)
+        self._task_radio_posing.toggled.connect(self._check_task_selected)
 
         if self._task == 'detect':
-            task_radio_detection.setChecked(True)
+            self._task_radio_detection.setChecked(True)
         elif self._task == 'segment':
-            task_radio_segmentation.setChecked(True)
+            self._task_radio_segmentation.setChecked(True)
         elif self._task == 'classify':
-            task_radio_classification.setChecked(True)
+            self._task_radio_classification.setChecked(True)
         elif self._task == 'track':
-            task_radio_tracking.setChecked(True)
+            self._task_radio_tracking.setChecked(True)
         elif self._task == 'pose':
-            task_radio_posing.setChecked(True)
+            self._task_radio_posing.setChecked(True)
 
-        task_radio_layout.addWidget(task_radio_detection)
-        task_radio_layout.addWidget(task_radio_segmentation)
-        task_radio_layout.addWidget(task_radio_classification)
-        task_radio_layout.addWidget(task_radio_tracking)
-        task_radio_layout.addWidget(task_radio_posing)
-        self._task_radios = task_radio_layout
+        self._task_radio_layout.addWidget(self._task_radio_detection)
+        self._task_radio_layout.addWidget(self._task_radio_segmentation)
+        self._task_radio_layout.addWidget(self._task_radio_classification)
+        self._task_radio_layout.addWidget(self._task_radio_tracking)
+        self._task_radio_layout.addWidget(self._task_radio_posing)
 
-        task_radio_widget = QWidget()
-        task_radio_widget.setLayout(task_radio_layout)
-        task_radio_widget.setProperty('class', 'border')
+        self._task_radio_widget = QWidget()
+        self._task_radio_widget.setLayout(self._task_radio_layout)
+        self._task_radio_widget.setProperty('class', 'border')
 
         # Task Layout
-        task_layout = QVBoxLayout()
-        task_layout.addLayout(task_icon_layout)
-        task_layout.addWidget(task_radio_widget)
-        task_layout.addStretch()
+        self._task_layout = QVBoxLayout()
+        self._task_layout.addLayout(self._task_icon_layout)
+        self._task_layout.addWidget(self._task_radio_widget)
+        self._task_layout.addStretch()
 
-        task_widget = QWidget()
-        task_widget.setLayout(task_layout)
-        task_widget.setFixedSize(240, 240)
-        return task_widget
+        self._task_widget = QWidget()
+        self._task_widget.setLayout(self._task_layout)
+        self._task_widget.setFixedSize(240, 240)
+        return self._task_widget
 
     def model_ui(self) -> QWidget:
         # Model icon
-        model_icon_layout = QHBoxLayout()
-        model_icon_layout.addStretch()
-        model_icon = QLabel()
-        model_icon.setPixmap(
+        self._model_icon_layout = QHBoxLayout()
+        self._model_icon_layout.addStretch()
+        self._model_icon = QLabel()
+        self._model_icon.setPixmap(
             QPixmap('ressources/images/model_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                                Qt.TransformationMode.SmoothTransformation))
-        model_icon_layout.addWidget(model_icon)
-        model_icon_layout.addStretch()
+        self._model_icon_layout.addWidget(self._model_icon)
+        self._model_icon_layout.addStretch()
 
         # Model List
         def on_item_clicked(clicked_item):
@@ -224,7 +248,7 @@ class ProjectWidget(QWidget):
                 new_state = Qt.CheckState.Unchecked
             clicked_item.setCheckState(new_state)
 
-        model_list = QListWidget()
+        self._model_list = QListWidget()
         model_names = ['yolov8n.pt', 'yolov8s.pt', 'yolov8m.pt', 'yolov8l.pt', 'yolov8x.pt']
         for model_name in model_names:
             item = QListWidgetItem(model_name)
@@ -233,73 +257,70 @@ class ProjectWidget(QWidget):
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            model_list.addItem(item)
+            self._model_list.addItem(item)
 
-        model_list.itemChanged.connect(self.check_model_selected)
-        model_list.itemDoubleClicked.connect(on_item_clicked)
-        self._model_list = model_list
+        self._model_list.itemChanged.connect(self.check_model_selected)
+        self._model_list.itemDoubleClicked.connect(on_item_clicked)
 
         # Model Layout
-        model_layout = QVBoxLayout()
-        model_layout.addLayout(model_icon_layout)
-        model_layout.addWidget(model_list)
-        model_layout.addStretch()
+        self._model_layout = QVBoxLayout()
+        self._model_layout.addLayout(self._model_icon_layout)
+        self._model_layout.addWidget(self._model_list)
+        self._model_layout.addStretch()
 
-        model_widget = QWidget()
-        model_widget.setLayout(model_layout)
-        model_widget.setFixedSize(240, 240)
-        return model_widget
+        self._model_widget = QWidget()
+        self._model_widget.setLayout(self._model_layout)
+        self._model_widget.setFixedSize(240, 240)
+        return self._model_widget
 
     def run_ui(self) -> QWidget:
         # Run icon
-        run_icon_layout = QHBoxLayout()
-        run_icon_layout.addStretch()
-        run_icon = QLabel()
-        run_icon.setPixmap(QPixmap('ressources/images/run_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                                            Qt.TransformationMode.SmoothTransformation))
-        run_icon_layout.addWidget(run_icon)
-        run_icon_layout.addStretch()
+        self._run_icon_layout = QHBoxLayout()
+        self._run_icon_layout.addStretch()
+        self._run_icon = QLabel()
+        self._run_icon.setPixmap(QPixmap('ressources/images/run_icon.png')
+                                 .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
+                                         Qt.TransformationMode.SmoothTransformation))
+        self._run_icon_layout.addWidget(self._run_icon)
+        self._run_icon_layout.addStretch()
 
         # Run button
-        btn_run = QPushButton(self.tr('Run'))
-        btn_run.setProperty('class', 'run')
-        btn_run.setEnabled(False)
-        btn_run.clicked.connect(self.run)
-        self._btn_run = btn_run
+        self._btn_run = QPushButton(self.tr('Run'))
+        self._btn_run.setProperty('class', 'run')
+        self._btn_run.setEnabled(False)
+        self._btn_run.clicked.connect(self.run)
 
         # Cancel button
-        btn_cancel = QPushButton(self.tr('Cancel'))
-        btn_cancel.setProperty('class', 'cancel')
-        btn_cancel.clicked.connect(self.cancel_current_pipeline)
-        btn_cancel.setEnabled(False)
-        self._btn_cancel = btn_cancel
+        self._btn_cancel = QPushButton(self.tr('Cancel'))
+        self._btn_cancel.setProperty('class', 'cancel')
+        self._btn_cancel.clicked.connect(self.cancel_current_pipeline)
+        self._btn_cancel.setEnabled(False)
 
         # Result history button
-        btn_history = QPushButton(self.tr('Result History'))
-        btn_history.clicked.connect(self.open_history)
+        self._btn_history = QPushButton(self.tr('Result History'))
+        self._btn_history.clicked.connect(self.open_history)
 
         # Run Layout
-        run_layout = QVBoxLayout()
-        run_layout.addLayout(run_icon_layout)
-        run_layout.addWidget(btn_run)
-        run_layout.addWidget(btn_cancel)
-        run_layout.addWidget(btn_history)
-        run_layout.addStretch()
+        self._run_layout = QVBoxLayout()
+        self._run_layout.addLayout(self._run_icon_layout)
+        self._run_layout.addWidget(self._btn_run)
+        self._run_layout.addWidget(self._btn_cancel)
+        self._run_layout.addWidget(self._btn_history)
+        self._run_layout.addStretch()
 
-        run_widget = QWidget()
-        run_widget.setLayout(run_layout)
-        run_widget.setFixedSize(240, 240)
-        return run_widget
+        self._run_widget = QWidget()
+        self._run_widget.setLayout(self._run_layout)
+        self._run_widget.setFixedSize(240, 240)
+        return self._run_widget
 
     def progress_bar_ui(self) -> QProgressBar:
-        progress_bar = QProgressBar()
-        progress_bar.setRange(0, 100)
-        progress_bar.setValue(0)
-        progress_bar.setTextVisible(True)
-        progress_bar.setFormat('%p%')
-        progress_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._progress_bar = progress_bar
-        return progress_bar
+        self._progress_bar = QProgressBar()
+        self._progress_bar.setRange(0, 100)
+        self._progress_bar.setValue(0)
+        self._progress_bar.setTextVisible(True)
+        self._progress_bar.setFormat('%p%')
+        self._progress_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        return self._progress_bar
 
     ##############################
     #         CONTROLLER         #
@@ -434,16 +455,20 @@ class ProjectWidget(QWidget):
             self.open_live(url)
         self.check_enable_run()
 
-    def check_task_selected(self):
-        if self._task_radios is None:
-            return
-        for i in reversed(range(self._task_radios.count())):
-            if self._task_radios.itemAt(i).widget().isChecked():
-                task = self._task_radios.itemAt(i).widget().objectName()
-                self._task = task
-                self._project.config.current_task = task
-                self._project.save()
-                break
+    def _check_task_selected(self):
+        if self._task_radio_detection.isChecked():
+            self._task = 'detect'
+        elif self._task_radio_segmentation.isChecked():
+            self._task = 'segment'
+        elif self._task_radio_classification.isChecked():
+            self._task = 'classify'
+        elif self._task_radio_tracking.isChecked():
+            self._task = 'track'
+        elif self._task_radio_posing.isChecked():
+            self._task = 'pose'
+        self._project.config.current_task = self._task
+        self._project.save()
+        logging.debug('Task selected: ' + self._task)
         self.check_enable_run()
 
     def check_model_selected(self):
@@ -457,6 +482,8 @@ class ProjectWidget(QWidget):
         self.check_enable_run()
 
     def check_enable_run(self):
+        if self._input_info is None:
+            return
         selected_image_len = len(self._input_info.get_selected_files('images'))
         selected_video_len = len(self._input_info.get_selected_files('videos'))
         if (selected_image_len > 0 or selected_video_len > 0 or self._live_url is not None) \
@@ -489,7 +516,7 @@ class ProjectWidget(QWidget):
             result_path = os.path.join(result_path, folder_name)
             os.mkdir(result_path)
 
-            pipeline = img_detection.ImgDetectionPipeline(inputs, self._models, result_path, self._project)
+            self._current_pipeline = img_detection.ImgDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = ImageResultWidget(self._project, result_path)
@@ -501,7 +528,7 @@ class ProjectWidget(QWidget):
                 self._callback_count += 1
                 self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
-                    pipeline.deleteLater()
+                    self._current_pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
@@ -509,10 +536,9 @@ class ProjectWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            pipeline.finished_signal.connect(callback_ok)
-            pipeline.error_signal.connect(callback_err)
-            pipeline.start()
-            self._current_pipeline = pipeline
+            self._current_pipeline.finished_signal.connect(callback_ok)
+            self._current_pipeline.error_signal.connect(callback_err)
+            self._current_pipeline.start()
 
         elif self._media_type == 'video' and self._task == 'detect':
             inputs = self._input_info.get_selected_files('videos')
@@ -522,7 +548,7 @@ class ProjectWidget(QWidget):
             result_path = os.path.join(result_path, folder_name)
             os.mkdir(result_path)
 
-            pipeline = vid_detection.VidDetectionPipeline(inputs, self._models, result_path, self._project)
+            self._current_pipeline = vid_detection.VidDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
             self.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = VideoResultWidget(self._project, result_path)
@@ -537,7 +563,7 @@ class ProjectWidget(QWidget):
                 self._callback_count += 1
                 self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
-                    pipeline.deleteLater()
+                    self._current_pipeline.deleteLater()
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
@@ -548,17 +574,16 @@ class ProjectWidget(QWidget):
             def callback_cleanup() -> None:
                 self._callback_count = 0
                 self.update_progress_bar(0, 1, 0)
-                pipeline.deleteLater()
+                self._current_pipeline.deleteLater()
                 self._current_pipeline = None
                 self._btn_cancel.setEnabled(False)
                 self._btn_run.setEnabled(True)
 
-            pipeline.finished_signal.connect(callback_ok)
-            pipeline.progress_signal.connect(callback_progress)
-            pipeline.error_signal.connect(callback_err)
-            pipeline.cleanup_signal.connect(callback_cleanup)
-            pipeline.start()
-            self._current_pipeline = pipeline
+            self._current_pipeline.finished_signal.connect(callback_ok)
+            self._current_pipeline.progress_signal.connect(callback_progress)
+            self._current_pipeline.error_signal.connect(callback_err)
+            self._current_pipeline.cleanup_signal.connect(callback_cleanup)
+            self._current_pipeline.start()
 
         elif self._media_type == 'live' and self._task == 'detect':
             logging.info(f'Run with: {self._live_url}, {self._models}, detect, live')

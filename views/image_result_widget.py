@@ -1,5 +1,6 @@
+from typing import Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsPixmapItem, QGraphicsScene, \
-    QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSplitter, QSizePolicy
+    QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSplitter
 from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile
 from models.project import Project
@@ -14,18 +15,32 @@ import numpy as np
 class ImageResultWidget(QWidget):
     def __init__(self, project: Project, result_path: str):
         super().__init__()
+
+        # PyQT6 Components
+        self._middle_layout: Optional[QSplitter] = None
+        self._bottom_layout: Optional[QHBoxLayout] = None
+        self._main_layout: Optional[QVBoxLayout] = None
+        self._file_select_label: Optional[QLabel] = None
+        self._file_select_combo: Optional[QComboBox] = None
+        self._model_select_label: Optional[QLabel] = None
+        self._model_select_combo: Optional[QComboBox] = None
+        self._layer_select_label: Optional[QLabel] = None
+        self._layer_list: Optional[QListWidget] = None
+        self._left_layout: Optional[QVBoxLayout] = None
+        self._left_widget: Optional[QWidget] = None
+        self._container_widget: Optional[QWidget] = None
+        self._container_layout: Optional[QVBoxLayout] = None
+        self._scene: Optional[QGraphicsScene] = None
+        self._view: Optional[ResizeableGraphicsWidget] = None
+        self._open_result_folder_button: Optional[QPushButton] = None
+        self._save_json_button: Optional[QPushButton] = None
+        self._save_image_button: Optional[QPushButton] = None
+
         self._project = project
         self._result_path = result_path
-
         self._input_images = []
         self._result_jsons = {}
         self._layer_visibility = {}
-
-        self._file_select_combo = None
-        self._model_select_combo = None
-        self._layer_list = None
-        self._middle_layout = None
-        self._current_scene = None
 
         self.init_ui()
 
@@ -37,94 +52,88 @@ class ImageResultWidget(QWidget):
         # Initialize user interface layout and widgets
 
         # Middle layout
-        middle_layout = QSplitter(Qt.Orientation.Horizontal)
-        middle_layout.addWidget(self.left_ui())
-        middle_layout.addWidget(self.image_ui(''))
-        middle_layout.setSizes([self.width() // 2, self.width() // 2])
-        self._middle_layout = middle_layout
+        self._middle_layout = QSplitter(Qt.Orientation.Horizontal)
+        self._middle_layout.addWidget(self.left_ui())
+        self._middle_layout.addWidget(self.image_ui(''))
+        self._middle_layout.setSizes([self.width() // 2, self.width() // 2])
 
         # Bottom layout
-        bottom_layout = QHBoxLayout()
-        bottom_layout.addStretch(1)
-        bottom_layout.addWidget(self.open_result_folder_button_ui())
-        bottom_layout.addWidget(self.save_json_button_ui())
-        bottom_layout.addWidget(self.save_image_button_ui())
+        self._bottom_layout = QHBoxLayout()
+        self._bottom_layout.addStretch(1)
+        self._bottom_layout.addWidget(self.open_result_folder_button_ui())
+        self._bottom_layout.addWidget(self.save_json_button_ui())
+        self._bottom_layout.addWidget(self.save_image_button_ui())
 
         # Main layout
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(middle_layout)
-        main_layout.addLayout(bottom_layout)
-        self.setLayout(main_layout)
+        self._main_layout = QVBoxLayout(self)
+        self._main_layout.addWidget(self._middle_layout)
+        self._main_layout.addLayout(self._bottom_layout)
+        self.setLayout(self._main_layout)
 
     def left_ui(self) -> QWidget:
         # UI elements for file selection and layer visibility
 
-        file_select_label = QLabel('Select file:')
-        file_select = QComboBox()
-        file_select.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-        file_select.currentIndexChanged.connect(self.change_current_file)
-        self._file_select_combo = file_select
+        self._file_select_label = QLabel('Select file:')
+        self._file_select_combo = QComboBox()
+        self._file_select_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        self._file_select_combo.currentIndexChanged.connect(self.change_current_file)
 
-        model_select_label = QLabel('Select model:')
-        model_select = QComboBox()
-        model_select.currentIndexChanged.connect(self.change_current_model)
-        self._model_select_combo = model_select
+        self._model_select_label = QLabel('Select model:')
+        self._model_select_combo = QComboBox()
+        self._model_select_combo.currentIndexChanged.connect(self.change_current_model)
 
-        layer_select_label = QLabel('Select layers:')
-        layer_list = QListWidget()
-        layer_list.itemChanged.connect(self.toggle_layer)
-        self._layer_list = layer_list
+        self._layer_select_label = QLabel('Select layers:')
+        self._layer_list = QListWidget()
+        self._layer_list.itemChanged.connect(self.toggle_layer)
 
-        left_layout = QVBoxLayout()
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        left_layout.addWidget(file_select_label)
-        left_layout.addWidget(file_select)
-        left_layout.addWidget(model_select_label)
-        left_layout.addWidget(model_select)
-        left_layout.addWidget(layer_select_label)
-        left_layout.addWidget(layer_list)
+        self._left_layout = QVBoxLayout()
+        self._left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._left_layout.addWidget(self._file_select_label)
+        self._left_layout.addWidget(self._file_select_combo)
+        self._left_layout.addWidget(self._model_select_label)
+        self._left_layout.addWidget(self._model_select_combo)
+        self._left_layout.addWidget(self._layer_select_label)
+        self._left_layout.addWidget(self._layer_list)
 
-        left_widget = QWidget(self)
-        left_widget.setLayout(left_layout)
-
-        return left_widget
+        self._left_widget = QWidget(self)
+        self._left_widget.setLayout(self._left_layout)
+        return self._left_widget
 
     def image_ui(self, input_image: str) -> QWidget:
         # Create UI for displaying input images
 
-        container_widget = QWidget(self)
-        container_layout = QVBoxLayout(container_widget)
+        self._container_widget = QWidget(self)
+        self._container_layout = QVBoxLayout(self._container_widget)
 
-        scene = QGraphicsScene(container_widget)
-        self._current_scene = scene
+        self._scene = QGraphicsScene(self._container_widget)
 
-        pixmap = QPixmap(input_image)
-        base_image_item = QGraphicsPixmapItem(pixmap)
-        scene.addItem(base_image_item)
+        base_image_pixmap = QPixmap(input_image)
+        base_image_item = QGraphicsPixmapItem(base_image_pixmap)
+        self._scene.addItem(base_image_item)
 
-        view = ResizeableGraphicsWidget(scene, container_widget)
-        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        container_layout.addWidget(view)
+        self._view = ResizeableGraphicsWidget(self._scene, self._container_widget)
+        self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._container_layout.addWidget(self._view)
 
-        container_widget.setLayout(container_layout)
-        container_widget.setProperty('class', 'border')
-        return container_widget
+        self._container_widget.setLayout(self._container_layout)
+        self._container_widget.setProperty('class', 'border')
+        return self._container_widget
 
     def open_result_folder_button_ui(self) -> QPushButton:
-        open_result_folder_button = QPushButton('Open Result Folder')
-        open_result_folder_button.clicked.connect(self.open_result_folder)
-        return open_result_folder_button
+        self._open_result_folder_button = QPushButton('Open Result Folder')
+        self._open_result_folder_button.clicked.connect(self.open_result_folder)
+        return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
-        save_json_button = QPushButton('Save JSON')
-        save_json_button.clicked.connect(self.save_json)
-        return save_json_button
+        self._save_json_button = QPushButton('Save JSON')
+        self._save_json_button.clicked.connect(self.save_json)
+        return self._save_json_button
 
     def save_image_button_ui(self) -> QPushButton:
-        save_image_button = QPushButton('Save Image')
-        save_image_button.clicked.connect(self.save_image)
-        return save_image_button
+        self._save_image_button = QPushButton('Save Image')
+        self._save_image_button.clicked.connect(self.save_image)
+        return self._save_image_button
 
     ##############################
     #         CONTROLLER         #
@@ -214,10 +223,10 @@ class ImageResultWidget(QWidget):
 
         # Reset everything and re-add the input image
         self._layer_list.clear()
-        self._current_scene.clear()
+        self._scene.clear()
         self._layer_visibility.clear()
         input_image = self._file_select_combo.currentData()
-        self._current_scene.addPixmap(QPixmap(input_image))
+        self._scene.addPixmap(QPixmap(input_image))
 
         if index < 1:
             return
@@ -252,7 +261,7 @@ class ImageResultWidget(QWidget):
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)
             layer_item = QGraphicsPixmapItem(layer_pixmap)
-            self._current_scene.addItem(layer_item)
+            self._scene.addItem(layer_item)
 
             # Store the layer info
             self._layer_visibility[item_text] = {

@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtWidgets import QTabWidget, QWidget, QTabBar
 from views.new_project_window import NewProjectWindow
 
@@ -5,7 +6,10 @@ from views.new_project_window import NewProjectWindow
 class AppTabWidget(QTabWidget):
     def __init__(self):
         super().__init__()
-        self._new_project_window = None
+
+        # PyQT6 Components
+        self._new_project_window: Optional[NewProjectWindow] = None
+
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.close_tab)
         self.tabBarClicked.connect(self.check_tab)

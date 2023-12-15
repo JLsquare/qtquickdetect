@@ -1,18 +1,25 @@
-import logging
-from typing import Callable
+from typing import Callable, Optional
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QGridLayout, QListWidget, QMessageBox
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QPushButton, QGridLayout, QListWidget
 from models.app_state import AppState
 from models.project import Project
-import os
-
 from views.image_result_widget import ImageResultWidget
 from views.video_result_widget import VideoResultWidget
+import os
+import logging
 
 
 class HistoryResultWindow(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None], project: Project):
         super().__init__()
+
+        # PyQT6 Components
+        self._main_layout: Optional[QGridLayout] = None
+        self._project_list_label: Optional[QLabel] = None
+        self._project_list: Optional[QListWidget] = None
+        self._open_project_layout: Optional[QVBoxLayout] = None
+        self._cancel_button: Optional[QPushButton] = None
+
         self._appstate = AppState.get_instance()
         self._project = project
         self._add_new_tab = add_new_tab
@@ -27,29 +34,27 @@ class HistoryResultWindow(QWidget):
         self.setGeometry(100, 100, 480, 480)
         self.setStyleSheet(self._appstate.qss)
 
-        main_layout = QGridLayout(self)
-        self.setLayout(main_layout)
+        self._main_layout = QGridLayout(self)
+        self.setLayout(self._main_layout)
 
-        main_layout.addLayout(self.open_history_ui(), 0, 0)
-        main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        self._main_layout.addLayout(self.open_history_ui(), 0, 0)
+        self._main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
     def open_history_ui(self) -> QVBoxLayout:
-        open_project_layout = QVBoxLayout()
-        project_list_label = QLabel('Open History:')
-        project_list = QListWidget()
-        project_list.addItems(self.get_history())
-        project_list.itemDoubleClicked.connect(self.open_history)
+        self._project_list_label = QLabel('Open History:')
+        self._project_list = QListWidget()
+        self._project_list.addItems(self.get_history())
+        self._project_list.itemDoubleClicked.connect(self.open_history)
 
-        open_project_layout.addWidget(project_list_label)
-        open_project_layout.addWidget(project_list)
-
-        return open_project_layout
+        self._open_project_layout = QVBoxLayout()
+        self._open_project_layout.addWidget(self._project_list_label)
+        self._open_project_layout.addWidget(self._project_list)
+        return self._open_project_layout
 
     def cancel_button_ui(self) -> QPushButton:
-        cancel_button = QPushButton('Cancel')
-        cancel_button.clicked.connect(self.cancel)
-
-        return cancel_button
+        self._cancel_button = QPushButton('Cancel')
+        self._cancel_button.clicked.connect(self.cancel)
+        return self._cancel_button
 
     ##############################
     #         CONTROLLER         #

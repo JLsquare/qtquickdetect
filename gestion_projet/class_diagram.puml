@@ -1,0 +1,337 @@
+@startuml classes_diagramme_class.puml
+set namespaceSeparator none
+class "AppConfig" as models.app_config.AppConfig {
+  localization : str
+  path : str
+  qss : str
+  save()
+}
+class "AppConfigWindow" as views.app_config_window.AppConfigWindow {
+  cancel_button_ui() -> QPushButton
+  cancel_settings()
+  init_ui()
+  save_button_ui() -> QPushButton
+  save_settings()
+}
+class "AppState" as models.app_state.AppState {
+  app : NoneType
+  config
+  opened_projects : list
+  pipelines : list
+  qss : NoneType
+  get_instance() -> 'AppState'
+  save()
+  set_app(app: QApplication)
+  stop_pipelines()
+  update_localization()
+  update_qss()
+}
+class "AppTabWidget" as views.app_tab_widget.AppTabWidget {
+  add_new_tab(new_tab: QWidget, title: str, redirect: bool) -> None
+  check_tab(index: int)
+  close_tab(index: int)
+}
+class "CheckableFileSystemModel" as views.input_info_widget.CheckableFileSystemModel {
+  checks : dict
+  selection_changed_signal
+  data(index: QModelIndex, role: int)
+  flags(index)
+  setData(index: QModelIndex, value, role: int)
+}
+class "FrameProcessor" as pipeline.realtime_detection.FrameProcessor {
+  signals
+  run()
+}
+class "FrameProcessorSignals" as pipeline.realtime_detection.FrameProcessorSignals {
+  finished
+}
+class "GeneralAppConfigWidget" as views.general_app_config_widget.GeneralAppConfigWidget {
+  local_layout : Optional[QVBoxLayout]
+  get_local() -> str
+  get_qss() -> str
+  init_ui()
+  local_ui()
+  qss_ui() -> QVBoxLayout
+  set_local()
+  set_qss()
+}
+class "GeneralProjectConfigWidget" as views.general_project_config_widget.GeneralProjectConfigWidget {
+  device_selection_layout : Optional[QVBoxLayout]
+  devices_combo : Optional[QComboBox]
+  devices_label : Optional[QLabel]
+  half_precision_disabled : Optional[QRadioButton]
+  half_precision_enabled : Optional[QRadioButton]
+  half_precision_label : Optional[QLabel]
+  half_precision_layout : Optional[QVBoxLayout]
+  main_layout : Optional[QVBoxLayout]
+  device_selection_ui()
+  get_device() -> str
+  get_gpu_devices() -> list[str]
+  get_half_precision() -> bool
+  half_precision_ui()
+  init_ui()
+  set_device(value: str)
+  set_half_precision(value: bool)
+}
+class "HistoryResultWindow" as views.history_result_window.HistoryResultWindow {
+  cancel()
+  cancel_button_ui() -> QPushButton
+  get_history() -> list[str]
+  init_ui()
+  open_history(item)
+  open_history_ui() -> QVBoxLayout
+}
+class "ImageProjectConfigWidget" as views.image_project_config_widget.ImageProjectConfigWidget {
+  box_color_ui() -> QVBoxLayout
+  box_thickness_ui() -> QVBoxLayout
+  file_format_ui() -> QVBoxLayout
+  get_file_format() -> str
+  init_ui()
+  set_box_color()
+  set_box_thickness(value: str)
+  set_file_format(value: str)
+  set_text_color()
+  set_text_size(value: str)
+  text_color_ui() -> QVBoxLayout
+  text_size_ui() -> QVBoxLayout
+  update_box_color()
+  update_text_color()
+}
+class "ImageResultWidget" as views.image_result_widget.ImageResultWidget {
+  add_input_and_result(input_image: str, result_json: str)
+  change_current_file()
+  change_current_model()
+  image_ui(input_image: str) -> QWidget
+  init_ui()
+  left_ui() -> QWidget
+  open_result_folder()
+  open_result_folder_button_ui() -> QPushButton
+  save_image()
+  save_image_button_ui() -> QPushButton
+  save_json()
+  save_json_button_ui() -> QPushButton
+  toggle_layer(item: QListWidgetItem)
+}
+class "ImgDetectionPipeline" as pipeline.img_detection.ImgDetectionPipeline {
+  error_signal
+  finished_signal
+  request_cancel()
+  run()
+}
+class "InputInfoWidget" as views.input_info_widget.InputInfoWidget {
+  model
+  get_selected_files(input_dir: str)
+  init_ui()
+  on_item_clicked(index)
+  on_item_double_clicked(index)
+  set_image_preview(file_path)
+  set_live_preview(live_url)
+  set_video_preview(file_path)
+  update_preview(selected)
+}
+class "LiveResultWidget" as views.live_result_widget.LiveResultWidget {
+  calculate_real_fps()
+  init_ui()
+  receive_frame(frame)
+  resize_and_add_pixmap(pixmap)
+  start()
+  stop()
+  update_frame()
+  update_info_label()
+}
+class "MainWindow" as views.main_window.MainWindow {
+  init_ui()
+  init_window()
+  open_settings()
+  settings_ui() -> QPushButton
+  title_ui() -> QHBoxLayout
+}
+class "MediaFetcher" as utils.media_fetcher.MediaFetcher {
+  fps : float
+  frame_signal
+  request_cancel()
+  run()
+}
+class "NewProjectWindow" as views.new_project_window.NewProjectWindow {
+  cancel()
+  cancel_button_ui() -> QPushButton
+  create_button_ui() -> QPushButton
+  create_project()
+  get_existing_projects()
+  init_ui()
+  open_project(item)
+  open_project_ui() -> QVBoxLayout
+  project_name_ui() -> QVBoxLayout
+}
+class "OtherSourceWindow" as views.other_source_window.OtherSourceWindow {
+  btn_layout() -> QHBoxLayout
+  cancel_button_ui() -> QPushButton
+  check_button_ui() -> QPushButton
+  check_url()
+  format_ui() -> QVBoxLayout
+  init_ui()
+  ok()
+  ok_button_ui() -> QPushButton
+  url_input_ui() -> QVBoxLayout
+}
+class "Project" as models.project.Project {
+  config
+  device : device
+  project_name : str
+  save()
+}
+class "ProjectConfig" as models.project_config.ProjectConfig {
+  current_media_type : NoneType
+  current_models : NoneType
+  current_task : NoneType, str
+  device : str
+  half_precision : bool
+  image_box_color : tuple
+  image_box_thickness : int
+  image_format : str
+  image_text_color : tuple
+  image_text_size : float
+  path
+  video_box_color : tuple
+  video_box_thickness : int
+  video_format : str
+  video_text_color : tuple
+  video_text_size : float
+  save()
+}
+class "ProjectConfigWindow" as views.project_config_window.ProjectConfigWindow {
+  cancel_button_ui() -> QPushButton
+  cancel_settings()
+  init_ui()
+  save_button_ui() -> QPushButton
+  save_settings()
+}
+class "ProjectWidget" as views.project_widget.ProjectWidget {
+  callback_other_source(url: str, image: bool, video: bool, live: bool) -> None
+  cancel_current_pipeline()
+  check_enable_run()
+  check_model_selected()
+  copy_files(file_paths: list[str])
+  download_file_to_input(url: str)
+  dragEnterEvent(event: QDragEnterEvent | None)
+  dragMoveEvent(event: QDragMoveEvent | None)
+  dropEvent(event: QDropEvent | None)
+  init_ui()
+  input_info_ui()
+  input_ui() -> QWidget
+  model_ui() -> QWidget
+  open_history()
+  open_image(_: bool, file_paths: list[str])
+  open_live(url: str)
+  open_media(media_type: str, file_mime_types: list[str], file_extensions: tuple[str, ...], file_paths: list[str]) -> list[str]
+  open_other_source()
+  open_settings()
+  open_video(_: bool, file_paths: list[str])
+  process_media_files(media_type: str, filenames: list[str])
+  progress_bar_ui() -> QProgressBar
+  run()
+  run_ui() -> QWidget
+  settings_ui() -> QPushButton
+  stop()
+  task_ui() -> QWidget
+  update_progress_bar(progress: int, total: int, extra: float)
+}
+class "RealtimeDetectionPipeline" as pipeline.realtime_detection.RealtimeDetectionPipeline {
+  error_signal
+  fetcher
+  finished_signal
+  progress_signal
+  on_frame_processed(processed_frame)
+  process_frame(frame, frame_available)
+  request_cancel()
+  run()
+}
+class "ResizeableGraphicsWidget" as views.resizeable_graphics_widget.ResizeableGraphicsWidget {
+  resizeEvent(event)
+}
+class "VidDetectionPipeline" as pipeline.vid_detection.VidDetectionPipeline {
+  cleanup_signal
+  error_signal
+  finished_signal
+  progress_signal
+  request_cancel()
+  run()
+}
+class "VideoPlayerWidget" as views.video_player_widget.VideoPlayerWidget {
+  auto_replay(status: QMediaPlayer.MediaStatus)
+  change_position(position: int)
+  control_ui() -> QHBoxLayout
+  get_current_frame() -> np.ndarray | None
+  init_ui()
+  pause()
+  play()
+  play_pause()
+  update_position_slider()
+  video_ui() -> QVideoWidget
+}
+class "VideoProjectConfigWidget" as views.video_project_config_widget.VideoProjectConfigWidget {
+  box_color_ui() -> QVBoxLayout
+  box_thickness_ui() -> QVBoxLayout
+  file_format_ui() -> QVBoxLayout
+  get_video_format() -> str
+  init_ui()
+  set_box_color()
+  set_box_thickness(value: str)
+  set_text_color()
+  set_text_size(value: str)
+  set_video_format(value: str)
+  text_color_ui() -> QVBoxLayout
+  text_size_ui() -> QVBoxLayout
+  update_box_color()
+  update_text_color()
+}
+class "VideoResultWidget" as views.video_result_widget.VideoResultWidget {
+  add_input_and_result(input_video: str, result_video: str, result_json: str)
+  change_current_file()
+  change_current_model()
+  change_current_video(video_path: str)
+  init_ui()
+  left_ui() -> QWidget
+  open_result_folder()
+  open_result_folder_button_ui() -> QPushButton
+  save_frame()
+  save_frame_button_ui() -> QPushButton
+  save_json()
+  save_json_button_ui() -> QPushButton
+  save_video()
+  save_video_button_ui() -> QPushButton
+  video_ui(video_path: str) -> QWidget
+}
+models.app_config.AppConfig --* models.app_state.AppState : config
+models.project_config.ProjectConfig --* models.project.Project : config
+pipeline.img_detection.ImgDetectionPipeline --* views.project_widget.ProjectWidget : _current_pipeline
+pipeline.realtime_detection.FrameProcessorSignals --* pipeline.realtime_detection.FrameProcessor : signals
+pipeline.realtime_detection.RealtimeDetectionPipeline --* views.live_result_widget.LiveResultWidget : _pipeline
+pipeline.vid_detection.VidDetectionPipeline --* views.project_widget.ProjectWidget : _current_pipeline
+utils.media_fetcher.MediaFetcher --* pipeline.realtime_detection.RealtimeDetectionPipeline : fetcher
+utils.media_fetcher.MediaFetcher --* views.input_info_widget.InputInfoWidget : _media_fetcher
+views.app_config_window.AppConfigWindow --* views.main_window.MainWindow : _settings_window
+views.history_result_window.HistoryResultWindow --* views.project_widget.ProjectWidget : _history_window
+views.input_info_widget.CheckableFileSystemModel --* views.input_info_widget.InputInfoWidget : model
+views.input_info_widget.InputInfoWidget --* views.project_widget.ProjectWidget : _input_info
+views.new_project_window.NewProjectWindow --* views.app_tab_widget.AppTabWidget : _new_project_window
+views.other_source_window.OtherSourceWindow --* views.project_widget.ProjectWidget : _other_source_window
+views.project_config_window.ProjectConfigWindow --* views.project_widget.ProjectWidget : _settings_window
+views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.image_result_widget.ImageResultWidget : _view
+views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.input_info_widget.InputInfoWidget : _preview_view
+views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.live_result_widget.LiveResultWidget : _view
+views.video_player_widget.VideoPlayerWidget --* views.video_result_widget.VideoResultWidget : _video_player
+models.app_config.AppConfig --o views.general_app_config_widget.GeneralAppConfigWidget : _config
+models.project.Project --o pipeline.img_detection.ImgDetectionPipeline : _project
+models.project.Project --o pipeline.realtime_detection.FrameProcessor : _project
+models.project.Project --o pipeline.realtime_detection.RealtimeDetectionPipeline : _project
+models.project.Project --o pipeline.vid_detection.VidDetectionPipeline : _project
+models.project.Project --o views.history_result_window.HistoryResultWindow : _project
+models.project.Project --o views.image_result_widget.ImageResultWidget : _project
+models.project.Project --o views.project_config_window.ProjectConfigWindow : _project
+models.project.Project --o views.project_widget.ProjectWidget : _project
+models.project.Project --o views.video_result_widget.VideoResultWidget : _project
+models.project_config.ProjectConfig --o views.general_project_config_widget.GeneralProjectConfigWidget : _config
+models.project_config.ProjectConfig --o views.image_project_config_widget.ImageProjectConfigWidget : _config
+models.project_config.ProjectConfig --o views.video_project_config_widget.VideoProjectConfigWidget : _config
+@enduml

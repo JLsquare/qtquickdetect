@@ -1,12 +1,12 @@
+from typing import Optional
 from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QLabel, QWidget, QVBoxLayout, QGraphicsScene, QSizePolicy
+from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 from pipeline.realtime_detection import MediaFetcher
 import logging
 import os
 import cv2
-
-from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
 class CheckableFileSystemModel(QFileSystemModel):
@@ -42,21 +42,17 @@ class InputInfoWidget(QWidget):
     def __init__(self, file_dir: str):
         super().__init__()
 
-        self._preview_view = None
-        self._scene = None
-        self._file_dir = file_dir
-        logging.debug('FileListWidget: ' + self._file_dir)
+        # PyQT6 Components
+        self._qtree_view: Optional[QTreeView] = None
+        self._scene: Optional[QGraphicsScene] = None
+        self._preview_view: Optional[ResizeableGraphicsWidget] = None
+        self._preview_container: Optional[QWidget] = None
+        self._preview_layout: Optional[QVBoxLayout] = None
+        self._layout: Optional[QVBoxLayout] = None
 
+        self._file_dir = file_dir
         self.model = CheckableFileSystemModel()
         self.model.setRootPath(self._file_dir)
-
-        self._qtree_view = QTreeView()
-        self._qtree_view.setRootIsDecorated(False)
-        self._qtree_view.setModel(self.model)
-        self._qtree_view.setRootIndex(self.model.index(self._file_dir))
-        self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
-        self._qtree_view.doubleClicked.connect(self.on_item_clicked)
-
         self._media_fetcher = None
 
         self.init_ui()
@@ -66,27 +62,31 @@ class InputInfoWidget(QWidget):
     ##############################
 
     def init_ui(self):
+        self._qtree_view = QTreeView()
+        self._qtree_view.setRootIsDecorated(False)
+        self._qtree_view.setModel(self.model)
+        self._qtree_view.setRootIndex(self.model.index(self._file_dir))
+        self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
+        self._qtree_view.doubleClicked.connect(self.on_item_clicked)
         for i in range(1, self.model.columnCount()):
             self._qtree_view.hideColumn(i)
         self._qtree_view.setHeaderHidden(True)
 
-        scene = QGraphicsScene(self)
-        self._scene = scene
-        preview_view = ResizeableGraphicsWidget(self._scene, self)
-        preview_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        preview_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._preview_view = preview_view
+        self._scene = QGraphicsScene(self)
+        self._preview_view = ResizeableGraphicsWidget(self._scene, self)
+        self._preview_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._preview_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
-        preview_container = QWidget()
-        preview_layout = QVBoxLayout()
-        preview_layout.addWidget(preview_view)
-        preview_container.setLayout(preview_layout)
-        preview_container.setProperty('class', 'border')
+        self._preview_container = QWidget()
+        self._preview_layout = QVBoxLayout()
+        self._preview_layout.addWidget(self._preview_view)
+        self._preview_container.setLayout(self._preview_layout)
+        self._preview_container.setProperty('class', 'border')
 
-        layout = QVBoxLayout()
-        layout.addWidget(self._qtree_view, 1)
-        layout.addWidget(preview_container, 1)
-        self.setLayout(layout)
+        self._layout = QVBoxLayout()
+        self._layout.addWidget(self._qtree_view, 1)
+        self._layout.addWidget(self._preview_container, 1)
+        self.setLayout(self._layout)
 
     ##############################
     #         CONTROLLER         #

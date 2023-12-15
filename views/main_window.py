@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
@@ -10,8 +11,18 @@ import logging
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self._settings_window = None
+
+        # PyQT6 Components
+        self._top_layout: Optional[QHBoxLayout] = None
+        self._main_layout: Optional[QGridLayout] = None
+        self._title_icon: Optional[QLabel] = None
+        self._title_label: Optional[QLabel] = None
+        self._title_layout: Optional[QHBoxLayout] = None
+        self._settings_button: Optional[QPushButton] = None
+        self._settings_window: Optional[AppConfigWindow] = None
+
         self._appstate = AppState.get_instance()
+
         self.init_window()
         self.init_ui()
 
@@ -27,38 +38,38 @@ class MainWindow(QWidget):
         self.setProperty('class', 'dark-bg')
 
     def init_ui(self):
-        top_layout = QHBoxLayout()
-        top_layout.addStretch(1)
-        top_layout.addLayout(self.title_ui())
-        top_layout.addStretch(1)
-        top_layout.addWidget(self.settings_ui())
+        self._top_layout = QHBoxLayout()
+        self._top_layout.addStretch(1)
+        self._top_layout.addLayout(self.title_ui())
+        self._top_layout.addStretch(1)
+        self._top_layout.addWidget(self.settings_ui())
 
-        main_layout = QGridLayout(self)
-        main_layout.addLayout(top_layout, 0, 0)
-        main_layout.addWidget(AppTabWidget(), 1, 0)
+        self._main_layout = QGridLayout(self)
+        self._main_layout.addLayout(self._top_layout, 0, 0)
+        self._main_layout.addWidget(AppTabWidget(), 1, 0)
+        self.setLayout(self._main_layout)
 
     def title_ui(self) -> QHBoxLayout:
-        title_icon = QLabel()
+        self._title_icon = QLabel()
         pixmap = QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                                             Qt.TransformationMode.SmoothTransformation)
-        title_icon.setPixmap(pixmap)
-        title_icon.setFixedWidth(32)
-        title_label = QLabel('QTQuickDetect')
+        self._title_icon.setPixmap(pixmap)
+        self._title_icon.setFixedWidth(32)
+        self._title_label = QLabel('QTQuickDetect')
 
-        title_layout = QHBoxLayout()
-        title_layout.addWidget(title_icon)
-        title_layout.addWidget(title_label)
-
-        return title_layout
+        self._title_layout = QHBoxLayout()
+        self._title_layout.addWidget(self._title_icon)
+        self._title_layout.addWidget(self._title_label)
+        return self._title_layout
 
     def settings_ui(self) -> QPushButton:
-        settings_button = QPushButton()
-        settings_button.setIcon(QIcon('ressources/images/settings_icon.png'))
-        settings_button.setIconSize(QSize(32, 32))
-        settings_button.setFixedSize(32, 32)
-        settings_button.clicked.connect(self.open_settings)
+        self._settings_button = QPushButton()
+        self._settings_button.setIcon(QIcon('ressources/images/settings_icon.png'))
+        self._settings_button.setIconSize(QSize(32, 32))
+        self._settings_button.setFixedSize(32, 32)
+        self._settings_button.clicked.connect(self.open_settings)
 
-        return settings_button
+        return self._settings_button
 
     ##############################
     #         CONTROLLER         #

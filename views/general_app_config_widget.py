@@ -1,15 +1,23 @@
-import logging
-
+from typing import Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox
 from PyQt6.QtCore import Qt
 from models.app_config import AppConfig
+import logging
 
 
 class GeneralAppConfigWidget(QWidget):
     def __init__(self, config: AppConfig):
         super().__init__()
-        self._qss_combo = None
-        self._local_combo = None
+
+        # PyQT6 Components
+        self._main_layout: Optional[QVBoxLayout] = None
+        self._qss_label: Optional[QLabel] = None
+        self._qss_combo: Optional[QComboBox] = None
+        self._qss_layout: Optional[QVBoxLayout] = None
+        self._local_label: Optional[QLabel] = None
+        self._local_combo: Optional[QComboBox] = None
+        self.local_layout: Optional[QVBoxLayout] = None
+
         self._config = config
         self.init_ui()
 
@@ -18,41 +26,39 @@ class GeneralAppConfigWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        main_layout = QVBoxLayout()
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.qss_ui())
-        main_layout.addLayout(self.local_ui())
-        self.setLayout(main_layout)
+        self._main_layout = QVBoxLayout()
+        self._main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._main_layout.addLayout(self.qss_ui())
+        self._main_layout.addLayout(self.local_ui())
+        self.setLayout(self._main_layout)
 
     def qss_ui(self) -> QVBoxLayout:
-        qss_label = QLabel('QSS (need restart):')
-        qss_combo = QComboBox()
-        qss_combo.addItem('App Default', 'app')
-        qss_combo.addItem('System', 'sys')
-        qss_combo.setCurrentText(self.get_qss())
-        qss_combo.currentIndexChanged.connect(self.set_qss)
-        self._qss_combo = qss_combo
+        self._qss_label = QLabel('QSS (need restart):')
+        self._qss_combo = QComboBox()
+        self._qss_combo.addItem('App Default', 'app')
+        self._qss_combo.addItem('System', 'sys')
+        self._qss_combo.setCurrentText(self.get_qss())
+        self._qss_combo.currentIndexChanged.connect(self.set_qss)
+        self._qss_combo = self._qss_combo
 
-        qss_layout = QVBoxLayout()
-        qss_layout.addWidget(qss_label)
-        qss_layout.addWidget(qss_combo)
-
-        return qss_layout
+        self._qss_layout = QVBoxLayout()
+        self._qss_layout.addWidget(self._qss_label)
+        self._qss_layout.addWidget(self._qss_combo)
+        return self._qss_layout
 
     def local_ui(self):
-        local_label = QLabel('Localization:')
-        local_combo = QComboBox()
-        local_combo.addItem('English', 'en')
-        local_combo.addItem('French', 'fr')
-        local_combo.setCurrentText(self.get_local())
-        local_combo.currentIndexChanged.connect(self.set_local)
-        self._local_combo = local_combo
+        self._local_label = QLabel('Localization:')
+        self._local_combo = QComboBox()
+        self._local_combo.addItem('English', 'en')
+        self._local_combo.addItem('French', 'fr')
+        self._local_combo.setCurrentText(self.get_local())
+        self._local_combo.currentIndexChanged.connect(self.set_local)
+        self._local_combo = self._local_combo
 
-        local_layout = QVBoxLayout()
-        local_layout.addWidget(local_label)
-        local_layout.addWidget(local_combo)
-
-        return local_layout
+        self.local_layout = QVBoxLayout()
+        self.local_layout.addWidget(self._local_label)
+        self.local_layout.addWidget(self._local_combo)
+        return self.local_layout
 
     ##############################
     #         CONTROLLER         #

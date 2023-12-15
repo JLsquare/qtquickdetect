@@ -1,4 +1,5 @@
 from collections import deque
+from typing import Optional
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QHBoxLayout
@@ -12,18 +13,24 @@ class LiveResultWidget(QWidget):
     def __init__(self, live_url: str, model_path: str, project: Project):
         super().__init__()
 
-        self._buffer_rate_label = None
-        self._buffer_size_label = None
-        self._fetcher_fps_label = None
-        self._real_fps_label = None
-        self._scene = None
-        self._info_label = None
+        # PyQT6 Components
+        self._container_widget: Optional[QWidget] = None
+        self._container_layout: Optional[QHBoxLayout] = None
+        self._scene: Optional[QGraphicsScene] = None
+        self._view: Optional[ResizeableGraphicsWidget] = None
+        self._stats_label: Optional[QLabel] = None
+        self._real_fps_label: Optional[QLabel] = None
+        self._fetcher_fps_label: Optional[QLabel] = None
+        self._buffer_size_label: Optional[QLabel] = None
+        self._buffer_max_size_label: Optional[QLabel] = None
+        self._buffer_rate_label: Optional[QLabel] = None
+        self._stats_layout: Optional[QVBoxLayout] = None
+        self._main_layout: Optional[QHBoxLayout] = None
 
         self._timer = None
         self._pipeline = RealtimeDetectionPipeline(live_url, model_path, project)
         self._frame_buffer = deque(maxlen=30)
         self._buffer_rate = 0.80
-
         self._frame_update_count = 0
         self._real_fps = 0
         self._fps_timer = QTimer(self)
@@ -38,44 +45,39 @@ class LiveResultWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        container_widget = QWidget(self)
-        container_layout = QHBoxLayout(container_widget)
-        container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._container_widget = QWidget(self)
+        self._container_layout = QHBoxLayout(self._container_widget)
+        self._container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        scene = QGraphicsScene(container_widget)
-        self._scene = scene
+        self._scene = QGraphicsScene(self._container_widget)
 
-        view = ResizeableGraphicsWidget(scene, container_widget)
-        view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        container_layout.addWidget(view, 1)
-        container_widget.setLayout(container_layout)
+        self._view = ResizeableGraphicsWidget(self._scene, self._container_widget)
+        self._view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._container_layout.addWidget(self._view, 1)
+        self._container_widget.setLayout(self._container_layout)
 
-        stats_label = QLabel('Live stats: ')
-        real_fps_label = QLabel('FPS: 0')
-        self._real_fps_label = real_fps_label
-        fetcher_fps_label = QLabel(f'Fetcher FPS: 0')
-        self._fetcher_fps_label = fetcher_fps_label
-        buffer_size_label = QLabel('Buffer Size: 0')
-        self._buffer_size_label = buffer_size_label
-        buffer_max_size_label = QLabel(f'Buffer Max Size: {self._frame_buffer.maxlen}')
-        buffer_rate_label = QLabel(f'Buffer Rate: {self._buffer_rate}')
-        self._buffer_rate_label = buffer_rate_label
+        self._stats_label = QLabel('Live stats: ')
+        self._real_fps_label = QLabel('FPS: 0')
+        self._fetcher_fps_label = QLabel(f'Fetcher FPS: 0')
+        self._buffer_size_label = QLabel('Buffer Size: 0')
+        self._buffer_max_size_label = QLabel(f'Buffer Max Size: {self._frame_buffer.maxlen}')
+        self._buffer_rate_label = QLabel(f'Buffer Rate: {self._buffer_rate}')
 
-        stats_layout = QVBoxLayout()
-        stats_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        stats_layout.addWidget(stats_label)
-        stats_layout.addWidget(real_fps_label)
-        stats_layout.addWidget(fetcher_fps_label)
-        stats_layout.addWidget(buffer_size_label)
-        stats_layout.addWidget(buffer_max_size_label)
-        stats_layout.addWidget(buffer_rate_label)
+        self._stats_layout = QVBoxLayout()
+        self._stats_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._stats_layout.addWidget(self._stats_label)
+        self._stats_layout.addWidget(self._real_fps_label)
+        self._stats_layout.addWidget(self._fetcher_fps_label)
+        self._stats_layout.addWidget(self._buffer_size_label)
+        self._stats_layout.addWidget(self._buffer_max_size_label)
+        self._stats_layout.addWidget(self._buffer_rate_label)
 
-        main_layout = QHBoxLayout()
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(container_widget)
-        main_layout.addLayout(stats_layout)
-        self.setLayout(main_layout)
+        self._main_layout = QHBoxLayout()
+        self._main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._main_layout.addWidget(self._container_widget)
+        self._main_layout.addLayout(self._stats_layout)
+        self.setLayout(self._main_layout)
 
     ##############################
     #         CONTROLLER         #

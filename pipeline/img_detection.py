@@ -52,6 +52,8 @@ class ImgDetectionPipeline(QThread):
             result_path = os.path.join(self._results_path, results['model_name'])
 
             for src in self._inputs:
+                if self._cancel_requested:
+                    break
                 try:
                     if not os.path.exists(result_path):
                         os.mkdir(result_path)

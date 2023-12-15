@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtCore import Qt, QFile
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, \
     QFileDialog, QSplitter
@@ -12,13 +13,27 @@ import cv2 as cv
 class VideoResultWidget(QWidget):
     def __init__(self, project: Project, result_path: str):
         super().__init__()
+
+        # PyQT6 Components
+        self._middle_layout: Optional[QSplitter] = None
+        self._bottom_layout: Optional[QHBoxLayout] = None
+        self._main_layout: Optional[QVBoxLayout] = None
+        self._file_select_label: Optional[QLabel] = None
+        self._file_select_combo: Optional[QComboBox] = None
+        self._model_select_label: Optional[QLabel] = None
+        self._model_select_combo: Optional[QComboBox] = None
+        self._left_layout: Optional[QVBoxLayout] = None
+        self._left_widget: Optional[QWidget] = None
+        self._video_player: Optional[VideoPlayerWidget] = None
+        self._video_layout: Optional[QVBoxLayout] = None
+        self._video_container: Optional[QWidget] = None
+        self._open_result_folder_button: Optional[QPushButton] = None
+        self._save_json_button: Optional[QPushButton] = None
+        self._save_video_button: Optional[QPushButton] = None
+        self._save_frame_button: Optional[QPushButton] = None
+
         self._project = project
         self._result_path = result_path
-
-        self._current_result_player = None
-        self._middle_layout = None
-        self._file_select_combo = None
-        self._model_select_combo = None
 
         self._input_videos = []
         self._result_videos = {}
@@ -32,80 +47,76 @@ class VideoResultWidget(QWidget):
 
     def init_ui(self):
         # Middle layout
-        middle_layout = QSplitter(Qt.Orientation.Horizontal)
-        middle_layout.addWidget(self.left_ui())
-        middle_layout.addWidget(self.video_ui(''))
-        middle_layout.setSizes([self.width() // 2, self.width() // 2])
-        self._middle_layout = middle_layout
+        self._middle_layout = QSplitter(Qt.Orientation.Horizontal)
+        self._middle_layout.addWidget(self.left_ui())
+        self._middle_layout.addWidget(self.video_ui(''))
+        self._middle_layout.setSizes([self.width() // 2, self.width() // 2])
 
         # Bottom layout
-        bottom_layout = QHBoxLayout()
-        bottom_layout.addStretch(1)
-        bottom_layout.addWidget(self.open_result_folder_button_ui())
-        bottom_layout.addWidget(self.save_json_button_ui())
-        bottom_layout.addWidget(self.save_video_button_ui())
-        bottom_layout.addWidget(self.save_frame_button_ui())
+        self._bottom_layout = QHBoxLayout()
+        self._bottom_layout.addStretch(1)
+        self._bottom_layout.addWidget(self.open_result_folder_button_ui())
+        self._bottom_layout.addWidget(self.save_json_button_ui())
+        self._bottom_layout.addWidget(self.save_video_button_ui())
+        self._bottom_layout.addWidget(self.save_frame_button_ui())
 
         # Main layout
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(middle_layout)
-        main_layout.addLayout(bottom_layout)
-        self.setLayout(main_layout)
+        self._main_layout = QVBoxLayout(self)
+        self._main_layout.addWidget(self._middle_layout)
+        self._main_layout.addLayout(self._bottom_layout)
+        self.setLayout(self._main_layout)
 
     def left_ui(self) -> QWidget:
-        file_select_label = QLabel('Select file:')
-        file_select = QComboBox()
-        file_select.currentIndexChanged.connect(self.change_current_file)
-        self._file_select_combo = file_select
+        self._file_select_label = QLabel('Select file:')
+        self._file_select_combo = QComboBox()
+        self._file_select_combo.currentIndexChanged.connect(self.change_current_file)
 
-        model_select_label = QLabel('Select model:')
-        model_select = QComboBox()
-        model_select.currentIndexChanged.connect(self.change_current_model)
-        self._model_select_combo = model_select
+        self._model_select_label = QLabel('Select model:')
+        self._model_select_combo = QComboBox()
+        self._model_select_combo.currentIndexChanged.connect(self.change_current_model)
 
-        left_layout = QVBoxLayout()
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        left_layout.addWidget(file_select_label)
-        left_layout.addWidget(file_select)
-        left_layout.addWidget(model_select_label)
-        left_layout.addWidget(model_select)
+        self._left_layout = QVBoxLayout()
+        self._left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._left_layout.addWidget(self._file_select_label)
+        self._left_layout.addWidget(self._file_select_combo)
+        self._left_layout.addWidget(self._model_select_label)
+        self._left_layout.addWidget(self._model_select_combo)
 
-        left_widget = QWidget()
-        left_widget.setLayout(left_layout)
-
-        return left_widget
+        self._left_widget = QWidget()
+        self._left_widget.setLayout(self._left_layout)
+        return self._left_widget
 
     def video_ui(self, video_path: str) -> QWidget:
-        video_player = VideoPlayerWidget(video_path)
-        self._current_result_player = video_player
+        self._video_player = VideoPlayerWidget(video_path)
 
-        video_container = QWidget()
-        video_layout = QVBoxLayout()
-        video_layout.addWidget(video_player)
-        video_container.setLayout(video_layout)
-        video_container.setProperty('class', 'border')
+        self._video_layout = QVBoxLayout()
+        self._video_layout.addWidget(self._video_player)
 
-        return video_container
+        self._video_container = QWidget()
+        self._video_container.setLayout(self._video_layout)
+        self._video_container.setProperty('class', 'border')
+
+        return self._video_container
 
     def open_result_folder_button_ui(self) -> QPushButton:
-        open_result_folder_button = QPushButton('Open Result Folder')
-        open_result_folder_button.clicked.connect(self.open_result_folder)
-        return open_result_folder_button
+        self._open_result_folder_button = QPushButton('Open Result Folder')
+        self._open_result_folder_button.clicked.connect(self.open_result_folder)
+        return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
-        save_json_button = QPushButton('Save JSON')
-        save_json_button.clicked.connect(self.save_json)
-        return save_json_button
+        self._save_json_button = QPushButton('Save JSON')
+        self._save_json_button.clicked.connect(self.save_json)
+        return self._save_json_button
 
     def save_video_button_ui(self) -> QPushButton:
-        save_video_button = QPushButton('Save Video')
-        save_video_button.clicked.connect(self.save_video)
-        return save_video_button
+        self._save_video_button = QPushButton('Save Video')
+        self._save_video_button.clicked.connect(self.save_video)
+        return self._save_video_button
 
     def save_frame_button_ui(self) -> QPushButton:
-        save_frame_button = QPushButton('Save Frame')
-        save_frame_button.clicked.connect(self.save_frame)
-        return save_frame_button
+        self._save_frame_button = QPushButton('Save Frame')
+        self._save_frame_button.clicked.connect(self.save_frame)
+        return self._save_frame_button
 
     ##############################
     #         CONTROLLER         #
@@ -159,11 +170,11 @@ class VideoResultWidget(QWidget):
                 QMessageBox.critical(self, "Error", "An error occurred while saving the video.")
 
     def save_frame(self):
-        if self._current_result_player is None:
+        if self._video_player is None:
             QMessageBox.critical(self, 'Error', 'No video selected.')
             return
 
-        frame = self._current_result_player.get_current_frame()
+        frame = self._video_player.get_current_frame()
 
         if frame is None:
             QMessageBox.critical(self, 'Error', 'No frame found.')

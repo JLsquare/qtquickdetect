@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QComboBox, QLineEdit, QColorDialog
 from PyQt6.QtCore import Qt
@@ -8,9 +9,26 @@ import logging
 class ImageProjectConfigWidget(QWidget):
     def __init__(self, config: ProjectConfig):
         super().__init__()
+
+        # PyQT6 Components
+        self._main_layout: Optional[QVBoxLayout] = None
+        self._file_format_label: Optional[QLabel] = None
+        self._file_format_combo: Optional[QComboBox] = None
+        self._file_format_layout: Optional[QVBoxLayout] = None
+        self._box_color_label: Optional[QLabel] = None
+        self._box_color_picker: Optional[QPushButton] = None
+        self._box_color_layout: Optional[QVBoxLayout] = None
+        self._text_color_label: Optional[QLabel] = None
+        self._text_color_picker: Optional[QPushButton] = None
+        self._text_color_layout: Optional[QVBoxLayout] = None
+        self._box_thickness_label: Optional[QLabel] = None
+        self._box_thickness_slider: Optional[QLineEdit] = None
+        self._box_thickness_layout: Optional[QVBoxLayout] = None
+        self._text_size_label: Optional[QLabel] = None
+        self._text_size_slider: Optional[QLineEdit] = None
+        self._text_size_layout: Optional[QVBoxLayout] = None
+
         self._config = config
-        self._box_color_picker = None
-        self._text_color_picker = None
         self.init_ui()
 
     ##############################
@@ -18,78 +36,71 @@ class ImageProjectConfigWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        main_layout = QVBoxLayout()
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.file_format_ui())
-        main_layout.addLayout(self.box_color_ui())
-        main_layout.addLayout(self.text_color_ui())
-        main_layout.addLayout(self.box_thickness_ui())
-        main_layout.addLayout(self.text_size_ui())
-        self.setLayout(main_layout)
+        self._main_layout = QVBoxLayout()
+        self._main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._main_layout.addLayout(self.file_format_ui())
+        self._main_layout.addLayout(self.box_color_ui())
+        self._main_layout.addLayout(self.text_color_ui())
+        self._main_layout.addLayout(self.box_thickness_ui())
+        self._main_layout.addLayout(self.text_size_ui())
+        self.setLayout(self._main_layout)
 
     def file_format_ui(self) -> QVBoxLayout:
-        file_format_label = QLabel('File format:')
-        file_format_combo = QComboBox()
-        file_format_combo.addItem('PNG (.png)', 'png')
-        file_format_combo.addItem('JPEG (.jpg, .jpeg)', 'jpg')
-        file_format_combo.setCurrentText(self.get_file_format())
-        file_format_combo.currentTextChanged.connect(self.set_file_format)
+        self._file_format_label = QLabel('File format:')
+        self._file_format_combo = QComboBox()
+        self._file_format_combo.addItem('PNG (.png)', 'png')
+        self._file_format_combo.addItem('JPEG (.jpg, .jpeg)', 'jpg')
+        self._file_format_combo.setCurrentText(self.get_file_format())
+        self._file_format_combo.currentTextChanged.connect(self.set_file_format)
 
-        file_format_layout = QVBoxLayout()
-        file_format_layout.addWidget(file_format_label)
-        file_format_layout.addWidget(file_format_combo)
-
-        return file_format_layout
+        self._file_format_layout = QVBoxLayout()
+        self._file_format_layout.addWidget(self._file_format_label)
+        self._file_format_layout.addWidget(self._file_format_combo)
+        return self._file_format_layout
 
     def box_color_ui(self) -> QVBoxLayout:
-        box_color_label = QLabel('Box color:')
-        box_color_picker = QPushButton('Pick')
-        box_color_picker.clicked.connect(self.set_box_color)
-        self._box_color_picker = box_color_picker
+        self._box_color_label = QLabel('Box color:')
+        self._box_color_picker = QPushButton('Pick')
+        self._box_color_picker.clicked.connect(self.set_box_color)
         self.update_box_color()
 
-        box_color_layout = QVBoxLayout()
-        box_color_layout.addWidget(box_color_label)
-        box_color_layout.addWidget(box_color_picker)
-
-        return box_color_layout
+        self._box_color_layout = QVBoxLayout()
+        self._box_color_layout.addWidget(self._box_color_label)
+        self._box_color_layout.addWidget(self._box_color_picker)
+        return self._box_color_layout
 
     def text_color_ui(self) -> QVBoxLayout:
-        text_color_label = QLabel('Text color:')
-        text_color_picker = QPushButton('Pick')
-        text_color_picker.clicked.connect(self.set_text_color)
-        self._text_color_picker = text_color_picker
+        self._text_color_label = QLabel('Text color:')
+        self._text_color_picker = QPushButton('Pick')
+        self._text_color_picker.clicked.connect(self.set_text_color)
         self.update_text_color()
 
-        text_color_layout = QVBoxLayout()
-        text_color_layout.addWidget(text_color_label)
-        text_color_layout.addWidget(text_color_picker)
-
-        return text_color_layout
+        self._text_color_layout = QVBoxLayout()
+        self._text_color_layout.addWidget(self._text_color_label)
+        self._text_color_layout.addWidget(self._text_color_picker)
+        return self._text_color_layout
 
     def box_thickness_ui(self) -> QVBoxLayout:
-        box_thickness_label = QLabel('Box thickness:')
-        box_thickness_slider = QLineEdit()
-        box_thickness_slider.setText(str(self._config.image_box_thickness))
-        box_thickness_slider.textChanged.connect(self.set_box_thickness)
+        self._box_thickness_label = QLabel('Box thickness:')
+        self._box_thickness_slider = QLineEdit()
+        self._box_thickness_slider.setText(str(self._config.image_box_thickness))
+        self._box_thickness_slider.textChanged.connect(self.set_box_thickness)
 
-        box_thickness_layout = QVBoxLayout()
-        box_thickness_layout.addWidget(box_thickness_label)
-        box_thickness_layout.addWidget(box_thickness_slider)
-
-        return box_thickness_layout
+        self._box_thickness_layout = QVBoxLayout()
+        self._box_thickness_layout.addWidget(self._box_thickness_label)
+        self._box_thickness_layout.addWidget(self._box_thickness_slider)
+        return self._box_thickness_layout
 
     def text_size_ui(self) -> QVBoxLayout:
-        text_size_label = QLabel('Text size:')
-        text_size_slider = QLineEdit()
-        text_size_slider.setText(str(self._config.image_text_size))
-        text_size_slider.textChanged.connect(self.set_text_size)
+        self._text_size_label = QLabel('Text size:')
+        self._text_size_slider = QLineEdit()
+        self._text_size_slider.setText(str(self._config.image_text_size))
+        self._text_size_slider.textChanged.connect(self.set_text_size)
 
-        text_size_layout = QVBoxLayout()
-        text_size_layout.addWidget(text_size_label)
-        text_size_layout.addWidget(text_size_slider)
-
-        return text_size_layout
+        self._text_size_layout = QVBoxLayout()
+        self._text_size_layout.addWidget(self._text_size_label)
+        self._text_size_layout.addWidget(self._text_size_slider)
+        return self._text_size_layout
 
     ##############################
     #         CONTROLLER         #

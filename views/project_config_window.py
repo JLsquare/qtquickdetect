@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtWidgets import QWidget, QTabWidget, QGridLayout, QPushButton
 from PyQt6.QtCore import Qt
 from models.app_state import AppState
@@ -11,6 +12,13 @@ import logging
 class ProjectConfigWindow(QWidget):
     def __init__(self, project: Project):
         super().__init__()
+
+        # PyQT6 Components
+        self._tab: Optional[QTabWidget] = None
+        self._main_layout: Optional[QGridLayout] = None
+        self._cancel_button: Optional[QPushButton] = None
+        self._save_button: Optional[QPushButton] = None
+
         self._appstate = AppState.get_instance()
         self._project = project
         self.init_ui()
@@ -25,31 +33,27 @@ class ProjectConfigWindow(QWidget):
         self.setStyleSheet(self._appstate.qss)
         self.setProperty('class', 'dark-bg')
 
-        main_layout = QGridLayout(self)
-        self.setLayout(main_layout)
+        self._tab = QTabWidget(self)
+        self._tab.addTab(GeneralProjectConfigWidget(self._project.config), "General")
+        self._tab.addTab(ImageProjectConfigWidget(self._project.config), "Image")
+        self._tab.addTab(VideoProjectConfigWidget(self._project.config), "Video")
+        self._tab.addTab(QWidget(), "Live")
 
-        tab = QTabWidget(self)
-
-        tab.addTab(GeneralProjectConfigWidget(self._project.config), "General")
-        tab.addTab(ImageProjectConfigWidget(self._project.config), "Image")
-        tab.addTab(VideoProjectConfigWidget(self._project.config), "Video")
-        tab.addTab(QWidget(), "Live")
-
-        main_layout.addWidget(tab, 0, 0, 2, 1)
-        main_layout.addWidget(self.cancel_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-        main_layout.addWidget(self.save_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        self._main_layout = QGridLayout(self)
+        self._main_layout.addWidget(self._tab, 0, 0, 2, 1)
+        self._main_layout.addWidget(self.cancel_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        self._main_layout.addWidget(self.save_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        self.setLayout(self._main_layout)
 
     def cancel_button_ui(self) -> QPushButton:
-        cancel_button = QPushButton('Cancel')
-        cancel_button.clicked.connect(self.cancel_settings)
-
-        return cancel_button
+        self._cancel_button = QPushButton('Cancel')
+        self._cancel_button.clicked.connect(self.cancel_settings)
+        return self._cancel_button
 
     def save_button_ui(self) -> QPushButton:
-        save_button = QPushButton('Save')
-        save_button.clicked.connect(self.save_settings)
-
-        return save_button
+        self._save_button = QPushButton('Save')
+        self._save_button.clicked.connect(self.save_settings)
+        return self._save_button
 
     ##############################
     #         CONTROLLER         #
@@ -57,7 +61,6 @@ class ProjectConfigWindow(QWidget):
 
     def save_settings(self):
         self._project.save()
-
         logging.debug('Saved settings')
         self.close()
 

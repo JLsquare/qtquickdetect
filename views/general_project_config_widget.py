@@ -1,3 +1,4 @@
+from typing import Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton
 from PyQt6.QtCore import Qt
 from models.project_config import ProjectConfig
@@ -8,6 +9,17 @@ import logging
 class GeneralProjectConfigWidget(QWidget):
     def __init__(self, config: ProjectConfig):
         super().__init__()
+
+        # PyQT6 Components
+        self.main_layout: Optional[QVBoxLayout] = None
+        self.devices_label: Optional[QLabel] = None
+        self.devices_combo: Optional[QComboBox] = None
+        self.device_selection_layout: Optional[QVBoxLayout] = None
+        self.half_precision_label: Optional[QLabel] = None
+        self.half_precision_enabled: Optional[QRadioButton] = None
+        self.half_precision_disabled: Optional[QRadioButton] = None
+        self.half_precision_layout: Optional[QVBoxLayout] = None
+
         self._config = config
         self.init_ui()
 
@@ -16,45 +28,43 @@ class GeneralProjectConfigWidget(QWidget):
     ##############################
 
     def init_ui(self):
-        main_layout = QVBoxLayout()
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        main_layout.addLayout(self.device_selection_ui())
-        main_layout.addLayout(self.half_precision_ui())
-        self.setLayout(main_layout)
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.main_layout.addLayout(self.device_selection_ui())
+        self.main_layout.addLayout(self.half_precision_ui())
+        self.setLayout(self.main_layout)
 
     def device_selection_ui(self):
-        devices_label = QLabel('GPU Devices:')
-        devices_combo = QComboBox()
-        devices_combo.addItem('CPU')
-        devices_combo.addItems(self.get_gpu_devices())
-        devices_combo.setCurrentText(self.get_device())
-        devices_combo.currentTextChanged.connect(self.set_device)
+        self.devices_label = QLabel('GPU Devices:')
+        self.devices_combo = QComboBox()
+        self.devices_combo.addItem('CPU')
+        self.devices_combo.addItems(self.get_gpu_devices())
+        self.devices_combo.setCurrentText(self.get_device())
+        self.devices_combo.currentTextChanged.connect(self.set_device)
 
-        device_selection_layout = QVBoxLayout()
-        device_selection_layout.addWidget(devices_label)
-        device_selection_layout.addWidget(devices_combo)
-
-        return device_selection_layout
+        self.device_selection_layout = QVBoxLayout()
+        self.device_selection_layout.addWidget(self.devices_label)
+        self.device_selection_layout.addWidget(self.devices_combo)
+        return self.device_selection_layout
     
     def half_precision_ui(self):
-        half_precision_label = QLabel('Half Precision (GPU):')
-        half_precision_enabled = QRadioButton('Enabled')
-        half_precision_disabled = QRadioButton('Disabled')
+        self.half_precision_label = QLabel('Half Precision (GPU):')
+        self.half_precision_enabled = QRadioButton('Enabled')
+        self.half_precision_disabled = QRadioButton('Disabled')
 
         if self.get_half_precision():
-            half_precision_enabled.setChecked(True)
+            self.half_precision_enabled.setChecked(True)
         else:
-            half_precision_disabled.setChecked(True)
+            self.half_precision_disabled.setChecked(True)
 
-        half_precision_enabled.toggled.connect(lambda: self.set_half_precision(True))
-        half_precision_disabled.toggled.connect(lambda: self.set_half_precision(False))
+        self.half_precision_enabled.toggled.connect(lambda: self.set_half_precision(True))
+        self.half_precision_disabled.toggled.connect(lambda: self.set_half_precision(False))
 
-        half_precision_layout = QVBoxLayout()
-        half_precision_layout.addWidget(half_precision_label)
-        half_precision_layout.addWidget(half_precision_enabled)
-        half_precision_layout.addWidget(half_precision_disabled)
-    
-        return half_precision_layout
+        self.half_precision_layout = QVBoxLayout()
+        self.half_precision_layout.addWidget(self.half_precision_label)
+        self.half_precision_layout.addWidget(self.half_precision_enabled)
+        self.half_precision_layout.addWidget(self.half_precision_disabled)
+        return self.half_precision_layout
 
     ##############################
     #         CONTROLLER         #

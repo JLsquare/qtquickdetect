@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QGridLayout, QListWidget, QMessageBox
 from models.app_state import AppState
@@ -10,8 +10,19 @@ import os
 class NewProjectWindow(QWidget):
     def __init__(self, add_new_tab: Callable[[QWidget, str, bool], None]):
         super().__init__()
+
+        # PyQT6 Components
+        self._main_layout: Optional[QGridLayout] = None
+        self._project_name_label: Optional[QLabel] = None
+        self._project_name_input: Optional[QLineEdit] = None
+        self._project_name_layout: Optional[QVBoxLayout] = None
+        self._open_project_layout: Optional[QVBoxLayout] = None
+        self._project_list_label: Optional[QLabel] = None
+        self._project_list: Optional[QListWidget] = None
+        self._cancel_button: Optional[QPushButton] = None
+        self._save_button: Optional[QPushButton] = None
+
         self._appstate = AppState.get_instance()
-        self._project_name_input = None
         self._add_new_tab = add_new_tab
         self.init_ui()
 
@@ -24,50 +35,44 @@ class NewProjectWindow(QWidget):
         self.setGeometry(100, 100, 480, 320)
         self.setStyleSheet(self._appstate.qss)
 
-        main_layout = QGridLayout(self)
-        self.setLayout(main_layout)
-
-        main_layout.addLayout(self.project_name_ui(), 0, 0, 1, 2)
-        main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-        main_layout.addWidget(self.create_button_ui(), 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
-        main_layout.addLayout(self.open_project_ui(), 2, 0, 1, 2)
+        self._main_layout = QGridLayout(self)
+        self._main_layout.addLayout(self.project_name_ui(), 0, 0, 1, 2)
+        self._main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        self._main_layout.addWidget(self.create_button_ui(), 1, 1, alignment=Qt.AlignmentFlag.AlignRight)
+        self._main_layout.addLayout(self.open_project_ui(), 2, 0, 1, 2)
+        self.setLayout(self._main_layout)
 
     def project_name_ui(self) -> QVBoxLayout:
-        project_name_label = QLabel(self.tr('New Project name:'))
-        project_name_input = QLineEdit()
-        project_name_input.setPlaceholderText('MyProject')
-        self._project_name_input = project_name_input
+        self._project_name_label = QLabel(self.tr('New Project name:'))
+        self._project_name_input = QLineEdit()
+        self._project_name_input.setPlaceholderText('MyProject')
 
-        project_name_layout = QVBoxLayout()
-        project_name_layout.addWidget(project_name_label)
-        project_name_layout.addWidget(project_name_input)
-        project_name_layout.addStretch()
-
-        return project_name_layout
+        self._project_name_layout = QVBoxLayout()
+        self._project_name_layout.addWidget(self._project_name_label)
+        self._project_name_layout.addWidget(self._project_name_input)
+        self._project_name_layout.addStretch()
+        return self._project_name_layout
 
     def open_project_ui(self) -> QVBoxLayout:
-        open_project_layout = QVBoxLayout()
-        project_list_label = QLabel(self.tr('Open Existing Project:'))
-        project_list = QListWidget()
-        project_list.addItems(self.get_existing_projects())
-        project_list.itemDoubleClicked.connect(self.open_project)
+        self._open_project_layout = QVBoxLayout()
+        self._project_list_label = QLabel(self.tr('Open Existing Project:'))
+        self._project_list = QListWidget()
+        self._project_list.addItems(self.get_existing_projects())
+        self._project_list.itemDoubleClicked.connect(self.open_project)
 
-        open_project_layout.addWidget(project_list_label)
-        open_project_layout.addWidget(project_list)
-
-        return open_project_layout
+        self._open_project_layout.addWidget(self._project_list_label)
+        self._open_project_layout.addWidget(self._project_list)
+        return self._open_project_layout
 
     def cancel_button_ui(self) -> QPushButton:
-        cancel_button = QPushButton(self.tr('Cancel'))
-        cancel_button.clicked.connect(self.cancel)
-
-        return cancel_button
+        self._cancel_button = QPushButton(self.tr('Cancel'))
+        self._cancel_button.clicked.connect(self.cancel)
+        return self._cancel_button
 
     def create_button_ui(self) -> QPushButton:
-        save_button = QPushButton(self.tr('Create'))
-        save_button.clicked.connect(self.create_project)
-
-        return save_button
+        self._save_button = QPushButton(self.tr('Create'))
+        self._save_button.clicked.connect(self.create_project)
+        return self._save_button
 
     ##############################
     #         CONTROLLER         #
