@@ -89,20 +89,23 @@ class InputWidget(QWidget):
             msg_box.setStyleSheet(self._appstate.qss)
             msg_box.setText(self.tr('What do you want to open?'))
 
-            files_btn = msg_box.addButton(self.tr("Files"), QMessageBox.ButtonRole.YesRole)
-            folder_btn = msg_box.addButton(self.tr('Folder'), QMessageBox.ButtonRole.NoRole)
+            close_btn = msg_box.addButton(self.tr('Cancel'), QMessageBox.ButtonRole.RejectRole)
+            files_btn = msg_box.addButton(self.tr("Files"), QMessageBox.ButtonRole.ActionRole)
+            folder_btn = msg_box.addButton(self.tr('Folder'), QMessageBox.ButtonRole.ActionRole)
             msg_box.exec()
 
             if msg_box.clickedButton() == files_btn:
-                file_mime_types = ["Image files (*.png *.jpg *.jpeg), Video files (*.mp4 *.avi *.mov *.webm)"]
                 dialog = QFileDialog(self, f"{self.tr('Select Files')}", "/")
-                dialog.setMimeTypeFilters(file_mime_types)
                 dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-                file_paths = dialog.selectedFiles() if dialog.exec() else []
-                if any(f.lower().endswith(('.png', '.jpg', '.jpeg')) for f in file_paths):
-                    media_type = 'image'
-                elif any(f.lower().endswith(('.mp4', '.avi', '.mov', '.webm')) for f in file_paths):
-                    media_type = 'video'
+                name_filter = ["Images (*.png *.jpg *.jpeg)", "Videos (*.mp4 *.avi *.mov *.webm)"]
+                dialog.setNameFilters(name_filter)
+                if dialog.exec():
+                    file_paths = dialog.selectedFiles() if dialog.exec() else []
+                    if any(f.lower().endswith(('.png', '.jpg', '.jpeg')) for f in file_paths):
+                        media_type = 'image'
+                    elif any(f.lower().endswith(('.mp4', '.avi', '.mov', '.webm')) for f in file_paths):
+                        media_type = 'video'
+                    self._process_media_files(file_paths, media_type)
             elif msg_box.clickedButton() == folder_btn:
                 file_extensions = ('.png', '.jpg', '.jpeg', '.mp4', '.avi', '.mov', '.webm')
                 dialog = QFileDialog(self, self.tr("Select Folder"), "/")
@@ -116,8 +119,9 @@ class InputWidget(QWidget):
                         media_type = 'image'
                     elif any(f.lower().endswith(('.mp4', '.avi', '.mov', '.webm')) for f in file_paths):
                         media_type = 'video'
-
-        self._process_media_files(file_paths, media_type)
+                    self._process_media_files(file_paths, media_type)
+            elif msg_box.clickedButton() == close_btn:
+                return
 
     def _process_media_files(self, filenames: list[str], media_type: str):
         if len(filenames) > 0:
