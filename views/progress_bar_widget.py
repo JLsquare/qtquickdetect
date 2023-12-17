@@ -22,5 +22,6 @@ class ProgressBarWidget(QProgressBar):
     #         CONTROLLER         #
     ##############################
 
-    def update_progress_bar(self, progress: int, total: int, extra: float):
+    def update_progress_bar(self, progress: int, total: int, extra: float, file_name: str):
         self.setValue(int(((progress + extra) / total) * 100))
+        self.setFormat(f'{file_name} - %p%')

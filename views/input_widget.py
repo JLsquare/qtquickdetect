@@ -186,7 +186,6 @@ class InputWidget(QWidget):
             return self.tr('Unknown')
 
     def _switch_media_type(self):
-        logging.debug('Switching media type: ' + self.media_type)
         if self.media_type == 'image':
             self.media_type = 'video'
         elif self.media_type == 'video':
