@@ -16,7 +16,7 @@ class GeneralAppConfigWidget(QWidget):
         self._qss_layout: Optional[QVBoxLayout] = None
         self._local_label: Optional[QLabel] = None
         self._local_combo: Optional[QComboBox] = None
-        self.local_layout: Optional[QVBoxLayout] = None
+        self._local_layout: Optional[QVBoxLayout] = None
 
         self._config = config
         self.init_ui()
@@ -55,10 +55,10 @@ class GeneralAppConfigWidget(QWidget):
         self._local_combo.currentIndexChanged.connect(self.set_local)
         self._local_combo = self._local_combo
 
-        self.local_layout = QVBoxLayout()
-        self.local_layout.addWidget(self._local_label)
-        self.local_layout.addWidget(self._local_combo)
-        return self.local_layout
+        self._local_layout = QVBoxLayout()
+        self._local_layout.addWidget(self._local_label)
+        self._local_layout.addWidget(self._local_combo)
+        return self._local_layout
 
     ##############################
     #         CONTROLLER         #

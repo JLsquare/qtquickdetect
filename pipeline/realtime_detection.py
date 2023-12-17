@@ -69,6 +69,7 @@ class RealtimeDetectionPipeline(QThread):
     def request_cancel(self):
         """Public method to request cancellation of the process."""
         self.fetcher.request_cancel()
+        self.fetcher.wait()
         self._appstate.pipelines.remove(self)
 
     def run(self):

@@ -1,12 +1,19 @@
 from typing import Optional
 from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
-from PyQt6.QtWidgets import QTreeView, QLabel, QWidget, QVBoxLayout, QGraphicsScene, QSizePolicy
+from PyQt6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QGraphicsScene, QStyledItemDelegate, QStyleOptionViewItem
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 from pipeline.realtime_detection import MediaFetcher
-import logging
 import os
 import cv2
+
+
+class NoCheckBoxDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option: QStyleOptionViewItem, index: QModelIndex):
+        super().initStyleOption(option, index)
+        if self.parent() and isinstance(self.parent(), QTreeView):
+            if self.parent().model().isDir(index):
+                option.features &= ~QStyleOptionViewItem.ViewItemFeature.HasCheckIndicator
 
 
 class CheckableFileSystemModel(QFileSystemModel):
@@ -15,6 +22,7 @@ class CheckableFileSystemModel(QFileSystemModel):
     def __init__(self):
         super().__init__()
         self.checks = {}
+        self.setData(self.index(self.rootPath()), Qt.CheckState.Checked, Qt.ItemDataRole.CheckStateRole)
 
     def data(self, index: QModelIndex, role: int = None):
         if role == Qt.ItemDataRole.CheckStateRole and index.column() == 0:
@@ -67,6 +75,8 @@ class InputInfoWidget(QWidget):
         self._qtree_view.setModel(self.model)
         self._qtree_view.setRootIndex(self.model.index(self._file_dir))
         self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
+        no_checkbox_delegate = NoCheckBoxDelegate(self._qtree_view)
+        self._qtree_view.setItemDelegateForColumn(0, no_checkbox_delegate)
         self._qtree_view.doubleClicked.connect(self.on_item_clicked)
         for i in range(1, self.model.columnCount()):
             self._qtree_view.hideColumn(i)
@@ -93,10 +103,14 @@ class InputInfoWidget(QWidget):
     ##############################
 
     def get_selected_files(self, input_dir: str):
+        self.collapse_all()
+        self._qtree_view.expand(self.model.index(f'{self._file_dir}/{input_dir}'))
         selected_files = []
         self._get_selected_files_recursive(self.model.index(f'{self._file_dir}/{input_dir}'), selected_files)
-        logging.debug('FileListWidget: ' + str(selected_files))
         return selected_files
+
+    def collapse_all(self):
+        self._qtree_view.collapseAll()
 
     def _get_selected_files_recursive(self, index, selected_files):
         if self.model.data(index, Qt.ItemDataRole.CheckStateRole) == 2:
@@ -147,7 +161,11 @@ class InputInfoWidget(QWidget):
         cap.release()
 
     def set_live_preview(self, live_url):
-        self._media_fetcher = MediaFetcher(live_url, 1)
+        if self._media_fetcher is not None:
+            self._media_fetcher.request_cancel()
+            self._media_fetcher.wait()
+            self._media_fetcher = None
+        self._media_fetcher = MediaFetcher(live_url, 60)
 
         def update_frame(frame, frame_available):
             if frame_available:

@@ -1,11 +1,13 @@
 from datetime import datetime
 from typing import Callable, Optional
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFileDialog, QProgressBar, \
-    QMessageBox, QListWidget, QListWidgetItem, QRadioButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QMessageBox, \
+    QListWidget, QListWidgetItem, QRadioButton
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QIcon
-from PyQt6.QtCore import Qt, QDir, QFile, QSize, QTimer
+from PyQt6.QtCore import Qt, QDir, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
+from views.input_widget import InputWidget
+from views.progress_bar_widget import ProgressBarWidget
 from views.project_config_window import ProjectConfigWindow
 from views.history_result_window import HistoryResultWindow
 from views.input_info_widget import InputInfoWidget
@@ -16,7 +18,6 @@ from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
 import logging
 import os
-import urllib.request
 
 
 class ProjectWidget(QWidget):
@@ -35,9 +36,9 @@ class ProjectWidget(QWidget):
         self._btn_import_video: Optional[QPushButton] = None
         self._btn_other_source: Optional[QPushButton] = None
         self._input_layout: Optional[QVBoxLayout] = None
-        self._input_widget: Optional[QWidget] = None
+        self._input_widget: Optional[InputWidget] = None
         self._task_icon_layout: Optional[QHBoxLayout] = None
-        self._task_icon: Optional[QLabel]= None
+        self._task_icon: Optional[QLabel] = None
         self._task_radio_layout: Optional[QVBoxLayout] = None
         self._task_radio_detection: Optional[QRadioButton] = None
         self._task_radio_segmentation: Optional[QRadioButton] = None
@@ -64,21 +65,21 @@ class ProjectWidget(QWidget):
         self._other_source_window: Optional[OtherSourceWindow] = None
         self._settings_window: Optional[ProjectConfigWindow] = None
         self._history_window: Optional[HistoryResultWindow] = None
-        self._progress_bar: Optional[QProgressBar] = None
+        self._progress_bar: Optional[ProgressBarWidget] = None
 
         self._appstate = AppState.get_instance()
         self._add_new_tab = add_new_tab
         self._project = project
         self._current_pipeline: Optional[img_detection.ImgDetectionPipeline | vid_detection.VidDetectionPipeline] = None
         self._callback_count = 0
-        self._media_type = project.config.current_media_type
         self._task = project.config.current_task
         self._models = project.config.current_models
         self._live_url = None
 
         self.setAcceptDrops(True)
         self.init_ui()
-        QTimer.singleShot(1000, self.check_enable_run)
+        self.check_enable_run()
+        QTimer.singleShot(500, self.check_enable_run)
 
     ##############################
     #            VIEW            #
@@ -92,7 +93,6 @@ class ProjectWidget(QWidget):
 
         # Right Layout
         self._right_layout = QHBoxLayout()
-        self._right_layout.addWidget(self.input_ui())
         self._right_layout.addWidget(self.task_ui())
         self._right_layout.addWidget(self.model_ui())
         self._right_layout.addWidget(self.run_ui())
@@ -108,6 +108,9 @@ class ProjectWidget(QWidget):
         self._left_layout.addStretch()
         self._left_layout.addLayout(self._right_vertical_layout)
         self._left_layout.addStretch()
+
+        # add input_ui to right_layout at first position (needed input_info_ui to be initialized)
+        self._right_layout.insertWidget(0, self.input_ui())
 
         # Main Layout
         self._main_layout = QVBoxLayout(self)
@@ -131,39 +134,9 @@ class ProjectWidget(QWidget):
         self._btn_settings.clicked.connect(self.open_settings)
         return self._btn_settings
 
-    def input_ui(self) -> QWidget:
-        # Input icon
-        self._input_icon_layout = QHBoxLayout()
-        self._input_icon_layout.addStretch()
-        self._input_icon = QLabel()
-        self._input_icon.setPixmap(
-            QPixmap('ressources/images/input_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                               Qt.TransformationMode.SmoothTransformation))
-        self._input_icon_layout.addWidget(self._input_icon)
-        self._input_icon_layout.addStretch()
-
-        # Input buttons
-        self._btn_import_image = QPushButton(self.tr('Import Image'))
-        self._btn_import_image.setProperty('class', 'input')
-        self._btn_import_image.clicked.connect(self.open_image)
-        self._btn_import_video = QPushButton(self.tr('Import Video'))
-        self._btn_import_video.setProperty('class', 'input')
-        self._btn_import_video.clicked.connect(self.open_video)
-        self._btn_other_source = QPushButton(self.tr('Other Source'))
-        self._btn_other_source.setProperty('class', 'input')
-        self._btn_other_source.clicked.connect(self.open_other_source)
-
-        # Input Layout
-        self._input_layout = QVBoxLayout()
-        self._input_layout.addLayout(self._input_icon_layout)
-        self._input_layout.addWidget(self._btn_import_image)
-        self._input_layout.addWidget(self._btn_import_video)
-        self._input_layout.addWidget(self._btn_other_source)
-        self._input_layout.addStretch()
-
-        self._input_widget = QWidget()
-        self._input_widget.setLayout(self._input_layout)
-        self._input_widget.setFixedSize(240, 240)
+    def input_ui(self) -> InputWidget:
+        self._input_widget = InputWidget(self._project, self._appstate, self._input_info)
+        self._input_widget.input_changed_signal.connect(self.check_enable_run)
         return self._input_widget
 
     def task_ui(self) -> QWidget:
@@ -313,13 +286,8 @@ class ProjectWidget(QWidget):
         self._run_widget.setFixedSize(240, 240)
         return self._run_widget
 
-    def progress_bar_ui(self) -> QProgressBar:
-        self._progress_bar = QProgressBar()
-        self._progress_bar.setRange(0, 100)
-        self._progress_bar.setValue(0)
-        self._progress_bar.setTextVisible(True)
-        self._progress_bar.setFormat('%p%')
-        self._progress_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    def progress_bar_ui(self) -> ProgressBarWidget:
+        self._progress_bar = ProgressBarWidget()
         return self._progress_bar
 
     ##############################
@@ -336,105 +304,17 @@ class ProjectWidget(QWidget):
 
     def dropEvent(self, event: QDropEvent | None):
         urls = event.mimeData().urls()
-        image_paths = []
-        video_paths = []
+        file_paths = []
         for url in urls:
             if url.isLocalFile():
                 path = url.toLocalFile()
             else:
                 path = url.toString()
             if path.endswith(('.png', '.jpg', '.jpeg')):
-                image_paths.append(path)
+                file_paths.append(path)
             elif path.endswith(('.mp4', '.avi', '.mov', '.webm')):
-                video_paths.append(path)
-        if image_paths:
-            self.open_image(file_paths=image_paths)
-        if video_paths:
-            self.open_video(file_paths=video_paths)
-
-    def open_media(self, media_type: str, file_mime_types: list[str], file_extensions: tuple[str, ...],
-                   file_paths: list[str] = None) -> list[str]:
-        if file_paths is None:
-            msg_box = QMessageBox()
-            msg_box.setStyleSheet(self._appstate.qss)
-            msg_box.setText(self.tr('What do you want to open?'))
-            files_btn = msg_box.addButton(self.tr("Files"), QMessageBox.ButtonRole.YesRole)
-            msg_box.addButton(self.tr('Folder'), QMessageBox.ButtonRole.NoRole)
-            msg_box.exec()
-
-            if msg_box.clickedButton() == files_btn:
-                dialog = QFileDialog(self, f"{self.tr('Open')} {media_type.capitalize()}(s)", '/')
-                dialog.setMimeTypeFilters(file_mime_types)
-                dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
-                filenames = dialog.selectedFiles() if dialog.exec() else []
-            else:
-                dialog = QFileDialog(self, self.tr("Select Folder"), "/")
-                dialog.setFileMode(QFileDialog.FileMode.Directory)
-                dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
-                if dialog.exec():
-                    folder_path = dialog.selectedFiles()[0]
-                    filenames = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
-                                 if any(f.lower().endswith(ext) for ext in file_extensions)]
-                else:
-                    filenames = []
-        else:
-            filenames = file_paths
-
-        return filenames
-
-    def process_media_files(self, media_type: str, filenames: list[str]):
-        if len(filenames) > 0:
-            self._media_type = media_type
-            self._project.config.current_media_type = media_type
-            self._project.save()
-            logging.debug(f'{media_type.capitalize()}(s) opened : {filenames}')
-
-            for filename in filenames:
-                if filename.startswith(('http://', 'https://')):
-                    self.download_file_to_input(filename)
-                else:
-                    self.copy_files(filenames)
-
-            self.check_enable_run()
-
-    def open_image(self, _: bool = False, file_paths: list[str] = None):
-        image_files = self.open_media('image', ["image/png", "image/jpeg"],
-                                      ('.png', '.jpg', '.jpeg'), file_paths)
-        self.process_media_files('image', image_files)
-
-    def open_video(self, _: bool = False, file_paths: list[str] = None):
-        video_files = self.open_media('video', ["video/mp4", "video/avi", "video/mov", "video/webm"],
-                                      ('.mp4', '.avi', '.mov', '.webm'), file_paths)
-        self.process_media_files('video', video_files)
-
-    def open_live(self, url: str):
-        self._media_type = 'live'
-        self._project.config.current_media_type = 'live'
-        self._project.save()
-        self._live_url = url
-        self._input_info.set_live_preview(url)
-        self.check_enable_run()
-
-    def download_file_to_input(self, url: str):
-        media = urllib.request.urlopen(url)
-        media_name = os.path.basename(url)
-        subfolder = 'images' if any(url.lower().endswith(ext) for ext in ('.png', '.jpg', '.jpeg')) else 'videos'
-        file_path = f'projects/{self._project.project_name}/input/{subfolder}/{media_name}'
-        with open(file_path, 'wb') as f:
-            f.write(media.read())
-        return file_path
-
-    def copy_files(self, file_paths: list[str]):
-        for file_path in file_paths:
-            file_name = file_path.split('/')[-1]
-            subfolder = 'images' if any(file_path.lower().endswith(ext) for ext in ('.png', '.jpg', '.jpeg')) else 'videos'
-            destination_path = f'projects/{self._project.project_name}/input/{subfolder}/{file_name}'
-            QFile.copy(file_path, destination_path)
-
-    def open_other_source(self):
-        self._other_source_window = OtherSourceWindow(self.callback_other_source)
-        self._other_source_window.show()
-        logging.debug('Window opened : Other Source')
+                file_paths.append(path)
+        self._input_widget.open_files(file_paths=file_paths)
 
     def open_settings(self):
         self._settings_window = ProjectConfigWindow(self._project)
@@ -445,15 +325,6 @@ class ProjectWidget(QWidget):
         self._history_window = HistoryResultWindow(self._add_new_tab, self._project)
         self._history_window.show()
         logging.debug('Window opened : History')
-
-    def callback_other_source(self, url: str, image: bool, video: bool, live: bool) -> None:
-        if image:
-            self.open_image(file_paths=[url])
-        elif video:
-            self.open_video(file_paths=[url])
-        elif live:
-            self.open_live(url)
-        self.check_enable_run()
 
     def _check_task_selected(self):
         if self._task_radio_detection.isChecked():
@@ -484,14 +355,24 @@ class ProjectWidget(QWidget):
     def check_enable_run(self):
         if self._input_info is None:
             return
-        selected_image_len = len(self._input_info.get_selected_files('images'))
-        selected_video_len = len(self._input_info.get_selected_files('videos'))
-        if (selected_image_len > 0 or selected_video_len > 0 or self._live_url is not None) \
-                and self._models is not None and len(self._models) > 0 and self._task is not None:
-            self._btn_run.setEnabled(True)
-        else:
-            self._btn_run.setEnabled(False)
-        logging.debug('Run enabled : ' + str(self._btn_run.isEnabled()))
+        if self._input_widget.media_type == 'image':
+            selected_files_len = len(self._input_info.get_selected_files('images'))
+            if selected_files_len > 0 and self._models is not None and len(self._models) > 0:
+                self._btn_run.setEnabled(True)
+            else:
+                self._btn_run.setEnabled(False)
+        elif self._input_widget.media_type == 'video':
+            selected_files_len = len(self._input_info.get_selected_files('videos'))
+            if selected_files_len > 0 and self._models is not None and len(self._models) > 0:
+                self._btn_run.setEnabled(True)
+            else:
+                self._btn_run.setEnabled(False)
+        elif self._input_widget.media_type == 'live':
+            if self._input_widget.live_url is not None and self._models is not None and len(self._models) > 0:
+                self._btn_run.setEnabled(True)
+                self._input_info.collapse_all()
+            else:
+                self._btn_run.setEnabled(False)
 
     def cancel_current_pipeline(self):
         if self._current_pipeline:
@@ -499,7 +380,7 @@ class ProjectWidget(QWidget):
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
             self._callback_count = 0
-            self.update_progress_bar(0, 1, 0)
+            self._progress_bar.update_progress_bar(0, 1, 0)
 
     def run(self):
         self._btn_run.setEnabled(False)
@@ -508,8 +389,13 @@ class ProjectWidget(QWidget):
         current_date = datetime.now()
         formatted_date = current_date.strftime("%Y-%m-%d_%H:%M:%S")
 
-        if self._media_type == 'image' and self._task == 'detect':
+        if self._input_widget.media_type == 'image' and self._task == 'detect':
             inputs = self._input_info.get_selected_files('images')
+            if len(inputs) == 0:
+                QMessageBox.critical(self, self.tr('Error'), self.tr('No image selected'))
+                logging.error('No image selected')
+                self._btn_cancel.setEnabled(False)
+                return
             logging.info(f'Run with: {inputs}, {self._models}, detect, image')
             folder_name = f'image_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
@@ -518,7 +404,7 @@ class ProjectWidget(QWidget):
 
             self._current_pipeline = img_detection.ImgDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
-            self.update_progress_bar(0, len(inputs) * len(self._models), 0)
+            self._progress_bar.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = ImageResultWidget(self._project, result_path)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Image detection", len(inputs) == 1)
 
@@ -526,7 +412,7 @@ class ProjectWidget(QWidget):
                 logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
                 result_widget.add_input_and_result(input_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
+                self._progress_bar.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -539,8 +425,13 @@ class ProjectWidget(QWidget):
             self._current_pipeline.error_signal.connect(callback_err)
             self._current_pipeline.start()
 
-        elif self._media_type == 'video' and self._task == 'detect':
+        elif self._input_widget.media_type == 'video' and self._task == 'detect':
             inputs = self._input_info.get_selected_files('videos')
+            if len(inputs) == 0:
+                QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected'))
+                logging.error('No video selected')
+                self._btn_cancel.setEnabled(False)
+                return
             logging.info(f'Run with: {inputs}, {self._models}, detect, video')
             folder_name = f'video_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
@@ -549,18 +440,18 @@ class ProjectWidget(QWidget):
 
             self._current_pipeline = vid_detection.VidDetectionPipeline(inputs, self._models, result_path, self._project)
             self._callback_count = 0
-            self.update_progress_bar(0, len(inputs) * len(self._models), 0)
+            self._progress_bar.update_progress_bar(0, len(inputs) * len(self._models), 0)
             result_widget = VideoResultWidget(self._project, result_path)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Video detection", False)
 
             def callback_progress(progress: float) -> None:
-                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), progress)
+                self._progress_bar.update_progress_bar(self._callback_count, len(inputs) * len(self._models), progress)
 
             def callback_ok(input_path: str, output_media_path: str, output_json_path: str) -> None:
                 logging.info('Detection done for ' + input_path + ', output in ' + output_media_path)
                 result_widget.add_input_and_result(input_path, output_media_path, output_json_path)
                 self._callback_count += 1
-                self.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
+                self._progress_bar.update_progress_bar(self._callback_count, len(inputs) * len(self._models), 0)
                 if self._callback_count == len(inputs) * len(self._models):
                     self._current_pipeline = None
                     self._btn_cancel.setEnabled(False)
@@ -571,7 +462,7 @@ class ProjectWidget(QWidget):
 
             def callback_cleanup() -> None:
                 self._callback_count = 0
-                self.update_progress_bar(0, 1, 0)
+                self._progress_bar.update_progress_bar(0, 1, 0)
                 self._current_pipeline = None
                 self._btn_cancel.setEnabled(False)
                 self._btn_run.setEnabled(True)
@@ -582,20 +473,17 @@ class ProjectWidget(QWidget):
             self._current_pipeline.cleanup_signal.connect(callback_cleanup)
             self._current_pipeline.start()
 
-        elif self._media_type == 'live' and self._task == 'detect':
-            logging.info(f'Run with: {self._live_url}, {self._models}, detect, live')
-            result_widget = LiveResultWidget(self._live_url, self._models[0], self._project)
+        elif self._input_widget.media_type == 'live' and self._task == 'detect':
+            logging.info(f'Run with: {self._input_widget.live_url}, {self._models}, detect, live')
+            result_widget = LiveResultWidget(self._input_widget.live_url, self._models[0], self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)
 
         else:
             QMessageBox.critical(self, self.tr('Error'), f"{self.tr('Invalid combination of media type and task')}: "
-                                                         f"{self._media_type}, {self._task}")
-            logging.error(f'Invalid combination of media type and task: {self._media_type}, {self._task}')
-
-    def update_progress_bar(self, progress: int, total: int, extra: float):
-        self._progress_bar.setValue(int(((progress + extra) / total) * 100))
+                                                         f"{self._input_widget.media_type}, {self._task}")
+            logging.error(f'Invalid combination of media type and task: {self._input_widget.media_type}, {self._task}')
 
     def stop(self):
         project_name = self._project.project_name

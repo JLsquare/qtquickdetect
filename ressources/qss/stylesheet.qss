@@ -38,18 +38,27 @@ QPushButton.input {
     background-color: #27a9d2;
     border: 1px solid #87c1d3;
 }
+QPushButton.input:hover {
+    background-color: #1b8eb0;
+}
 QPushButton.run {
     background-color: #79D962;
     border: 1px solid #b7e2ab;
 }
-QPushButton.cancel {
-    background-color: #D96262;
-    border: 1px solid #e2abab;
+QPushButton.run:hover {
+    background-color: #5dbd4f;
 }
 QPushButton.run:disabled {
     background-color: rgba(121, 217, 98, 51);
     color: rgba(255, 255, 255, 51);
     border: 1px solid rgba(183, 226, 171, 51);
+}
+QPushButton.cancel {
+    background-color: #D96262;
+    border: 1px solid #e2abab;
+}
+QPushButton.cancel:hover {
+    background-color: #bd4f4f;
 }
 QPushButton.cancel:disabled {
     background-color: rgba(217, 98, 98, 51);

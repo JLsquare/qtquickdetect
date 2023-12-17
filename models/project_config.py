@@ -23,6 +23,7 @@ class ProjectConfig:
         self.video_box_thickness = 2
         self.video_text_size = 1.5
 
+        self.current_live_url = None
         self.current_media_type = None
         self.current_task = 'detect'
         self.current_models = None

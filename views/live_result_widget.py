@@ -147,6 +147,10 @@ class LiveResultWidget(QWidget):
         """Stop the pipeline and timer"""
         self._pipeline.request_cancel()
         self._timer.stop()
+        self._fps_timer.stop()
+        self._timer = None
+        self._pipeline = None
+        self._fps_timer = None
 
     def calculate_real_fps(self):
         """Calculate the real fps"""
@@ -162,3 +166,4 @@ class LiveResultWidget(QWidget):
         self._fetcher_fps_label.setText(f'Fetcher FPS: {fetcher_fps:.2f}')
         self._buffer_size_label.setText(f'Buffer Size: {buffer_size}')
         self._buffer_rate_label.setText(f'Buffer Rate: {self._buffer_rate:.2f}')
+
