@@ -19,6 +19,8 @@ class MediaFetcher(QThread):
         self._cancel_requested = True
 
     def run(self):
+        if self._url is None:
+            return
         cap = cv.VideoCapture(self._url)
         self.fps = cap.get(cv.CAP_PROP_FPS)
         frame_interval = 1.0 / min(self.fps, self._max_fps)
