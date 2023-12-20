@@ -13,23 +13,26 @@ if %errorlevel% NEQ 0 (
     exit /b 1
 )
 
-echo Found Python 3.10 installation, creating runtime environment...
+echo Found Python 3.10 installation....
 
 :: Create virtual environment if it doesn't exist
 if not exist qtquickdetect_runtime (
+    echo Creating runtime environment...
+
     python3.10 -m venv qtquickdetect_runtime
     if %errorlevel% NEQ 0 (
         echo Failed to create virtual environment.
         exit /b 1
     )
+
+    echo Created runtime environment.
 )
 
 :: Activate virtual environment
 call qtquickdetect_runtime/Scripts/activate.bat
 
-echo Created runtime environment, installing dependencies...
-
 :: Install dependencies
+echo Syncing dependencies...
 python -m pip install -Ur requirements.txt
 
 echo Everything is ready, running qtquickdetect...
