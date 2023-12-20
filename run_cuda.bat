@@ -16,10 +16,10 @@ if %errorlevel% NEQ 0 (
 echo Found Python 3.10 installation....
 
 :: Create virtual environment if it doesn't exist
-if not exist qtquickdetect_runtime (
+if not exist qtquickdetect_runtime_cuda (
     echo Creating runtime environment...
 
-    python3.10 -m venv qtquickdetect_runtime
+    python3.10 -m venv qtquickdetect_runtime_cuda
     if %errorlevel% NEQ 0 (
         echo Failed to create virtual environment.
         exit /b 1
@@ -29,11 +29,12 @@ if not exist qtquickdetect_runtime (
 )
 
 :: Activate virtual environment
-call qtquickdetect_runtime/Scripts/activate.bat
+call qtquickdetect_runtime_cuda/Scripts/activate.bat
 
-:: Install dependencies
+:: Install dependencies (Did I mention pip is horrible?)
 echo Syncing dependencies...
-python -m pip install -Ur requirements_cuda_win.txt
+python -m pip install -r requirements.txt
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121 
 
 echo Everything is ready, running qtquickdetect...
 
