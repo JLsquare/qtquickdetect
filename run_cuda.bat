@@ -30,7 +30,7 @@ call qtquickdetect_runtime/Scripts/activate.bat
 echo Created runtime environment, installing dependencies...
 
 :: Install dependencies
-python -m pip install -Ur requirements.txt
+python -m pip install -Ur requirements_cuda.txt
 
 echo Everything is ready, running qtquickdetect...
 
