@@ -13,6 +13,7 @@ from views.history_result_window import HistoryResultWindow
 from views.input_info_widget import InputInfoWidget
 from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
+from views.task_widget import TaskWidget
 from views.video_result_widget import VideoResultWidget
 from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
@@ -30,24 +31,8 @@ class ProjectWidget(QWidget):
         self._right_vertical_layout: Optional[QVBoxLayout] = None
         self._left_layout: Optional[QHBoxLayout] = None
         self._main_layout: Optional[QVBoxLayout] = None
-        self._input_icon_layout: Optional[QHBoxLayout] = None
-        self._input_icon: Optional[QLabel] = None
-        self._btn_import_image: Optional[QPushButton] = None
-        self._btn_import_video: Optional[QPushButton] = None
-        self._btn_other_source: Optional[QPushButton] = None
-        self._input_layout: Optional[QVBoxLayout] = None
         self._input_widget: Optional[InputWidget] = None
-        self._task_icon_layout: Optional[QHBoxLayout] = None
-        self._task_icon: Optional[QLabel] = None
-        self._task_radio_layout: Optional[QVBoxLayout] = None
-        self._task_radio_detection: Optional[QRadioButton] = None
-        self._task_radio_segmentation: Optional[QRadioButton] = None
-        self._task_radio_classification: Optional[QRadioButton] = None
-        self._task_radio_tracking: Optional[QRadioButton] = None
-        self._task_radio_posing: Optional[QRadioButton] = None
-        self._task_radio_widget: Optional[QWidget] = None
-        self._task_layout: Optional[QVBoxLayout] = None
-        self._task_widget: Optional[QWidget] = None
+        self._task_widget: Optional[TaskWidget] = None
         self._model_icon_layout: Optional[QHBoxLayout] = None
         self._model_icon: Optional[QLabel] = None
         self._model_list: Optional[QListWidget] = None
@@ -62,7 +47,6 @@ class ProjectWidget(QWidget):
         self._run_widget: Optional[QWidget] = None
         self._input_info: Optional[InputInfoWidget] = None
         self._btn_settings: Optional[QPushButton] = None
-        self._other_source_window: Optional[OtherSourceWindow] = None
         self._settings_window: Optional[ProjectConfigWindow] = None
         self._history_window: Optional[HistoryResultWindow] = None
         self._progress_bar: Optional[ProgressBarWidget] = None
@@ -140,66 +124,8 @@ class ProjectWidget(QWidget):
         return self._input_widget
 
     def task_ui(self) -> QWidget:
-        # Task icon
-        self._task_icon_layout = QHBoxLayout()
-        self._task_icon_layout.addStretch()
-        self._task_icon = QLabel()
-        self._task_icon.setPixmap(
-            QPixmap('ressources/images/task_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                              Qt.TransformationMode.SmoothTransformation))
-        self._task_icon_layout.addWidget(self._task_icon)
-        self._task_icon_layout.addStretch()
-
-        # Task Radio Buttons
-        self._task_radio_layout = QVBoxLayout()
-        self._task_radio_detection = QRadioButton(self.tr('Detect'))
-        self._task_radio_segmentation = QRadioButton(self.tr('Segment'))
-        self._task_radio_classification = QRadioButton(self.tr('Classify'))
-        self._task_radio_tracking = QRadioButton(self.tr('Track'))
-        self._task_radio_posing = QRadioButton(self.tr('Pose'))
-
-        self._task_radio_detection.setObjectName('detect')
-        self._task_radio_segmentation.setObjectName('segment')
-        self._task_radio_classification.setObjectName('classify')
-        self._task_radio_tracking.setObjectName('track')
-        self._task_radio_posing.setObjectName('pose')
-
-        self._task_radio_detection.toggled.connect(self._check_task_selected)
-        self._task_radio_segmentation.toggled.connect(self._check_task_selected)
-        self._task_radio_classification.toggled.connect(self._check_task_selected)
-        self._task_radio_tracking.toggled.connect(self._check_task_selected)
-        self._task_radio_posing.toggled.connect(self._check_task_selected)
-
-        if self._task == 'detect':
-            self._task_radio_detection.setChecked(True)
-        elif self._task == 'segment':
-            self._task_radio_segmentation.setChecked(True)
-        elif self._task == 'classify':
-            self._task_radio_classification.setChecked(True)
-        elif self._task == 'track':
-            self._task_radio_tracking.setChecked(True)
-        elif self._task == 'pose':
-            self._task_radio_posing.setChecked(True)
-
-        self._task_radio_layout.addWidget(self._task_radio_detection)
-        self._task_radio_layout.addWidget(self._task_radio_segmentation)
-        self._task_radio_layout.addWidget(self._task_radio_classification)
-        self._task_radio_layout.addWidget(self._task_radio_tracking)
-        self._task_radio_layout.addWidget(self._task_radio_posing)
-
-        self._task_radio_widget = QWidget()
-        self._task_radio_widget.setLayout(self._task_radio_layout)
-        self._task_radio_widget.setProperty('class', 'border')
-
-        # Task Layout
-        self._task_layout = QVBoxLayout()
-        self._task_layout.addLayout(self._task_icon_layout)
-        self._task_layout.addWidget(self._task_radio_widget)
-        self._task_layout.addStretch()
-
-        self._task_widget = QWidget()
-        self._task_widget.setLayout(self._task_layout)
-        self._task_widget.setFixedSize(240, 240)
+        self._task_widget = TaskWidget(self._project)
+        self._task_widget.task_changed_signal.connect(self.check_enable_run)
         return self._task_widget
 
     def model_ui(self) -> QWidget:
@@ -325,22 +251,6 @@ class ProjectWidget(QWidget):
         self._history_window = HistoryResultWindow(self._add_new_tab, self._project)
         self._history_window.show()
         logging.debug('Window opened : History')
-
-    def _check_task_selected(self):
-        if self._task_radio_detection.isChecked():
-            self._task = 'detect'
-        elif self._task_radio_segmentation.isChecked():
-            self._task = 'segment'
-        elif self._task_radio_classification.isChecked():
-            self._task = 'classify'
-        elif self._task_radio_tracking.isChecked():
-            self._task = 'track'
-        elif self._task_radio_posing.isChecked():
-            self._task = 'pose'
-        self._project.config.current_task = self._task
-        self._project.save()
-        logging.debug('Task selected: ' + self._task)
-        self.check_enable_run()
 
     def check_model_selected(self):
         self._models = []

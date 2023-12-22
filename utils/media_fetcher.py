@@ -10,7 +10,7 @@ class MediaFetcher(QThread):
     def __init__(self, url: str, max_fps: float):
         super().__init__()
         self._cancel_requested = False
-        self._url = url
+        self.url = url
         self._max_fps = max_fps
         self._last_frame = None
         self.fps = 0.0
@@ -19,9 +19,9 @@ class MediaFetcher(QThread):
         self._cancel_requested = True
 
     def run(self):
-        if self._url is None:
+        if self.url is None:
             return
-        cap = cv.VideoCapture(self._url)
+        cap = cv.VideoCapture(self.url)
         self.fps = cap.get(cv.CAP_PROP_FPS)
         frame_interval = 1.0 / min(self.fps, self._max_fps)
         last_frame_time = time.time()

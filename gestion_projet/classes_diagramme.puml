@@ -46,7 +46,6 @@ class "FrameProcessorSignals" as pipeline.realtime_detection.FrameProcessorSigna
   finished
 }
 class "GeneralAppConfigWidget" as views.general_app_config_widget.GeneralAppConfigWidget {
-  local_layout : Optional[QVBoxLayout]
   get_local() -> str
   get_qss() -> str
   init_ui()
@@ -120,6 +119,7 @@ class "ImgDetectionPipeline" as pipeline.img_detection.ImgDetectionPipeline {
 }
 class "InputInfoWidget" as views.input_info_widget.InputInfoWidget {
   model
+  collapse_all()
   get_selected_files(input_dir: str)
   init_ui()
   on_item_clicked(index)
@@ -128,6 +128,13 @@ class "InputInfoWidget" as views.input_info_widget.InputInfoWidget {
   set_live_preview(live_url)
   set_video_preview(file_path)
   update_preview(selected)
+}
+class "InputWidget" as views.input_widget.InputWidget {
+  input_changed_signal
+  live_url : str
+  media_type : str
+  init_ui()
+  open_files(_, file_paths: list[str])
 }
 class "LiveResultWidget" as views.live_result_widget.LiveResultWidget {
   calculate_real_fps()
@@ -149,6 +156,7 @@ class "MainWindow" as views.main_window.MainWindow {
 class "MediaFetcher" as utils.media_fetcher.MediaFetcher {
   fps : float
   frame_signal
+  url : str
   request_cancel()
   run()
 }
@@ -163,6 +171,9 @@ class "NewProjectWindow" as views.new_project_window.NewProjectWindow {
   open_project_ui() -> QVBoxLayout
   project_name_ui() -> QVBoxLayout
 }
+class "NoCheckBoxDelegate" as views.input_info_widget.NoCheckBoxDelegate {
+  initStyleOption(option: QStyleOptionViewItem, index: QModelIndex)
+}
 class "OtherSourceWindow" as views.other_source_window.OtherSourceWindow {
   btn_layout() -> QHBoxLayout
   cancel_button_ui() -> QPushButton
@@ -174,6 +185,10 @@ class "OtherSourceWindow" as views.other_source_window.OtherSourceWindow {
   ok_button_ui() -> QPushButton
   url_input_ui() -> QVBoxLayout
 }
+class "ProgressBarWidget" as views.progress_bar_widget.ProgressBarWidget {
+  init_ui()
+  update_progress_bar(progress: int, total: int, extra: float, file_name: str)
+}
 class "Project" as models.project.Project {
   config
   device : device
@@ -181,6 +196,7 @@ class "Project" as models.project.Project {
   save()
 }
 class "ProjectConfig" as models.project_config.ProjectConfig {
+  current_live_url : NoneType
   current_media_type : NoneType
   current_models : NoneType
   current_task : NoneType, str
@@ -207,34 +223,24 @@ class "ProjectConfigWindow" as views.project_config_window.ProjectConfigWindow {
   save_settings()
 }
 class "ProjectWidget" as views.project_widget.ProjectWidget {
-  callback_other_source(url: str, image: bool, video: bool, live: bool) -> None
   cancel_current_pipeline()
-  check_enable_run()
+  check_enable_run(is_recursive: bool)
   check_model_selected()
-  copy_files(file_paths: list[str])
-  download_file_to_input(url: str)
   dragEnterEvent(event: QDragEnterEvent | None)
   dragMoveEvent(event: QDragMoveEvent | None)
   dropEvent(event: QDropEvent | None)
   init_ui()
   input_info_ui()
-  input_ui() -> QWidget
+  input_ui() -> InputWidget
   model_ui() -> QWidget
   open_history()
-  open_image(_: bool, file_paths: list[str])
-  open_live(url: str)
-  open_media(media_type: str, file_mime_types: list[str], file_extensions: tuple[str, ...], file_paths: list[str]) -> list[str]
-  open_other_source()
   open_settings()
-  open_video(_: bool, file_paths: list[str])
-  process_media_files(media_type: str, filenames: list[str])
-  progress_bar_ui() -> QProgressBar
+  progress_bar_ui() -> ProgressBarWidget
   run()
   run_ui() -> QWidget
   settings_ui() -> QPushButton
   stop()
   task_ui() -> QWidget
-  update_progress_bar(progress: int, total: int, extra: float)
 }
 class "RealtimeDetectionPipeline" as pipeline.realtime_detection.RealtimeDetectionPipeline {
   error_signal
@@ -248,6 +254,10 @@ class "RealtimeDetectionPipeline" as pipeline.realtime_detection.RealtimeDetecti
 }
 class "ResizeableGraphicsWidget" as views.resizeable_graphics_widget.ResizeableGraphicsWidget {
   resizeEvent(event)
+}
+class "TaskWidget" as views.task_widget.TaskWidget {
+  task_changed_signal
+  init_ui()
 }
 class "VidDetectionPipeline" as pipeline.vid_detection.VidDetectionPipeline {
   cleanup_signal
@@ -314,24 +324,31 @@ views.app_config_window.AppConfigWindow --* views.main_window.MainWindow : _sett
 views.history_result_window.HistoryResultWindow --* views.project_widget.ProjectWidget : _history_window
 views.input_info_widget.CheckableFileSystemModel --* views.input_info_widget.InputInfoWidget : model
 views.input_info_widget.InputInfoWidget --* views.project_widget.ProjectWidget : _input_info
+views.input_widget.InputWidget --* views.project_widget.ProjectWidget : _input_widget
 views.new_project_window.NewProjectWindow --* views.app_tab_widget.AppTabWidget : _new_project_window
-views.other_source_window.OtherSourceWindow --* views.project_widget.ProjectWidget : _other_source_window
+views.other_source_window.OtherSourceWindow --* views.input_widget.InputWidget : _other_source_window
+views.progress_bar_widget.ProgressBarWidget --* views.project_widget.ProjectWidget : _progress_bar
 views.project_config_window.ProjectConfigWindow --* views.project_widget.ProjectWidget : _settings_window
 views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.image_result_widget.ImageResultWidget : _view
 views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.input_info_widget.InputInfoWidget : _preview_view
 views.resizeable_graphics_widget.ResizeableGraphicsWidget --* views.live_result_widget.LiveResultWidget : _view
+views.task_widget.TaskWidget --* views.project_widget.ProjectWidget : _task_widget
 views.video_player_widget.VideoPlayerWidget --* views.video_result_widget.VideoResultWidget : _video_player
 models.app_config.AppConfig --o views.general_app_config_widget.GeneralAppConfigWidget : _config
+models.app_state.AppState --o views.input_widget.InputWidget : _appstate
 models.project.Project --o pipeline.img_detection.ImgDetectionPipeline : _project
 models.project.Project --o pipeline.realtime_detection.FrameProcessor : _project
 models.project.Project --o pipeline.realtime_detection.RealtimeDetectionPipeline : _project
 models.project.Project --o pipeline.vid_detection.VidDetectionPipeline : _project
 models.project.Project --o views.history_result_window.HistoryResultWindow : _project
 models.project.Project --o views.image_result_widget.ImageResultWidget : _project
+models.project.Project --o views.input_widget.InputWidget : _project
 models.project.Project --o views.project_config_window.ProjectConfigWindow : _project
 models.project.Project --o views.project_widget.ProjectWidget : _project
+models.project.Project --o views.task_widget.TaskWidget : _project
 models.project.Project --o views.video_result_widget.VideoResultWidget : _project
 models.project_config.ProjectConfig --o views.general_project_config_widget.GeneralProjectConfigWidget : _config
 models.project_config.ProjectConfig --o views.image_project_config_widget.ImageProjectConfigWidget : _config
 models.project_config.ProjectConfig --o views.video_project_config_widget.VideoProjectConfigWidget : _config
+views.input_info_widget.InputInfoWidget --o views.input_widget.InputWidget : _input_info
 @enduml

@@ -161,6 +161,8 @@ class InputInfoWidget(QWidget):
         cap.release()
 
     def set_live_preview(self, live_url):
+        if self._media_fetcher is not None and self._media_fetcher.url == live_url:
+            return
         if self._media_fetcher is not None:
             self._media_fetcher.request_cancel()
             self._media_fetcher.wait()
