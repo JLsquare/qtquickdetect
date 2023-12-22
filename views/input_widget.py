@@ -14,7 +14,7 @@ from views.other_source_window import OtherSourceWindow
 class InputWidget(QWidget):
     input_changed_signal = pyqtSignal()
 
-    def __init__(self, project: Project, appstate: AppState, input_info: InputInfoWidget):
+    def __init__(self, project: Project, input_info: InputInfoWidget):
         super().__init__()
 
         # PyQT6 Components
@@ -27,7 +27,7 @@ class InputWidget(QWidget):
         self._input_layout: Optional[QVBoxLayout] = None
 
         self._project = project
-        self._appstate = appstate
+        self._appstate = AppState.get_instance()
         self._input_info = input_info
         self.media_type = self._project.config.current_media_type
         self.live_url = self._project.config.current_live_url

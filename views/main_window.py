@@ -20,6 +20,7 @@ class MainWindow(QWidget):
         self._title_layout: Optional[QHBoxLayout] = None
         self._settings_button: Optional[QPushButton] = None
         self._settings_window: Optional[AppConfigWindow] = None
+        self._app_tab_widget: Optional[AppTabWidget] = None
 
         self._appstate = AppState.get_instance()
 
@@ -44,9 +45,11 @@ class MainWindow(QWidget):
         self._top_layout.addStretch(1)
         self._top_layout.addWidget(self.settings_ui())
 
+        self._app_tab_widget = AppTabWidget()
+
         self._main_layout = QGridLayout(self)
         self._main_layout.addLayout(self._top_layout, 0, 0)
-        self._main_layout.addWidget(AppTabWidget(), 1, 0)
+        self._main_layout.addWidget(self._app_tab_widget, 1, 0)
         self.setLayout(self._main_layout)
 
     def title_ui(self) -> QHBoxLayout:

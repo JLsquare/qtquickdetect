@@ -21,6 +21,7 @@ class NewProjectWindow(QWidget):
         self._project_list: Optional[QListWidget] = None
         self._cancel_button: Optional[QPushButton] = None
         self._save_button: Optional[QPushButton] = None
+        self._new_project: Optional[Project] = None
 
         self._appstate = AppState.get_instance()
         self._add_new_tab = add_new_tab
@@ -103,11 +104,10 @@ class NewProjectWindow(QWidget):
     def open_project(self, item):
         project_name = item.text()
         try:
-            project = Project(project_name)
+            self._new_project = Project(project_name)
         except Exception as e:
             QMessageBox.critical(self, self.tr('Error'), e.args[0])
-
             return
-        new_tab = ProjectWidget(self._add_new_tab, project)
+        new_tab = ProjectWidget(self._add_new_tab, self._new_project)
         self._add_new_tab(new_tab, project_name, True)
         self.close()

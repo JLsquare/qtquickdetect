@@ -52,6 +52,7 @@ class InputInfoWidget(QWidget):
 
         # PyQT6 Components
         self._qtree_view: Optional[QTreeView] = None
+        self._no_checkbox_delegate: Optional[NoCheckBoxDelegate] = None
         self._scene: Optional[QGraphicsScene] = None
         self._preview_view: Optional[ResizeableGraphicsWidget] = None
         self._preview_container: Optional[QWidget] = None
@@ -75,8 +76,8 @@ class InputInfoWidget(QWidget):
         self._qtree_view.setModel(self.model)
         self._qtree_view.setRootIndex(self.model.index(self._file_dir))
         self._qtree_view.selectionModel().selectionChanged.connect(self.update_preview)
-        no_checkbox_delegate = NoCheckBoxDelegate(self._qtree_view)
-        self._qtree_view.setItemDelegateForColumn(0, no_checkbox_delegate)
+        self._no_checkbox_delegate = NoCheckBoxDelegate(self._qtree_view)
+        self._qtree_view.setItemDelegateForColumn(0, self._no_checkbox_delegate)
         self._qtree_view.doubleClicked.connect(self.on_item_clicked)
         for i in range(1, self.model.columnCount()):
             self._qtree_view.hideColumn(i)
