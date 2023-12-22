@@ -80,9 +80,9 @@ class ImgDetectionPipeline(QThread):
         """
         image = cv.imread(src)
         if self._project.device.type == 'cuda' and self._project.config.half_precision:
-            result = model(image, half=True, verbose=False)[0].cpu()
+            result = model(image, half=True, verbose=False, iou=self._project.config.iou_threshold)[0].cpu()
         else:
-            result = model(image, verbose=False)[0].cpu()
+            result = model(image, verbose=False, iou=self._project.config.iou_threshold)[0].cpu()
 
         results_array = []
         for box in result.boxes:
@@ -100,7 +100,7 @@ class ImgDetectionPipeline(QThread):
             results_array.append({
                 'x1': top_left[0], 'y1': top_left[1],
                 'x2': bottom_right[0], 'y2': bottom_right[1],
-                'classid': class_id, 'confidence': conf
+                'classid': class_id, 'confidence': conf,
             })
 
         cv.imwrite(output_path, image)

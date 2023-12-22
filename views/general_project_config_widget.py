@@ -1,5 +1,5 @@
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QRadioButton, QSlider 
 from PyQt6.QtCore import Qt
 from models.project_config import ProjectConfig
 import torch
@@ -32,6 +32,7 @@ class GeneralProjectConfigWidget(QWidget):
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.main_layout.addLayout(self.device_selection_ui())
         self.main_layout.addLayout(self.half_precision_ui())
+        self.main_layout.addLayout(self.iou_slider_ui())
         self.setLayout(self.main_layout)
 
     def device_selection_ui(self):
@@ -65,6 +66,28 @@ class GeneralProjectConfigWidget(QWidget):
         self.half_precision_layout.addWidget(self.half_precision_enabled)
         self.half_precision_layout.addWidget(self.half_precision_disabled)
         return self.half_precision_layout
+    
+    def iou_slider_ui(self):
+        # Slider for Intersection over Union (IoU) threshold
+        self.iou_label = QLabel('IoU Threshold:')
+
+        self.iou_slider = QSlider(Qt.Orientation.Horizontal)
+        self.iou_slider.setMinimum(0)
+        self.iou_slider.setMaximum(100)
+        self.iou_slider.setTickInterval(1)
+        self.iou_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.iou_slider.setValue(int(self._config.iou_threshold * 100))
+        self.iou_slider.valueChanged.connect(self.set_iou_threshold)
+
+        self.iou_slider_label = QLabel(str(self.get_iou_threshold()))
+        self.iou_slider.valueChanged.connect(lambda: self.iou_slider_label.setText(str(self.get_iou_threshold())))
+
+        self.iou_layout = QVBoxLayout()
+        self.iou_layout.addWidget(self.iou_label)
+        self.iou_layout.addWidget(self.iou_slider)
+        self.iou_layout.addWidget(self.iou_slider_label)
+
+        return self.iou_layout
 
     ##############################
     #         CONTROLLER         #
@@ -98,3 +121,9 @@ class GeneralProjectConfigWidget(QWidget):
     
     def set_half_precision(self, value: bool):
         self._config.half_precision = value
+
+    def get_iou_threshold(self) -> float:
+        return self._config.iou_threshold
+
+    def set_iou_threshold(self, value: int):
+        self._config.iou_threshold = value / 100

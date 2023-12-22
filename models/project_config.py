@@ -10,6 +10,7 @@ class ProjectConfig:
     def __init__(self, project_name):
         self.device = 'cpu'
         self.half_precision = False
+        self.iou_threshold = 0.7
 
         self.image_format = 'png'
         self.image_box_color = (0, 255, 0, 255)

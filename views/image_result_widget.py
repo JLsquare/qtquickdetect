@@ -242,7 +242,7 @@ class ImageResultWidget(QWidget):
             # Add the layer to the list
             class_name = data['classes'][str(result['classid'])]
             confidence = round(result['confidence'], 2)
-            item_text = f"{class_name} ({index}) : {confidence}%"
+            item_text = f"{class_name} ({index}) : {confidence * 100}%"
             item = QListWidgetItem(item_text)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked)

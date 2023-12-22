@@ -28,9 +28,9 @@ class FrameProcessor(QRunnable):
         """Runs the model on the frame and emits the result."""
 
         if self._project.device.type == 'cuda' and self._project.config.half_precision:
-            results = self._model(self._frame, verbose=False, half=True)[0].cpu()
+            results = self._model(self._frame, verbose=False, half=True, iou=self._project.config.iou_threshold)[0].cpu()
         else:
-            results = self._model(self._frame, verbose=False)[0].cpu()
+            results = self._model(self._frame, verbose=False, iou=self._project.config.iou_threshold)[0].cpu()
 
         for box in results.boxes:
             flat = box.xyxy.flatten()
