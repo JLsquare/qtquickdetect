@@ -119,7 +119,7 @@ class ProjectWidget(QWidget):
         return self._btn_settings
 
     def input_ui(self) -> InputWidget:
-        self._input_widget = InputWidget(self._project, self._appstate, self._input_info)
+        self._input_widget = InputWidget(self._project, self._input_info)
         self._input_widget.input_changed_signal.connect(self.check_enable_run)
         return self._input_widget
 
