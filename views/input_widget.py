@@ -100,12 +100,12 @@ class InputWidget(QWidget):
                 name_filter = ["Images (*.png *.jpg *.jpeg)", "Videos (*.mp4 *.avi *.mov *.webm)"]
                 dialog.setNameFilters(name_filter)
                 if dialog.exec():
-                    file_paths = dialog.selectedFiles() if dialog.exec() else []
+                    file_paths = dialog.selectedFiles() if dialog.selectedFiles() is not None else []
                     if any(f.lower().endswith(('.png', '.jpg', '.jpeg')) for f in file_paths):
                         media_type = 'image'
                     elif any(f.lower().endswith(('.mp4', '.avi', '.mov', '.webm')) for f in file_paths):
                         media_type = 'video'
-                    self._process_media_files(file_paths, media_type)
+                    self._process_media_files(file_paths, str(media_type))
             elif msg_box.clickedButton() == folder_btn:
                 file_extensions = ('.png', '.jpg', '.jpeg', '.mp4', '.avi', '.mov', '.webm')
                 dialog = QFileDialog(self, self.tr("Select Folder"), "/")
