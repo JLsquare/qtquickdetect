@@ -55,18 +55,6 @@ class "GeneralAppConfigWidget" as views.general_app_config_widget.GeneralAppConf
   set_qss()
 }
 class "GeneralProjectConfigWidget" as views.general_project_config_widget.GeneralProjectConfigWidget {
-  device_selection_layout : Optional[QVBoxLayout]
-  devices_combo : Optional[QComboBox]
-  devices_label : Optional[QLabel]
-  half_precision_disabled : Optional[QRadioButton]
-  half_precision_enabled : Optional[QRadioButton]
-  half_precision_label : Optional[QLabel]
-  half_precision_layout : Optional[QVBoxLayout]
-  iou_label
-  iou_layout
-  iou_slider
-  iou_slider_label
-  main_layout : Optional[QVBoxLayout]
   device_selection_ui()
   get_device() -> str
   get_gpu_devices() -> list[str]
@@ -167,6 +155,12 @@ class "MediaFetcher" as utils.media_fetcher.MediaFetcher {
   request_cancel()
   run()
 }
+class "ModelWidget" as views.model_widget.ModelWidget {
+  models : list
+  models_changed_signal
+  check_model_selected()
+  init_ui()
+}
 class "NewProjectWindow" as views.new_project_window.NewProjectWindow {
   cancel()
   cancel_button_ui() -> QPushButton
@@ -233,7 +227,6 @@ class "ProjectConfigWindow" as views.project_config_window.ProjectConfigWindow {
 class "ProjectWidget" as views.project_widget.ProjectWidget {
   cancel_current_pipeline()
   check_enable_run(is_recursive: bool)
-  check_model_selected()
   dragEnterEvent(event: QDragEnterEvent | None)
   dragMoveEvent(event: QDragMoveEvent | None)
   dropEvent(event: QDropEvent | None)
@@ -264,6 +257,7 @@ class "ResizeableGraphicsWidget" as views.resizeable_graphics_widget.ResizeableG
   resizeEvent(event)
 }
 class "TaskWidget" as views.task_widget.TaskWidget {
+  task : str
   task_changed_signal
   init_ui()
 }
@@ -336,6 +330,7 @@ views.input_info_widget.CheckableFileSystemModel --* views.input_info_widget.Inp
 views.input_info_widget.InputInfoWidget --* views.project_widget.ProjectWidget : _input_info
 views.input_info_widget.NoCheckBoxDelegate --* views.input_info_widget.InputInfoWidget : _no_checkbox_delegate
 views.input_widget.InputWidget --* views.project_widget.ProjectWidget : _input_widget
+views.model_widget.ModelWidget --* views.project_widget.ProjectWidget : _model_widget
 views.new_project_window.NewProjectWindow --* views.app_tab_widget.AppTabWidget : _new_project_window
 views.other_source_window.OtherSourceWindow --* views.input_widget.InputWidget : _other_source_window
 views.progress_bar_widget.ProgressBarWidget --* views.project_widget.ProjectWidget : _progress_bar
@@ -353,6 +348,7 @@ models.project.Project --o pipeline.vid_detection.VidDetectionPipeline : _projec
 models.project.Project --o views.history_result_window.HistoryResultWindow : _project
 models.project.Project --o views.image_result_widget.ImageResultWidget : _project
 models.project.Project --o views.input_widget.InputWidget : _project
+models.project.Project --o views.model_widget.ModelWidget : _project
 models.project.Project --o views.project_config_window.ProjectConfigWindow : _project
 models.project.Project --o views.project_widget.ProjectWidget : _project
 models.project.Project --o views.task_widget.TaskWidget : _project
