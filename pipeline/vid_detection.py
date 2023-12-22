@@ -14,7 +14,7 @@ class VidDetectionPipeline(QThread):
     progress_signal = pyqtSignal(float)  # Progress percentage
     finished_signal = pyqtSignal(str, str, str)  # Source file, video output, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
-    cleanup_signal = pyqtSignal()
+    thread_del_signal = pyqtSignal()
 
     def __init__(self, inputs: list[str], model_paths: list[str], results_path: str, project: Project):
         """
@@ -33,6 +33,9 @@ class VidDetectionPipeline(QThread):
         self._model_paths = model_paths
         self._results_path = results_path
         self._project = project
+
+    def __del__(self):
+        self.thread_del_signal.emit()
 
     def request_cancel(self):
         """Public method to request cancellation of the process."""
@@ -101,27 +104,7 @@ class VidDetectionPipeline(QThread):
         cap.release()
         writer.release()
 
-        if self._cancel_requested:
-            self._cleanup()
-            return
-
         return results_array
-
-    def _cleanup(self):
-        """
-        Cleans up the video file and JSON file if they exist.
-        """
-        for src in self._inputs:
-            video_name = os.path.basename(src)
-            output_path = os.path.join(self._results_path, video_name)
-            json_path = os.path.join(self._results_path, video_name.split('.')[0] + '.json')
-
-            if os.path.exists(output_path):
-                os.remove(output_path)
-            if os.path.exists(json_path):
-                os.remove(json_path)
-
-        self.cleanup_signal.emit()
 
     def _setup_video(self, src: str, output_path: str) -> tuple[cv.VideoCapture, cv.VideoWriter, int]:
         """

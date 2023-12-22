@@ -12,6 +12,7 @@ import cv2 as cv
 class ImgDetectionPipeline(QThread):
     finished_signal = pyqtSignal(str, str, str)  # Source file, image output, JSON path
     error_signal = pyqtSignal(str, Exception)  # Source file, Exception
+    thread_del_signal = pyqtSignal()
 
     def __init__(self, inputs: list[str], model_paths: list[str], results_path: str, project: Project):
         """
@@ -31,6 +32,9 @@ class ImgDetectionPipeline(QThread):
         self._inputs = inputs
         self._model_paths = model_paths
         self._results_path = results_path
+
+    def __del__(self):
+        self.thread_del_signal.emit()
 
     def request_cancel(self):
         """Public method to request cancellation of the process."""

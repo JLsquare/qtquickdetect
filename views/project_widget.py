@@ -233,10 +233,7 @@ class ProjectWidget(QWidget):
     def cancel_current_pipeline(self):
         if self._current_pipeline:
             self._current_pipeline.request_cancel()
-            self._btn_cancel.setEnabled(False)
-            self._btn_run.setEnabled(True)
-            self._callback_count = 0
-            self._progress_bar.update_progress_bar(0, 1, 0, '')
+            self._current_pipeline = None
 
     def run(self):
         self._btn_run.setEnabled(False)
@@ -279,8 +276,16 @@ class ProjectWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
+            def callback_thread_del() -> None:
+                self._callback_count = 0
+                self._progress_bar.update_progress_bar(0, 1, 0, '')
+                self._current_pipeline = None
+                self._btn_cancel.setEnabled(False)
+                self._btn_run.setEnabled(True)
+
             self._current_pipeline.finished_signal.connect(callback_ok)
             self._current_pipeline.error_signal.connect(callback_err)
+            self._current_pipeline.thread_del_signal.connect(callback_thread_del)
             self._current_pipeline.start()
 
         elif self._input_widget.media_type == 'video' and self._task_widget.task == 'detect':
@@ -320,7 +325,7 @@ class ProjectWidget(QWidget):
             def callback_err(input_media_path: str, exception: Exception) -> None:
                 logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
 
-            def callback_cleanup() -> None:
+            def callback_thread_del() -> None:
                 self._callback_count = 0
                 self._progress_bar.update_progress_bar(0, 1, 0, '')
                 self._current_pipeline = None
@@ -330,7 +335,7 @@ class ProjectWidget(QWidget):
             self._current_pipeline.finished_signal.connect(callback_ok)
             self._current_pipeline.progress_signal.connect(callback_progress)
             self._current_pipeline.error_signal.connect(callback_err)
-            self._current_pipeline.cleanup_signal.connect(callback_cleanup)
+            self._current_pipeline.thread_del_signal.connect(callback_thread_del)
             self._current_pipeline.start()
 
         elif self._input_widget.media_type == 'live' and self._task_widget.task == 'detect':
