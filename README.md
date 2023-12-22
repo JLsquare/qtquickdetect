@@ -36,4 +36,4 @@ python3 qtquickdetect.py
 - Clonez le dépot sur votre machine
 - Dans l'environnement du dépot, exécutez le fichier run.bat ( ou run_cuda.bat pour les machine avec un gpu NVIDIA)
 
-## 
+**NOTE:** Aux premier lancement, l'inférence peut prendre du temps, car qtquickdetect doit d'abord télécharger les modèles. 
