@@ -46,7 +46,7 @@ class VideoProjectConfigWidget(QWidget):
         self.setLayout(self._main_layout)
 
     def file_format_ui(self) -> QVBoxLayout:
-        self._file_format_label = QLabel('File format:')
+        self._file_format_label = QLabel(self.tr('File format:'))
         self._file_format_combo = QComboBox()
         self._file_format_combo.addItem('MP4 (.mp4)', 'mp4')
         self._file_format_combo.addItem('AVI (.avi)', 'avi')
@@ -59,8 +59,8 @@ class VideoProjectConfigWidget(QWidget):
         return self._file_format_layout
 
     def box_color_ui(self) -> QVBoxLayout:
-        self._box_color_label = QLabel('Box color:')
-        self._box_color_picker = QPushButton('Pick')
+        self._box_color_label = QLabel(self.tr('Box color:'))
+        self._box_color_picker = QPushButton(self.tr('Pick'))
         self._box_color_picker.clicked.connect(self.set_box_color)
         self.update_box_color()
 
@@ -70,8 +70,8 @@ class VideoProjectConfigWidget(QWidget):
         return self._box_color_layout
 
     def text_color_ui(self) -> QVBoxLayout:
-        self._text_color_label = QLabel('Text color:')
-        self._text_color_picker = QPushButton('Pick')
+        self._text_color_label = QLabel(self.tr('Text color:'))
+        self._text_color_picker = QPushButton(self.tr('Pick'))
         self._text_color_picker.clicked.connect(self.set_text_color)
         self.update_text_color()
 
@@ -82,7 +82,7 @@ class VideoProjectConfigWidget(QWidget):
         return self._text_color_layout
 
     def box_thickness_ui(self) -> QVBoxLayout:
-        self._box_thickness_label = QLabel('Box thickness:')
+        self._box_thickness_label = QLabel(self.tr('Box thickness:'))
         self._box_thickness_slider = QLineEdit()
         self._box_thickness_slider.setText(str(self._config.video_box_thickness))
         self._box_thickness_slider.textChanged.connect(self.set_box_thickness)
@@ -94,7 +94,7 @@ class VideoProjectConfigWidget(QWidget):
         return self._box_thickness_layout
 
     def text_size_ui(self) -> QVBoxLayout:
-        self._text_size_label = QLabel('Text size:')
+        self._text_size_label = QLabel(self.tr('Text size:'))
         self._text_size_slider = QLineEdit()
         self._text_size_slider.setText(str(self._config.video_text_size))
         self._text_size_slider.textChanged.connect(self.set_text_size)

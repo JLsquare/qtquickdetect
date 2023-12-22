@@ -57,12 +57,12 @@ class LiveResultWidget(QWidget):
         self._container_layout.addWidget(self._view, 1)
         self._container_widget.setLayout(self._container_layout)
 
-        self._stats_label = QLabel('Live stats: ')
+        self._stats_label = QLabel(self.tr('Live stats: '))
         self._real_fps_label = QLabel('FPS: 0')
-        self._fetcher_fps_label = QLabel(f'Fetcher FPS: 0')
-        self._buffer_size_label = QLabel('Buffer Size: 0')
-        self._buffer_max_size_label = QLabel(f'Buffer Max Size: {self._frame_buffer.maxlen}')
-        self._buffer_rate_label = QLabel(f'Buffer Rate: {self._buffer_rate}')
+        self._fetcher_fps_label = QLabel(self.tr('Fetcher FPS: 0'))
+        self._buffer_size_label = QLabel(self.tr('Buffer Size: 0'))
+        self._buffer_max_size_label = QLabel(f"{self.tr('Buffer Max Size')}: {self._frame_buffer.maxlen}")
+        self._buffer_rate_label = QLabel(f"{self.tr('Buffer Rate')}: {self._buffer_rate}")
 
         self._stats_layout = QVBoxLayout()
         self._stats_layout.setAlignment(Qt.AlignmentFlag.AlignTop)

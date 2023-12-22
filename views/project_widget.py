@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Callable, Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QMessageBox, \
-    QListWidget, QListWidgetItem, QRadioButton
+    QListWidget, QListWidgetItem
 from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QIcon
 from PyQt6.QtCore import Qt, QDir, QSize, QTimer
 from models.app_state import AppState
@@ -15,7 +15,6 @@ from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
 from views.task_widget import TaskWidget
 from views.video_result_widget import VideoResultWidget
-from views.other_source_window import OtherSourceWindow
 from pipeline import img_detection, vid_detection
 import logging
 import os
@@ -57,7 +56,6 @@ class ProjectWidget(QWidget):
         self._current_pipeline: Optional[img_detection.ImgDetectionPipeline | vid_detection.VidDetectionPipeline] = None
         self._callback_count = 0
         self._current_file = None
-        self._task = project.config.current_task
         self._models = project.config.current_models
         self._live_url = None
 
@@ -301,7 +299,7 @@ class ProjectWidget(QWidget):
         current_date = datetime.now()
         formatted_date = current_date.strftime("%Y-%m-%d_%H:%M:%S")
 
-        if self._input_widget.media_type == 'image' and self._task == 'detect':
+        if self._input_widget.media_type == 'image' and self._task_widget.task == 'detect':
             inputs = self._input_info.get_selected_files('images')
             if len(inputs) == 0:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('No image selected'))
@@ -339,7 +337,7 @@ class ProjectWidget(QWidget):
             self._current_pipeline.error_signal.connect(callback_err)
             self._current_pipeline.start()
 
-        elif self._input_widget.media_type == 'video' and self._task == 'detect':
+        elif self._input_widget.media_type == 'video' and self._task_widget.task == 'detect':
             inputs = self._input_info.get_selected_files('videos')
             if len(inputs) == 0:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected'))
@@ -389,7 +387,7 @@ class ProjectWidget(QWidget):
             self._current_pipeline.cleanup_signal.connect(callback_cleanup)
             self._current_pipeline.start()
 
-        elif self._input_widget.media_type == 'live' and self._task == 'detect':
+        elif self._input_widget.media_type == 'live' and self._task_widget.task == 'detect':
             logging.info(f'Run with: {self._input_widget.live_url}, {self._models}, detect, live')
             result_widget = LiveResultWidget(self._input_widget.live_url, self._models[0], self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
@@ -398,8 +396,8 @@ class ProjectWidget(QWidget):
 
         else:
             QMessageBox.critical(self, self.tr('Error'), f"{self.tr('Invalid combination of media type and task')}: "
-                                                         f"{self._input_widget.media_type}, {self._task}")
-            logging.error(f'Invalid combination of media type and task: {self._input_widget.media_type}, {self._task}')
+                                                         f"{self._input_widget.media_type}, {self._task_widget.task}")
+            logging.error(f'Invalid combination of media type and task: {self._input_widget.media_type}, {self._task_widget.task}')
 
     def stop(self):
         project_name = self._project.project_name

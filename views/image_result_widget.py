@@ -73,16 +73,16 @@ class ImageResultWidget(QWidget):
     def left_ui(self) -> QWidget:
         # UI elements for file selection and layer visibility
 
-        self._file_select_label = QLabel('Select file:')
+        self._file_select_label = QLabel(self.tr('Select file:'))
         self._file_select_combo = QComboBox()
         self._file_select_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
         self._file_select_combo.currentIndexChanged.connect(self.change_current_file)
 
-        self._model_select_label = QLabel('Select model:')
+        self._model_select_label = QLabel(self.tr('Select model:'))
         self._model_select_combo = QComboBox()
         self._model_select_combo.currentIndexChanged.connect(self.change_current_model)
 
-        self._layer_select_label = QLabel('Select layers:')
+        self._layer_select_label = QLabel(self.tr('Select layers:'))
         self._layer_list = QListWidget()
         self._layer_list.itemChanged.connect(self.toggle_layer)
 
@@ -121,17 +121,17 @@ class ImageResultWidget(QWidget):
         return self._container_widget
 
     def open_result_folder_button_ui(self) -> QPushButton:
-        self._open_result_folder_button = QPushButton('Open Result Folder')
+        self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
         self._open_result_folder_button.clicked.connect(self.open_result_folder)
         return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
-        self._save_json_button = QPushButton('Save JSON')
+        self._save_json_button = QPushButton(self.tr('Save JSON'))
         self._save_json_button.clicked.connect(self.save_json)
         return self._save_json_button
 
     def save_image_button_ui(self) -> QPushButton:
-        self._save_image_button = QPushButton('Save Image')
+        self._save_image_button = QPushButton(self.tr('Save Image'))
         self._save_image_button.clicked.connect(self.save_image)
         return self._save_image_button
 
@@ -143,17 +143,17 @@ class ImageResultWidget(QWidget):
         try:
             open_file_explorer(self._result_path)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', str(e))
+            QMessageBox.critical(self, self.tr('Error'), str(e))
 
     def save_image(self):
         input_image = self._file_select_combo.currentData()
         result_json = self._model_select_combo.currentData()
 
         if not input_image:
-            QMessageBox.critical(self, "Error", "No image selected.")
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No image selected.'))
             return
         if not result_json:
-            QMessageBox.critical(self, "Error", "No model selected.")
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No model selected.'))
             return
 
         # Use QPainter to draw all layers on top of the input image
@@ -174,33 +174,33 @@ class ImageResultWidget(QWidget):
             format_filter = 'PNG (*.png)'
         else:
             format_filter = 'JPEG (*.jpg)'
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Image", "", format_filter)
+        file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Image'), "", format_filter)
         if file_name:
             if not file_name.lower().endswith('.png') and format_filter == 'PNG (*.png)':
                 file_name += ".png"
             elif not file_name.lower().endswith('.jpg') and format_filter == 'JPEG (*.jpg)':
                 file_name += ".jpg"
             if img.save(file_name):
-                QMessageBox.information(self, "Success", "Image saved successfully!")
+                QMessageBox.information(self, self.tr('Success'), self.tr('Image saved successfully!'))
             else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the image.")
+                QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the image.'))
 
     def save_json(self):
         result_json = self._model_select_combo.currentData()
 
         if result_json is None:
-            QMessageBox.critical(self, "Error", "No model selected.")
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No model selected.'))
             return
 
         # Save the JSON
-        file_name, selected_filter = QFileDialog.getSaveFileName(self, "Save JSON", "", "JSON (*.json)")
+        file_name, selected_filter = QFileDialog.getSaveFileName(self, self.tr('Save JSON'), '', 'JSON (*.json)')
         if file_name:
             if not file_name.lower().endswith('.json'):
                 file_name += ".json"
             if QFile.copy(result_json, file_name):
-                QMessageBox.information(self, "Success", "JSON saved successfully!")
+                QMessageBox.information(self, self.tr('Success'), self.tr('JSON saved successfully!'))
             else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the JSON.")
+                QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the JSON.'))
 
     def change_current_file(self):
         index = self._file_select_combo.currentIndex()

@@ -24,7 +24,7 @@ class AppTabWidget(QTabWidget):
         if index == self.count() - 1:
             self.add_new_tab()
 
-    def add_new_tab(self, new_tab: QWidget = None, title: str = "Start", redirect: bool = True) -> None:
+    def add_new_tab(self, new_tab: QWidget = None, title: str = 'Start', redirect: bool = True) -> None:
         if new_tab is None:
             self._new_project_window = NewProjectWindow(self.add_new_tab)
             self._new_project_window.show()

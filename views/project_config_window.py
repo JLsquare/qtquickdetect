@@ -28,16 +28,16 @@ class ProjectConfigWindow(QWidget):
     ##############################
 
     def init_ui(self):
-        self.setWindowTitle(f'{self._project.project_name} Settings')
+        self.setWindowTitle(f"{self._project.project_name} {self.tr('Settings')}")
         self.setGeometry(100, 100, 480, 480)
         self.setStyleSheet(self._appstate.qss)
         self.setProperty('class', 'dark-bg')
 
         self._tab = QTabWidget(self)
-        self._tab.addTab(GeneralProjectConfigWidget(self._project.config), "General")
-        self._tab.addTab(ImageProjectConfigWidget(self._project.config), "Image")
-        self._tab.addTab(VideoProjectConfigWidget(self._project.config), "Video")
-        self._tab.addTab(QWidget(), "Live")
+        self._tab.addTab(GeneralProjectConfigWidget(self._project.config), self.tr('General'))
+        self._tab.addTab(ImageProjectConfigWidget(self._project.config), self.tr('Image'))
+        self._tab.addTab(VideoProjectConfigWidget(self._project.config), self.tr('Video'))
+        self._tab.addTab(QWidget(), self.tr('Live'))
 
         self._main_layout = QGridLayout(self)
         self._main_layout.addWidget(self._tab, 0, 0, 2, 1)
@@ -46,12 +46,12 @@ class ProjectConfigWindow(QWidget):
         self.setLayout(self._main_layout)
 
     def cancel_button_ui(self) -> QPushButton:
-        self._cancel_button = QPushButton('Cancel')
+        self._cancel_button = QPushButton(self.tr('Cancel'))
         self._cancel_button.clicked.connect(self.cancel_settings)
         return self._cancel_button
 
     def save_button_ui(self) -> QPushButton:
-        self._save_button = QPushButton('Save')
+        self._save_button = QPushButton(self.tr('Save'))
         self._save_button.clicked.connect(self.save_settings)
         return self._save_button
 

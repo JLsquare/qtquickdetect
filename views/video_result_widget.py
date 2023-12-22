@@ -67,11 +67,11 @@ class VideoResultWidget(QWidget):
         self.setLayout(self._main_layout)
 
     def left_ui(self) -> QWidget:
-        self._file_select_label = QLabel('Select file:')
+        self._file_select_label = QLabel(self.tr('Select file:'))
         self._file_select_combo = QComboBox()
         self._file_select_combo.currentIndexChanged.connect(self.change_current_file)
 
-        self._model_select_label = QLabel('Select model:')
+        self._model_select_label = QLabel(self.tr('Select model:'))
         self._model_select_combo = QComboBox()
         self._model_select_combo.currentIndexChanged.connect(self.change_current_model)
 
@@ -99,22 +99,22 @@ class VideoResultWidget(QWidget):
         return self._video_container
 
     def open_result_folder_button_ui(self) -> QPushButton:
-        self._open_result_folder_button = QPushButton('Open Result Folder')
+        self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
         self._open_result_folder_button.clicked.connect(self.open_result_folder)
         return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
-        self._save_json_button = QPushButton('Save JSON')
+        self._save_json_button = QPushButton(self.tr('Save JSON'))
         self._save_json_button.clicked.connect(self.save_json)
         return self._save_json_button
 
     def save_video_button_ui(self) -> QPushButton:
-        self._save_video_button = QPushButton('Save Video')
+        self._save_video_button = QPushButton(self.tr('Save Video'))
         self._save_video_button.clicked.connect(self.save_video)
         return self._save_video_button
 
     def save_frame_button_ui(self) -> QPushButton:
-        self._save_frame_button = QPushButton('Save Frame')
+        self._save_frame_button = QPushButton(self.tr('Save Frame'))
         self._save_frame_button.clicked.connect(self.save_frame)
         return self._save_frame_button
 
@@ -126,13 +126,13 @@ class VideoResultWidget(QWidget):
         try:
             open_file_explorer(self._result_path)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', str(e))
+            QMessageBox.critical(self, self.tr('Error'), str(e))
 
     def save_json(self):
         result_json = self._model_select_combo.currentData()
 
         if result_json is None:
-            QMessageBox.critical(self, 'Error', 'No model selected.')
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No model selected.'))
             return
 
         # Save the json
@@ -141,16 +141,16 @@ class VideoResultWidget(QWidget):
             if not file_name.lower().endswith('.json'):
                 file_name += ".json"
             if QFile.copy(result_json, file_name):
-                QMessageBox.information(self, "Success", "JSON saved successfully!")
+                QMessageBox.information(self, self.tr('Success'), self.tr('JSON saved successfully!'))
             else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the JSON.")
+                QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the JSON.'))
 
     def save_video(self):
         input_video = self._input_videos[self._file_select_combo.currentIndex()]
         result_video = self._result_videos[input_video][self._model_select_combo.currentIndex() - 1]
 
         if result_video is None:
-            QMessageBox.critical(self, 'Error', 'No video selected.')
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected.'))
             return
 
         # Save the video
@@ -158,43 +158,43 @@ class VideoResultWidget(QWidget):
             format_filter = "MP4 (*.mp4)"
         else:
             format_filter = "AVI (*.avi)"
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Video", "", format_filter)
+        file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Video'), '', format_filter)
         if file_name:
-            if not file_name.lower().endswith('.mp4') and format_filter == "Video (*.mp4)":
+            if not file_name.lower().endswith('.mp4') and format_filter == 'Video (*.mp4)':
                 file_name += ".mp4"
-            elif not file_name.lower().endswith('.avi') and format_filter == "Video (*.avi)":
+            elif not file_name.lower().endswith('.avi') and format_filter == 'Video (*.avi)':
                 file_name += ".avi"
             if QFile.copy(result_video, file_name):
-                QMessageBox.information(self, "Success", "Video saved successfully!")
+                QMessageBox.information(self, self.tr('Success'), self.tr('Video saved successfully!'))
             else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the video.")
+                QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the video.'))
 
     def save_frame(self):
         if self._video_player is None:
-            QMessageBox.critical(self, 'Error', 'No video selected.')
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected.'))
             return
 
         frame = self._video_player.get_current_frame()
 
         if frame is None:
-            QMessageBox.critical(self, 'Error', 'No frame found.')
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No frame found.'))
             return
 
         # Save the frame
         if self._project.config.image_format == 'png':
-            format_filter = "PNG (*.png)"
+            format_filter = 'PNG (*.png)'
         else:
-            format_filter = "JPG (*.jpg)"
-        file_name, _ = QFileDialog.getSaveFileName(self, "Save Frame", "", format_filter)
+            format_filter = 'JPG (*.jpg)'
+        file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Frame'), '', format_filter)
         if file_name:
-            if not file_name.lower().endswith('.png') and format_filter == "PNG (*.png)":
-                file_name += ".png"
-            elif not file_name.lower().endswith('.jpg') and format_filter == "JPG (*.jpg)":
-                file_name += ".jpg"
+            if not file_name.lower().endswith('.png') and format_filter == 'PNG (*.png)':
+                file_name += '.png'
+            elif not file_name.lower().endswith('.jpg') and format_filter == 'JPG (*.jpg)':
+                file_name += '.jpg'
             if cv.imwrite(file_name, frame):
-                QMessageBox.information(self, "Success", "Frame saved successfully!")
+                QMessageBox.information(self, self.tr('Success'), self.tr('Frame saved successfully!'))
             else:
-                QMessageBox.critical(self, "Error", "An error occurred while saving the frame.")
+                QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the frame.'))
 
     def change_current_file(self):
         index = self._file_select_combo.currentIndex()

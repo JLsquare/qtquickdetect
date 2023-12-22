@@ -30,7 +30,7 @@ class HistoryResultWindow(QWidget):
     ##############################
 
     def init_ui(self):
-        self.setWindowTitle('QTQuickDetect History Result')
+        self.setWindowTitle(self.tr('QTQuickDetect History Result'))
         self.setGeometry(100, 100, 480, 480)
         self.setStyleSheet(self._appstate.qss)
 
@@ -41,7 +41,7 @@ class HistoryResultWindow(QWidget):
         self._main_layout.addWidget(self.cancel_button_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignLeft)
 
     def open_history_ui(self) -> QVBoxLayout:
-        self._project_list_label = QLabel('Open History:')
+        self._project_list_label = QLabel(self.tr('Open History:'))
         self._project_list = QListWidget()
         self._project_list.addItems(self.get_history())
         self._project_list.itemDoubleClicked.connect(self.open_history)
@@ -96,7 +96,7 @@ class HistoryResultWindow(QWidget):
                             result_video_path = f'{model_result_path}/{file}'
                             result_widget.add_input_and_result(file_path, result_video_path, json_path)
 
-            tab_title = f'{media_type.capitalize()} Result - {model_name}'
+            tab_title = f"{media_type.capitalize()} {self.tr('Result')} - {model_name}"
             self._add_new_tab(result_widget, tab_title, True)
 
         self.close()

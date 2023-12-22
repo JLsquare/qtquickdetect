@@ -33,10 +33,10 @@ class GeneralAppConfigWidget(QWidget):
         self.setLayout(self._main_layout)
 
     def qss_ui(self) -> QVBoxLayout:
-        self._qss_label = QLabel('QSS (need restart):')
+        self._qss_label = QLabel(self.tr('QSS (need restart):'))
         self._qss_combo = QComboBox()
-        self._qss_combo.addItem('App Default', 'app')
-        self._qss_combo.addItem('System', 'sys')
+        self._qss_combo.addItem(self.tr('App Default'), 'app')
+        self._qss_combo.addItem(self.tr('System'), 'sys')
         self._qss_combo.setCurrentText(self.get_qss())
         self._qss_combo.currentIndexChanged.connect(self.set_qss)
         self._qss_combo = self._qss_combo
@@ -47,10 +47,10 @@ class GeneralAppConfigWidget(QWidget):
         return self._qss_layout
 
     def local_ui(self):
-        self._local_label = QLabel('Localization:')
+        self._local_label = QLabel(self.tr('Localization:'))
         self._local_combo = QComboBox()
         self._local_combo.addItem('English', 'en')
-        self._local_combo.addItem('French', 'fr')
+        self._local_combo.addItem('Français', 'fr')
         self._local_combo.setCurrentText(self.get_local())
         self._local_combo.currentIndexChanged.connect(self.set_local)
         self._local_combo = self._local_combo
@@ -67,18 +67,18 @@ class GeneralAppConfigWidget(QWidget):
     def get_qss(self) -> str:
         qss = self._config.qss
         if qss == 'app':
-            return 'App Default'
+            return self.tr('App Default')
         else:
-            return 'System'
+            return self.tr('System')
 
     def set_qss(self):
-        logging.debug(f'Setting QSS to {self._qss_combo.currentData()}')
+        logging.debug(f"{self.tr('Setting QSS to')} {self._qss_combo.currentData()}")
         self._config.qss = self._qss_combo.currentData()
 
     def get_local(self) -> str:
         local = self._config.localization
         if local == 'fr':
-            return 'French'
+            return 'Français'
         else:
             return 'English'
 

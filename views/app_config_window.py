@@ -33,19 +33,19 @@ class AppConfigWindow(QWidget):
         self.setLayout(self._main_layout)
 
         self._tab = QTabWidget(self)
-        self._tab.addTab(GeneralAppConfigWidget(self._appstate.config), "General")
+        self._tab.addTab(GeneralAppConfigWidget(self._appstate.config), self.tr('General'))
 
         self._main_layout.addWidget(self._tab, 0, 0, 2, 1)
         self._main_layout.addWidget(self.cancel_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignLeft)
         self._main_layout.addWidget(self.save_button_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignRight)
 
     def cancel_button_ui(self) -> QPushButton:
-        self._cancel_button = QPushButton('Cancel')
+        self._cancel_button = QPushButton(self.tr('Cancel'))
         self._cancel_button.clicked.connect(self.cancel_settings)
         return self._cancel_button
 
     def save_button_ui(self) -> QPushButton:
-        self._save_button = QPushButton('Save')
+        self._save_button = QPushButton(self.tr('Save'))
         self._save_button.clicked.connect(self.save_settings)
         return self._save_button
 

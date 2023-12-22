@@ -25,7 +25,7 @@ class TaskWidget(QWidget):
         self._task_layout: Optional[QVBoxLayout] = None
 
         self._project = project
-        self._task = self._project.config.current_task
+        self.task = self._project.config.current_task
 
         self.init_ui()
 
@@ -64,15 +64,15 @@ class TaskWidget(QWidget):
         self._task_radio_tracking.toggled.connect(self._check_task_selected)
         self._task_radio_posing.toggled.connect(self._check_task_selected)
 
-        if self._task == 'detect':
+        if self.task == 'detect':
             self._task_radio_detection.setChecked(True)
-        elif self._task == 'segment':
+        elif self.task == 'segment':
             self._task_radio_segmentation.setChecked(True)
-        elif self._task == 'classify':
+        elif self.task == 'classify':
             self._task_radio_classification.setChecked(True)
-        elif self._task == 'track':
+        elif self.task == 'track':
             self._task_radio_tracking.setChecked(True)
-        elif self._task == 'pose':
+        elif self.task == 'pose':
             self._task_radio_posing.setChecked(True)
 
         self._task_radio_layout.addWidget(self._task_radio_detection)
@@ -100,16 +100,16 @@ class TaskWidget(QWidget):
 
     def _check_task_selected(self):
         if self._task_radio_detection.isChecked():
-            self._task = 'detect'
+            self.task = 'detect'
         elif self._task_radio_segmentation.isChecked():
-            self._task = 'segment'
+            self.task = 'segment'
         elif self._task_radio_classification.isChecked():
-            self._task = 'classify'
+            self.task = 'classify'
         elif self._task_radio_tracking.isChecked():
-            self._task = 'track'
+            self.task = 'track'
         elif self._task_radio_posing.isChecked():
-            self._task = 'pose'
-        self._project.config.current_task = self._task
+            self.task = 'pose'
+        self._project.config.current_task = self.task
         self._project.save()
-        logging.debug('Task selected: ' + self._task)
+        logging.debug('Task selected: ' + self.task)
         self.task_changed_signal.emit()
