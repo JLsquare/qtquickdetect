@@ -9,12 +9,9 @@ build_linux:
     - apt-get update && apt-get install -y zip
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
-    - cd dist/qtquickdetect || exit
-    - zip -r ../qtquickdetect.zip ./*
-    - cd ../..
   artifacts:
     paths:
-      - dist/qtquickdetect.zip
+      - dist/
   only:
     - main
 
@@ -27,11 +24,8 @@ build_windows:
   script:
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg\ultralytics\default.yaml;ultralytics\cfg" --add-data="ressources;ressources"
-    - cd dist/qtquickdetect || exit
-    - powershell Compress-Archive -Path * -DestinationPath ../qtquickdetect.zip
-    - cd ../..
   artifacts:
     paths:
-      - dist/qtquickdetect.zip
+      - dist/
   only:
     - main
