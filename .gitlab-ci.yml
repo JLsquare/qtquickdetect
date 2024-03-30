@@ -22,8 +22,9 @@ build_windows:
     - saas-windows-medium-amd64
   before_script:
     - choco install python --version 3.11.8 -y -f
-    - refreshenv
-    - pip install pyinstaller
+    - C:\Python311\python.exe -m ensurepip
+    - C:\Python311\python.exe -m pip install --upgrade pip
+    - C:\Python311\python.exe -m pip install pyinstaller
   script:
     - pyinstaller qtquickdetect.py --add-data="cfg\ultralytics\default.yaml;ultralytics\cfg" --add-data="ressources;ressources"
   artifacts:
