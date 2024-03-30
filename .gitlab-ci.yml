@@ -7,7 +7,7 @@ build_linux:
   image: python:3.11.8
   before_script:
       - apt-get update && apt-get install -y zip
-      - pip install pyinstaller
+      - pip install -r requirements.txt
   script:
     - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
   artifacts:
@@ -24,9 +24,9 @@ build_windows:
     - choco install python --version 3.11.8 -y -f
     - C:\Python311\python.exe -m ensurepip
     - C:\Python311\python.exe -m pip install --upgrade pip
-    - C:\Python311\python.exe -m pip install pyinstaller
+    - C:\Python311\python.exe -m pip install -r requirements.txt
   script:
-    - pyinstaller qtquickdetect.py --add-data="cfg\ultralytics\default.yaml;ultralytics\cfg" --add-data="ressources;ressources"
+    - C:\Python311\python.exe -m pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
   artifacts:
     paths:
       - dist/
