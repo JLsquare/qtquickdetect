@@ -1,8 +1,6 @@
 import ultralytics
 import logging
 
-from models.project import Project
-
 
 def load_model(model_path, device) -> ultralytics.YOLO:
     """

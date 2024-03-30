@@ -5,3 +5,6 @@
 tmp/
 projects/
 app_config.json
+build/
+dist/
+qtquickdetect.spec
