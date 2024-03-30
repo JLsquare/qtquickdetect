@@ -6,11 +6,15 @@ build_linux:
   stage: build
   image: python:3.11.8
   script:
+    - apt-get update && apt-get install -y zip
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
+    - cd dist/qtquickdetect || exit
+    - zip -r ../qtquickdetect.zip ./*
+    - cd ../..
   artifacts:
     paths:
-      - dist/
+      - dist/qtquickdetect.zip
   only:
     - main
 
@@ -19,12 +23,15 @@ build_windows:
   tags:
     - saas-windows-medium-amd64
   before_script:
-    - choco install python --version 3.11.8
+    - choco install python --version 3.11.8 -y -f
   script:
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg\ultralytics\default.yaml;ultralytics\cfg" --add-data="ressources;ressources"
+    - cd dist/qtquickdetect || exit
+    - powershell Compress-Archive -Path * -DestinationPath ../qtquickdetect.zip
+    - cd ../..
   artifacts:
     paths:
-      - dist/
+      - dist/qtquickdetect.zip
   only:
     - main
