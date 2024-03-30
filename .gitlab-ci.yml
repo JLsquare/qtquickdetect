@@ -6,13 +6,14 @@ build_linux:
   stage: build
   image: python:3.11.8
   before_script:
-      - apt-get update && apt-get install -y zip
+      - apt-get update && apt-get install -y zip sshpass
       - pip install -r requirements.txt
   script:
     - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
-  artifacts:
-    paths:
-      - dist/
+    - cd dist/
+    - zip -r qtquickdetect-linux.zip qtquickdetect/
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-linux.zip"
+    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-linux.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
   only:
     - main
 
@@ -27,8 +28,9 @@ build_windows:
     - C:\Python311\python.exe -m pip install -r requirements.txt
   script:
     - C:\Python311\python.exe -m pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
-  artifacts:
-    paths:
-      - dist/
+    - cd dist\qtquickdetect\
+    - 7z a ..\qtquickdetect-windows.zip .\* -r
+    - cd ..\..
+    - scp -o StrictHostKeyChecking=no qtquickdetect-windows.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
   only:
     - main
