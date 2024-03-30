@@ -4,7 +4,7 @@ stages:
 
 build_linux:
   stage: build
-  image: python:3.9
+  image: python:3.11.8
   script:
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
@@ -18,6 +18,8 @@ build_windows:
   stage: build
   tags:
     - saas-windows-medium-amd64
+  before_script:
+    - choco install python --version 3.11.8
   script:
     - pip install pyinstaller
     - pyinstaller qtquickdetect.py --add-data="cfg\ultralytics\default.yaml;ultralytics\cfg" --add-data="ressources;ressources"
