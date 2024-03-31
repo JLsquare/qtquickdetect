@@ -19,17 +19,18 @@ build_linux:
   only:
     - main
 
-build_windows_with_wine:
+build_windows:
   stage: build
   image: tobix/pywine:3.11
   tags:
     - feur-linux
   script:
     - . /opt/mkuserwineprefix
-    - wine python -m ensurepip
-    - wine python -m pip install --upgrade pip
-    - wine python -m pip install -r requirements.txt
-    - wine python -m pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
+    - wine /opt/wineprefix/drive_c/Python311/Python.exe -v
+    - wine /opt/wineprefix/drive_c/Python311/Python.exe -m ensurepip
+    - wine /opt/wineprefix/drive_c/Python311/Python.exe -m pip install --upgrade pip
+    - wine /opt/wineprefix/drive_c/Python311/Python.exe -m pip install -r requirements.txt
+    - wine /opt/wineprefix/drive_c/Python311/Scripts/pyinstaller.exe qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
     - cd dist/
     - zip -r qtquickdetect-windows.zip qtquickdetect/
     - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-windows.zip"
