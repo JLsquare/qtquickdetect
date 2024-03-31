@@ -240,7 +240,7 @@ class ProjectWidget(QWidget):
         self._btn_cancel.setEnabled(True)
 
         current_date = datetime.now()
-        formatted_date = current_date.strftime("%Y-%m-%d_%H:%M:%S")
+        formatted_date = current_date.strftime("%Y-%m-%d_%H-%M-%S")
 
         if self._input_widget.media_type == 'image' and self._task_widget.task == 'detect':
             inputs = self._input_info.get_selected_files('images')
