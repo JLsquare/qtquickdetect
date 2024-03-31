@@ -1,6 +1,5 @@
 stages:
   - build
-  - test
 
 build_linux:
   stage: build
@@ -24,12 +23,14 @@ build_windows:
   image: tobix/pywine:3.11
   tags:
     - feur-linux
-  script:
+  before_script:
+    - apt-get update && apt-get install -y zip sshpass
     - . /opt/mkuserwineprefix
     - wine /opt/wineprefix/drive_c/Python/Python.exe -v
     - wine /opt/wineprefix/drive_c/Python/Python.exe -m ensurepip
     - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install --upgrade pip
     - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install -r requirements.txt
+  script:
     - wine /opt/wineprefix/drive_c/Python/Scripts/pyinstaller.exe qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
     - cd dist/
     - zip -r qtquickdetect-windows.zip qtquickdetect/
