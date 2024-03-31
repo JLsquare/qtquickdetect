@@ -18,6 +18,8 @@ release:
   tags:
     - feur-linux
   image: python:3.11.8
+  before_script:
+    - apt-get update && apt-get install -y zip sshpass
   script:
     - zip -r qtquickdetect.zip qtquickdetect/
     - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect.zip"
