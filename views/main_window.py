@@ -55,8 +55,7 @@ class MainWindow(QWidget):
 
     def title_ui(self) -> QHBoxLayout:
         self._title_icon = QLabel()
-        image_path = get_ressource_path('images/qtquickdetect_icon.png')
-        pixmap = QPixmap(image_path).scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
+        pixmap = QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                                             Qt.TransformationMode.SmoothTransformation)
         self._title_icon.setPixmap(pixmap)
         self._title_icon.setFixedWidth(32)
@@ -69,8 +68,7 @@ class MainWindow(QWidget):
 
     def settings_ui(self) -> QPushButton:
         self._settings_button = QPushButton()
-        image_path = get_ressource_path('images/settings_icon.png')
-        self._settings_button.setIcon(QIcon(image_path))
+        self._settings_button.setIcon(QIcon('ressources/images/settings_icon.png'))
         self._settings_button.setIconSize(QSize(32, 32))
         self._settings_button.setFixedSize(32, 32)
         self._settings_button.clicked.connect(self.open_settings)
