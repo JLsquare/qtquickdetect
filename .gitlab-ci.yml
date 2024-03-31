@@ -23,6 +23,7 @@ build_windows:
     - saas-windows-medium-amd64
   before_script:
     - choco install python --version 3.11.8 -y -f
+    - choco install openssh -y
     - C:\Python311\python.exe -m ensurepip
     - C:\Python311\python.exe -m pip install --upgrade pip
     - C:\Python311\python.exe -m pip install -r requirements.txt
