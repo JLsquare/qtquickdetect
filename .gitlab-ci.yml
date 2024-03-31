@@ -19,21 +19,20 @@ build_linux:
   only:
     - main
 
-build_windows:
+build_windows_with_wine:
   stage: build
+  image: tobix/pywine:3.11
   tags:
-    - feur-windows
-  before_script:
-    - choco install python --version 3.11.8 -y -f
-    - choco install openssh -y
-    - C:\Python311\python.exe -m ensurepip
-    - C:\Python311\python.exe -m pip install --upgrade pip
-    - C:\Python311\python.exe -m pip install -r requirements.txt
+    - feur-linux
   script:
-    - C:\Python311\python.exe -m pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
-    - cd dist\qtquickdetect\
-    - 7z a ..\qtquickdetect-windows.zip .\* -r
-    - cd ..\..
-    - scp -o StrictHostKeyChecking=no qtquickdetect-windows.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
+    - . /opt/mkuserwineprefix
+    - wine python -m ensurepip
+    - wine python -m pip install --upgrade pip
+    - wine python -m pip install -r requirements.txt
+    - wine python -m pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
+    - cd dist/
+    - zip -r qtquickdetect-windows.zip qtquickdetect/
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-windows.zip"
+    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-windows.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
   only:
     - main
