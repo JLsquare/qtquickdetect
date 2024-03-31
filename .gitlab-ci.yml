@@ -4,6 +4,8 @@ stages:
 
 build_linux:
   stage: build
+  tags:
+    - feur-linux
   image: python:3.11.8
   before_script:
       - apt-get update && apt-get install -y zip sshpass
@@ -20,7 +22,7 @@ build_linux:
 build_windows:
   stage: build
   tags:
-    - saas-windows-medium-amd64
+    - feur-windows
   before_script:
     - choco install python --version 3.11.8 -y -f
     - choco install openssh -y
