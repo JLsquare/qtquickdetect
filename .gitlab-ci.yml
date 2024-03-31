@@ -1,83 +1,27 @@
 stages:
   - build
+  - test
 
-build_linux_cpu:
+test:
+  stage: test
+  tags:
+    - feur-linux
+  image: python:3.11.8
+  script:
+    - pip install -r requirements.txt
+    - python3 -m unittest discover -s tests/
+  only:
+    - main
+
+release:
   stage: build
   tags:
     - feur-linux
   image: python:3.11.8
-  before_script:
-    - apt-get update && apt-get install -y zip sshpass
-    - pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-    - pip install -r requirements.txt
   script:
-    - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
-    - cd dist/
-    - zip -r qtquickdetect-linux-cpu.zip qtquickdetect/
-    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-linux-cpu.zip"
-    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-linux-cpu.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
-  only:
-    - main
-
-build_linux_cuda:
-  stage: build
-  tags:
-    - feur-linux
-  image: python:3.11.8
-  before_script:
-    - apt-get update && apt-get install -y zip sshpass
-    - pip install torch torchvision
-    - pip install -r requirements.txt
-  script:
-    - pyinstaller qtquickdetect.py --add-data="cfg/ultralytics/default.yaml:ultralytics/cfg" --add-data="ressources:ressources"
-    - cd dist/
-    - zip -r qtquickdetect-linux-cuda.zip qtquickdetect/
-    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-linux-cuda.zip"
-    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-linux-cuda.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
-  only:
-    - main
-
-build_windows_cpu:
-  stage: build
-  image: tobix/pywine:3.11
-  tags:
-    - feur-linux
-  before_script:
-    - apt-get update && apt-get install -y zip sshpass
-    - . /opt/mkuserwineprefix
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -v
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m ensurepip
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install --upgrade pip
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install -r requirements.txt
-  script:
-    - wine /opt/wineprefix/drive_c/Python/Scripts/pyinstaller.exe qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
-    - cd dist/
-    - zip -r qtquickdetect-windows-cpu.zip qtquickdetect/
-    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-windows-cpu.zip"
-    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-windows-cpu.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
-  only:
-    - main
-
-build_windows_cuda:
-  stage: build
-  image: tobix/pywine:3.11
-  tags:
-    - feur-linux
-  before_script:
-    - apt-get update && apt-get install -y zip sshpass
-    - . /opt/mkuserwineprefix
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -v
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m ensurepip
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install --upgrade pip
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install torch torchvision
-    - wine /opt/wineprefix/drive_c/Python/Python.exe -m pip install -r requirements.txt
-  script:
-    - wine /opt/wineprefix/drive_c/Python/Scripts/pyinstaller.exe qtquickdetect.py --add-data="cfg/ultralytics/default.yaml;ultralytics/cfg" --add-data="ressources;ressources"
-    - cd dist/
-    - zip -r qtquickdetect-windows-cuda.zip qtquickdetect/
-    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect-windows-cuda.zip"
-    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect-windows-cuda.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
+    - zip -r qtquickdetect.zip qtquickdetect/
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect.zip"
+    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
   only:
     - main
 

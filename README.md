@@ -11,29 +11,13 @@ Une application pour réaliser des détections d'objets sur différents type de 
 ### Détection sur livestream (exemple : caméra) :
 - Détecter des objets
 
-
 ## Installation et lancement
-Pour pouvoir exécuter l'application, une version de [Python](https://www.python.org/downloads/) 3.10 ou plus doit être installée sur votre machine. 
+Pour pouvoir exécuter l'application, une version de [Python](https://www.python.org/downloads/) 3.11 ou plus doit être installée sur votre machine. 
+
 ### Linux :
-- Clonez le dépot sur votre machine
-- Créez un environnement python avec la commande :
-```bash
-python3 -m venv venv
-```
-- Activez l'environnement :
-```bash
-source venv/bin/activate
-```
-- Dans le terminal de l'environnement, exécutez la commande : 
-```bash
-pip install -r requirements.txt
-```
-- Exécutez l'application :
-```bash
-python3 qtquickdetect.py
-```
+- Clonez le dépot sur votre machine ou téléchargez la dernière release sur [qtquickdetect.feur.live](https://qtquickdetect.feur.live)
+- Exécutez le fichier `run-linux.sh`, si c'est la première fois, choisissez si vous voulez installer CUDA ou non (pour les machines avec un GPU NVIDIA)
+
 ### Windows :
 - Clonez le dépot sur votre machine
-- Dans l'environnement du dépot, exécutez le fichier run.bat ( ou run_cuda.bat pour les machine avec un gpu NVIDIA)
-
-**NOTE:** Aux premier lancement, l'inférence peut prendre du temps, car qtquickdetect doit d'abord télécharger les modèles. 
+- Exécutez le fichier `run-windows.bat`, si c'est la première fois, choisissez si vous voulez installer CUDA ou non (pour les machines avec un GPU NVIDIA)
