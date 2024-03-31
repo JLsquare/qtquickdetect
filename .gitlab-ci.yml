@@ -7,7 +7,7 @@ build_linux_cpu:
     - feur-linux
   image: python:3.11.8
   before_script:
-    - apt-get update && apt-get install -y zip sshpass
+    - apt-get update && apt-get install -y zip sshpass libssl-dev libcurl4-openssl-dev
     - pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
     - pip install -r requirements.txt
   script:
@@ -25,7 +25,7 @@ build_linux_cuda:
     - feur-linux
   image: python:3.11.8
   before_script:
-    - apt-get update && apt-get install -y zip sshpass
+    - apt-get update && apt-get install -y zip sshpass libssl-dev libcurl4-openssl-dev
     - pip install torch torchvision
     - pip install -r requirements.txt
   script:
@@ -43,7 +43,7 @@ build_windows_cpu:
   tags:
     - feur-linux
   before_script:
-    - apt-get update && apt-get install -y zip sshpass
+    - apt-get update && apt-get install -y zip sshpass libssl-dev libcurl4-openssl-dev
     - . /opt/mkuserwineprefix
     - wine /opt/wineprefix/drive_c/Python/Python.exe -v
     - wine /opt/wineprefix/drive_c/Python/Python.exe -m ensurepip
@@ -65,7 +65,7 @@ build_windows_cuda:
   tags:
     - feur-linux
   before_script:
-    - apt-get update && apt-get install -y zip sshpass
+    - apt-get update && apt-get install -y zip sshpass libssl-dev libcurl4-openssl-dev
     - . /opt/mkuserwineprefix
     - wine /opt/wineprefix/drive_c/Python/Python.exe -v
     - wine /opt/wineprefix/drive_c/Python/Python.exe -m ensurepip
