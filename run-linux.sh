@@ -50,7 +50,3 @@ fi
 
 echo "Running qtquickdetect.py..."
 python qtquickdetect.py
-
-echo "Execution complete."
-echo "Press any key to close this window."
-read -n 1 -s -r

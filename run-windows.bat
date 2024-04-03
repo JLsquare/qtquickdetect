@@ -60,8 +60,3 @@ echo Virtual environment activated.
 :proceedToExecution
 echo Running qtquickdetect.py...
 python qtquickdetect.py
-
-echo Execution complete.
-echo Press any key to close this window.
-pause >nul
-exit /b

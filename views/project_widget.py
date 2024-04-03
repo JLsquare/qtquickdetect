@@ -5,6 +5,7 @@ from PyQt6.QtGui import QPixmap, QDragEnterEvent, QDragMoveEvent, QDropEvent, QI
 from PyQt6.QtCore import Qt, QDir, QSize, QTimer
 from models.app_state import AppState
 from models.project import Project
+from pipeline.pipeline_manager import PipelineManager
 from views.input_widget import InputWidget
 from views.model_widget import ModelWidget
 from views.progress_bar_widget import ProgressBarWidget
@@ -15,7 +16,6 @@ from views.image_result_widget import ImageResultWidget
 from views.live_result_widget import LiveResultWidget
 from views.task_widget import TaskWidget
 from views.video_result_widget import VideoResultWidget
-from pipeline import img_detection, vid_detection
 import logging
 import os
 
@@ -49,7 +49,7 @@ class ProjectWidget(QWidget):
         self._appstate = AppState.get_instance()
         self._add_new_tab = add_new_tab
         self._project = project
-        self._current_pipeline: Optional[img_detection.ImgDetectionPipeline | vid_detection.VidDetectionPipeline] = None
+        self._current_pipeline_manager: Optional[PipelineManager] = None
         self._callback_count = 0
         self._current_file = None
         self._live_url = None
@@ -231,9 +231,9 @@ class ProjectWidget(QWidget):
             QTimer.singleShot(500, lambda: self.check_enable_run(True))
 
     def cancel_current_pipeline(self):
-        if self._current_pipeline:
-            self._current_pipeline.request_cancel()
-            self._current_pipeline = None
+        if self._current_pipeline_manager:
+            self._current_pipeline_manager.request_cancel()
+            self._current_pipeline_manager = None
 
     def run(self):
         self._btn_run.setEnabled(False)
@@ -242,20 +242,19 @@ class ProjectWidget(QWidget):
         current_date = datetime.now()
         formatted_date = current_date.strftime("%Y-%m-%d_%H-%M-%S")
 
-        if self._input_widget.media_type == 'image' and self._task_widget.task == 'detect':
+        if self._input_widget.media_type == 'image':
             inputs = self._input_info.get_selected_files('images')
             if len(inputs) == 0:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('No image selected'))
                 logging.error('No image selected')
                 self._btn_cancel.setEnabled(False)
                 return
-            logging.info(f'Run with: {inputs}, {self._model_widget.models}, detect, image')
             folder_name = f'image_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
             result_path = os.path.join(result_path, folder_name)
             os.mkdir(result_path)
 
-            self._current_pipeline = img_detection.ImgDetectionPipeline(inputs, self._model_widget.models, result_path, self._project)
+            self._current_pipeline_manager = PipelineManager(self._task_widget.task, self._model_widget.models, self._project)
             self._callback_count = 0
             self._current_file = os.path.basename(inputs[0])
             self._progress_bar.update_progress_bar(0, len(inputs) * len(self._model_widget.models), 0, self._current_file)
@@ -269,7 +268,7 @@ class ProjectWidget(QWidget):
                 self._current_file = os.path.basename(input_path)
                 self._progress_bar.update_progress_bar(self._callback_count, len(inputs) * len(self._model_widget.models), 0, self._current_file)
                 if self._callback_count == len(inputs) * len(self._model_widget.models):
-                    self._current_pipeline = None
+                    self._current_pipeline_manager = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
 
@@ -279,29 +278,27 @@ class ProjectWidget(QWidget):
             def callback_thread_del() -> None:
                 self._callback_count = 0
                 self._progress_bar.update_progress_bar(0, 1, 0, '')
-                self._current_pipeline = None
+                self._current_pipeline_manager = None
                 self._btn_cancel.setEnabled(False)
                 self._btn_run.setEnabled(True)
 
-            self._current_pipeline.finished_signal.connect(callback_ok)
-            self._current_pipeline.error_signal.connect(callback_err)
-            self._current_pipeline.thread_del_signal.connect(callback_thread_del)
-            self._current_pipeline.start()
+            self._current_pipeline_manager.finished_file_signal.connect(callback_ok)
+            self._current_pipeline_manager.error_signal.connect(callback_err)
+            self._current_pipeline_manager.run_image(inputs, result_path)
 
-        elif self._input_widget.media_type == 'video' and self._task_widget.task == 'detect':
+        elif self._input_widget.media_type == 'video':
             inputs = self._input_info.get_selected_files('videos')
             if len(inputs) == 0:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected'))
                 logging.error('No video selected')
                 self._btn_cancel.setEnabled(False)
                 return
-            logging.info(f'Run with: {inputs}, {self._model_widget.models}, detect, video')
             folder_name = f'video_detection_{formatted_date}'
             result_path = os.path.abspath(f'projects/{self._project.project_name}/result/')
             result_path = os.path.join(result_path, folder_name)
             os.mkdir(result_path)
 
-            self._current_pipeline = vid_detection.VidDetectionPipeline(inputs, self._model_widget.models, result_path, self._project)
+            self._current_pipeline_manager = PipelineManager(self._task_widget.task, self._model_widget.models, self._project)
             self._callback_count = 0
             self._current_file = os.path.basename(inputs[0])
             self._progress_bar.update_progress_bar(0, len(inputs) * len(self._model_widget.models), 0, self._current_file)
@@ -318,7 +315,7 @@ class ProjectWidget(QWidget):
                 self._current_file = os.path.basename(input_path)
                 self._progress_bar.update_progress_bar(self._callback_count, len(inputs) * len(self._model_widget.models), 0, self._current_file)
                 if self._callback_count == len(inputs) * len(self._model_widget.models):
-                    self._current_pipeline = None
+                    self._current_pipeline_manager = None
                     self._btn_cancel.setEnabled(False)
                     self._btn_run.setEnabled(True)
 
@@ -328,19 +325,17 @@ class ProjectWidget(QWidget):
             def callback_thread_del() -> None:
                 self._callback_count = 0
                 self._progress_bar.update_progress_bar(0, 1, 0, '')
-                self._current_pipeline = None
+                self._current_pipeline_manager = None
                 self._btn_cancel.setEnabled(False)
                 self._btn_run.setEnabled(True)
 
-            self._current_pipeline.finished_signal.connect(callback_ok)
-            self._current_pipeline.progress_signal.connect(callback_progress)
-            self._current_pipeline.error_signal.connect(callback_err)
-            self._current_pipeline.thread_del_signal.connect(callback_thread_del)
-            self._current_pipeline.start()
+            self._current_pipeline_manager.finished_file_signal.connect(callback_ok)
+            self._current_pipeline_manager.progress_signal.connect(callback_progress)
+            self._current_pipeline_manager.error_signal.connect(callback_err)
+            self._current_pipeline_manager.run_video(inputs, result_path)
 
-        elif self._input_widget.media_type == 'live' and self._task_widget.task == 'detect':
-            logging.info(f'Run with: {self._input_widget.live_url}, {self._model_widget.models}, detect, live')
-            result_widget = LiveResultWidget(self._input_widget.live_url, self._model_widget.models[0], self._project)
+        elif self._input_widget.media_type == 'live':
+            result_widget = LiveResultWidget(self._input_widget.live_url, self._model_widget.models, self._project)
             self._add_new_tab(result_widget, f"{self._project.project_name} : Live detection", False)
             self._btn_cancel.setEnabled(False)
             self._btn_run.setEnabled(True)

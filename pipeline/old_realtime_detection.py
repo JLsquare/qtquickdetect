@@ -1,10 +1,9 @@
+from ultralytics import YOLO
 from PyQt6.QtCore import pyqtSignal, QThread, QRunnable, QThreadPool, QObject
-
 from models.project import Project
 from utils.image_helpers import *
 from models.app_state import AppState
 from utils.media_fetcher import MediaFetcher
-from utils.model_loader import load_model
 import numpy as np
 
 
@@ -60,7 +59,7 @@ class RealtimeDetectionPipeline(QThread):
         self._appstate.pipelines.append(self)
         self._url = url
         self._project = project
-        self._model = load_model(model_path, self._project.device)
+        self._model = YOLO(model_path).to(self._project.device)
         self._is_processing = False
         self._thread_pool = QThreadPool()
         self.fetcher = MediaFetcher(url, 60)

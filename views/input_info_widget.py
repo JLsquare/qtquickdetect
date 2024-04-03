@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QGraphicsScene, QStyledItemDelegate, QStyleOptionViewItem
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
-from pipeline.realtime_detection import MediaFetcher
+from pipeline.old_realtime_detection import MediaFetcher
 import os
 import cv2
 
