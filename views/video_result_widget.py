@@ -209,7 +209,7 @@ class VideoResultWidget(QWidget):
         for index, result_video in enumerate(self._result_videos[input_video]):
             with open(self._result_jsons[input_video][index], 'r') as f:
                 data = json.load(f)
-            self._model_select_combo.addItem(data['model_name'], self._result_jsons[input_video][index])
+            self._model_select_combo.addItem(data['weight'], self._result_jsons[input_video][index])
 
     def change_current_model(self):
         index = self._model_select_combo.currentIndex()

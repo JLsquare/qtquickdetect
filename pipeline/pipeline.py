@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import cv2 as cv
 import numpy as np
@@ -165,22 +164,50 @@ class Pipeline(QThread):
         # Release the frame fetcher when cancelled
         media_fetcher.release()
 
-    def _process_image(self, image) -> tuple[np.ndarray, list[dict]]:
-        """
-        Processes a single image.
-
-        :param image: The input image.
-        :return: The processed image and the results array.
-        """
-        raise NotImplementedError
-
-    def _process_video(self, video_path, output_path) -> list[dict]:
+    def _process_video(self, video_path: str, output_path: str) -> list[dict]:
         """
         Processes a single video and saves the output.
 
         :param video_path: The input video path.
         :param output_path: The output video path.
         :return: The results array.
+        """
+        # Open the video
+        cap = cv.VideoCapture(video_path)
+        width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv.CAP_PROP_FPS)
+        codec = cv.VideoWriter_fourcc(*'mp4v')
+        out = cv.VideoWriter(output_path, codec, fps, (width, height))
+
+        results_array = []
+        # Process each frame
+        while True:
+            ret, frame = cap.read()
+            if not ret or self.cancel_requested:
+                break
+
+            # Infer the frame like an image
+            result_frame, result_json = self._process_image(frame)
+            # Write the frame to the output video
+            out.write(result_frame)
+            # Append the results to the results array
+            results_array.extend(result_json)
+            # Emit the progress signal for the progress bar
+            self.progress_signal.emit(cap.get(cv.CAP_PROP_POS_FRAMES) / cap.get(cv.CAP_PROP_FRAME_COUNT))
+
+        # Release the video capture and the video writer
+        cap.release()
+        out.release()
+
+        return results_array
+
+    def _process_image(self, image) -> tuple[np.ndarray, list[dict]]:
+        """
+        Processes a single image.
+
+        :param image: The input image.
+        :return: The processed image and the results array.
         """
         raise NotImplementedError
 
