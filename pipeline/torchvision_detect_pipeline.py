@@ -50,15 +50,15 @@ class TorchVisionDetectPipeline(Pipeline):
         :param model_name: The name of the model to load.
         """
         if model_name == 'fasterrcnn':
-            self.model = fasterrcnn_resnet50_fpn(pretrained=True)
+            self.model = fasterrcnn_resnet50_fpn(pretrained=True).to(self.project.device)
         elif model_name == 'maskrcnn':
-            self.model = maskrcnn_resnet50_fpn(pretrained=True)
+            self.model = maskrcnn_resnet50_fpn(pretrained=True).to(self.project.device)
         elif model_name == 'retinanet':
-            self.model = retinanet_resnet50_fpn(pretrained=True)
+            self.model = retinanet_resnet50_fpn(pretrained=True).to(self.project.device)
         elif model_name == 'ssd300':
-            self.model = ssd300_vgg16(pretrained=True)
+            self.model = ssd300_vgg16(pretrained=True).to(self.project.device)
         elif model_name == 'ssdlite320':
-            self.model = ssdlite320_mobilenet_v3_large(pretrained=True)
+            self.model = ssdlite320_mobilenet_v3_large(pretrained=True).to(self.project.device)
         else:
             raise ValueError(f"Unknown model name: {model_name}")
         self.model.eval()
@@ -71,7 +71,7 @@ class TorchVisionDetectPipeline(Pipeline):
         :return: The processed image and the results array.
         """
         # Inference
-        image_tensor = self.transform(image).unsqueeze(0)
+        image_tensor = self.transform(image).unsqueeze(0).to(self.project.device)
         with torch.no_grad():
             predictions = self.model(image_tensor)[0]
 
