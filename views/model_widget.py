@@ -56,7 +56,6 @@ class ModelWidget(QWidget):
                 child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 child_item.setCheckState(0, Qt.CheckState.Unchecked)
 
-        self._model_tree.expandAll()
         self._model_tree.itemChanged.connect(self.check_model_selected)
 
         # Model Layout
