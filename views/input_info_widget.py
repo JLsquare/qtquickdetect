@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt, QModelIndex, pyqtSignal
 from PyQt6.QtGui import QFileSystemModel, QPixmap, QImage
 from PyQt6.QtWidgets import QTreeView, QWidget, QVBoxLayout, QGraphicsScene, QStyledItemDelegate, QStyleOptionViewItem
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
-from pipeline.old_realtime_detection import MediaFetcher
+from utils.threaded_media_fetcher import ThreadedMediaFetcher
 import os
 import cv2
 
@@ -153,12 +153,7 @@ class InputInfoWidget(QWidget):
         cap = cv2.VideoCapture(file_path)
         success, frame = cap.read()
         if success:
-            height, width, channel = frame.shape
-            bytes_per_line = 3 * width
-            q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
-            pixmap = QPixmap.fromImage(q_img)
-            self._scene.clear()
-            self._scene.addPixmap(pixmap.scaled(self._preview_view.size(), Qt.AspectRatioMode.KeepAspectRatio))
+            self._set_preview(frame)
         cap.release()
 
     def set_live_preview(self, live_url):
@@ -168,16 +163,11 @@ class InputInfoWidget(QWidget):
             self._media_fetcher.request_cancel()
             self._media_fetcher.wait()
             self._media_fetcher = None
-        self._media_fetcher = MediaFetcher(live_url, 60)
+        self._media_fetcher = ThreadedMediaFetcher(live_url, 30)
 
         def update_frame(frame, frame_available):
             if frame_available:
-                height, width, channel = frame.shape
-                bytes_per_line = 3 * width
-                q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
-                pixmap = QPixmap.fromImage(q_img)
-                self._scene.clear()
-                self._scene.addPixmap(pixmap.scaled(self._preview_view.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                self._set_preview(frame)
 
         self._media_fetcher.frame_signal.connect(update_frame)
         self._media_fetcher.start()
@@ -193,3 +183,11 @@ class InputInfoWidget(QWidget):
             current_state = self.model.data(index, Qt.ItemDataRole.CheckStateRole)
             new_state = Qt.CheckState.Unchecked if current_state == Qt.CheckState.Checked else Qt.CheckState.Checked
             self.model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
+
+    def _set_preview(self, frame):
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format.Format_RGB888).rgbSwapped()
+        pixmap = QPixmap.fromImage(q_img)
+        self._scene.clear()
+        self._scene.addPixmap(pixmap.scaled(self._preview_view.size(), Qt.AspectRatioMode.KeepAspectRatio))

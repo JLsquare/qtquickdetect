@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
 from ultralytics import YOLO
 from pipeline.pipeline import Pipeline
 from utils.image_helpers import draw_bounding_box
@@ -7,30 +8,49 @@ from utils.image_helpers import draw_bounding_box
 class YoloV8DetectPipeline(Pipeline):
     """Pipeline for detecting objects in images and videos using YoloV8."""
 
-    def __init__(self, weight: str, results_path: str | None, project):
-        super().__init__(weight, results_path, project)
+    def __init__(self, weight: str, images_paths: list[str] | None, videos_paths: list[str] | None,
+                 stream_url: str | None, results_path: str | None, project):
+        """
+        Initializes the pipeline.
+
+        :param weight: The weight file path to use.
+        :param images_paths: List of image paths if processing images.
+        :param videos_paths: List of video paths if processing videos.
+        :param stream_url: URL of the video stream if processing a stream.
+        :param results_path: Path to save the results if processing images or videos.
+        :param project: Project object.
+        """
+        super().__init__(weight, images_paths, videos_paths, stream_url, results_path, project)
         self.model = YOLO(weight).to(self.project.device)
 
-    def _process_image(self, image):
-        """Processes a single image / frame"""
-        if self.project.device.type == 'cuda' and self.project.config.half_precision:
-            result = self.model(image, half=True, verbose=False, iou=self.project.config.iou_threshold)[0].cpu()
-        else:
-            result = self.model(image, verbose=False, iou=self.project.config.iou_threshold)[0].cpu()
+    def _process_image(self, image) -> tuple[np.ndarray, list[dict]]:
+        """
+        Processes a single image.
+
+        :param image: The input image.
+        :return: The processed image and the results array.
+        """
+        # Inference
+        result = self.model(image, half=(self.project.device.type == 'cuda' and self.project.config.half_precision),
+                            verbose=False, iou=self.project.config.iou_threshold)[0].cpu()
 
         results_array = []
+        # For each box in the result
         for box in result.boxes:
+            # Extract box information
             flat = box.xyxy.flatten()
             top_left, bottom_right = (int(flat[0]), int(flat[1])), (int(flat[2]), int(flat[3]))
             class_id, class_name = int(box.cls), self.model.names[int(box.cls)]
             conf = float(box.conf[0])
 
+            # Draw bounding box
             draw_bounding_box(
                 image, top_left, bottom_right, class_name, conf,
                 self.project.config.video_box_color, self.project.config.video_text_color,
                 self.project.config.video_box_thickness, self.project.config.video_text_size
             )
 
+            # Append the box to the results array
             results_array.append({
                 'x1': top_left[0],
                 'y1': top_left[1],
@@ -42,9 +62,16 @@ class YoloV8DetectPipeline(Pipeline):
 
         return image, results_array
 
-    def _process_video(self, input_path: str, output_path: str):
-        """Processes a video file."""
-        cap = cv.VideoCapture(input_path)
+    def _process_video(self, video_path: str, output_path: str) -> list[dict]:
+        """
+        Processes a single video and saves the output.
+
+        :param video_path: The input video path.
+        :param output_path: The output video path.
+        :return: The results array.
+        """
+        # Open the video
+        cap = cv.VideoCapture(video_path)
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         fps = cap.get(cv.CAP_PROP_FPS)
@@ -52,25 +79,37 @@ class YoloV8DetectPipeline(Pipeline):
         out = cv.VideoWriter(output_path, codec, fps, (width, height))
 
         results_array = []
+        # Process each frame
         while True:
             ret, frame = cap.read()
             if not ret or self.cancel_requested:
                 break
 
+            # Infer the frame like an image
             result_frame, result_json = self._process_image(frame)
+            # Write the frame to the output video
             out.write(result_frame)
+            # Append the results to the results array
             results_array.extend(result_json)
+            # Emit the progress signal for the progress bar
             self.progress_signal.emit(cap.get(cv.CAP_PROP_POS_FRAMES) / cap.get(cv.CAP_PROP_FRAME_COUNT))
 
+        # Release the video capture and the video writer
         cap.release()
         out.release()
 
         return results_array
 
-    def _make_results(self, results_array: list):
-        """Creates the results dictionary."""
+    def _make_results(self, results_array: list) -> dict:
+        """
+        Creates the results dictionary.
+
+        :param results_array: The list of results.
+        :return: The results dictionary.
+        """
         return {
-            'model_name': self.weight,
+            'model_name': 'YoloV8',
+            'weight': self.weight,
             'task': "detection",
             'classes': self.model.names,
             'results': results_array

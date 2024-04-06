@@ -1,11 +1,10 @@
 import json
 import logging
-
+import time
 import cv2 as cv
-from pathlib import Path
-
 import numpy as np
-from PyQt6.QtCore import QThread, pyqtSignal
+from pathlib import Path
+from PyQt6.QtCore import pyqtSignal, QThread
 from models.project import Project
 from utils.media_fetcher import MediaFetcher
 
@@ -17,13 +16,30 @@ class Pipeline(QThread):
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
     error_signal = pyqtSignal(str, Exception)  # Source file, exception
 
-    def __init__(self, weight: str, results_path: str | None, project: Project):
+    def __init__(self, weight: str, images_paths: list[str] | None, videos_paths: list[str] | None,
+                 stream_url: str | None, results_path: str | None, project: Project):
+        """
+        Initializes the pipeline.
+
+        :param weight: The weight file path to use.
+        :param images_paths: List of image paths if processing images.
+        :param videos_paths: List of video paths if processing videos.
+        :param stream_url: URL of the video stream if processing a stream.
+        :param results_path: Path to save the results if processing images or videos.
+        :param project: Project object.
+        """
         super().__init__()
         self.fetcher = None
         self.weight = weight
+        self.images_paths = images_paths
+        self.videos_paths = videos_paths
+        self.stream_url = stream_url
+        self.mode = 'images' if images_paths else 'videos' if videos_paths else 'stream'
         self.results_path = Path(results_path) / Path(weight).stem if results_path else None
         self.project = project
         self.cancel_requested = False
+        self.processing_frame = None
+        self.stream_fps = 0.0
 
         if self.results_path:
             self.results_path.mkdir(parents=True, exist_ok=True)
@@ -32,10 +48,25 @@ class Pipeline(QThread):
         """Requests cancellation of the ongoing process."""
         self.cancel_requested = True
 
-    def run_images(self, inputs: list[str]):
-        """Process a list of image paths."""
+    def run(self):
+        """Runs the pipeline from another thread."""
+        if self.mode == 'images':
+            self._run_images(self.images_paths)
+        elif self.mode == 'videos':
+            self._run_videos(self.videos_paths)
+        elif self.mode == 'stream':
+            self._run_stream(self.stream_url)
+
+    def _run_images(self, inputs: list[str]):
+        """
+        Process a list of image paths.
+
+        :param inputs: The list of image paths.
+        """
         if not self.results_path:
             self.error_signal.emit('No results path provided', Exception('No results path provided'))
+            return
+
         for input_path in inputs:
             if self.cancel_requested:
                 return
@@ -61,10 +92,16 @@ class Pipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(input_path, e)
 
-    def run_videos(self, inputs: list[str]):
-        """Process a list of video paths."""
+    def _run_videos(self, inputs: list[str]):
+        """
+        Process a list of video paths.
+
+        :param inputs: The list of video paths.
+        """
         if not self.results_path:
             self.error_signal.emit('No results path provided', Exception('No results path provided'))
+            return
+
         for input_path in inputs:
             if self.cancel_requested:
                 return
@@ -88,38 +125,70 @@ class Pipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(input_path, e)
 
-    def run_stream(self, url: str):
-        """Process a video stream."""
-        logging.info(f'Starting stream from {url}')
-        self.fetcher = MediaFetcher(url, 60)
+    def _run_stream(self, url: str):
+        """
+        Processes a video stream.
 
-        def process_frame(frame, frame_available):
-            """Processes a single frame."""
-            if not frame_available or self.cancel_requested:
-                return
+        :param url: The URL of the video stream.
+        """
+        if url is None:
+            self.error_signal.emit('No URL provided', Exception('No URL provided'))
+            return
 
-            try:
-                # Process the frame
-                logging.debug('Processing frame')
-                result_frame, _ = self._process_image(frame)
+        # Setup the frame fetcher and the frame interval
+        media_fetcher = MediaFetcher(url)
+        self.stream_fps = media_fetcher.fps
+        max_fps = 30.0
+        frame_interval = 1.0 / min(self.stream_fps, max_fps)
+        last_frame_time = time.time()
 
-                # Emit the processed frame
-                logging.debug('Emitting frame')
-                self.finished_stream_frame_signal.emit(result_frame)
-            except Exception as e:
-                self.error_signal.emit(url, e)
+        while not self.cancel_requested:
+            current_time = time.time()
+            elapsed_since_last_frame = current_time - last_frame_time
 
-        self.fetcher.frame_signal.connect(process_frame)
-        self.fetcher.start()
+            # Fetch the frame and process it
+            if elapsed_since_last_frame >= frame_interval:
+                try:
+                    frame, frame_available = media_fetcher.fetch_frame()
+                    if not frame_available:
+                        continue
+                    result_frame, _ = self._process_image(frame)
+                    self.finished_stream_frame_signal.emit(result_frame)
+                except Exception as e:
+                    self.error_signal.emit("Error processing frame", e)
+                    break
+                last_frame_time = current_time
 
-    def _make_results(self, results_array: list):
-        """Creates the results dictionary."""
+            # Because it's another thread, we can use sleep
+            time.sleep(max(0.0, frame_interval - (time.time() - current_time)))
+
+        # Release the frame fetcher when cancelled
+        media_fetcher.release()
+
+    def _process_image(self, image) -> tuple[np.ndarray, list[dict]]:
+        """
+        Processes a single image.
+
+        :param image: The input image.
+        :return: The processed image and the results array.
+        """
         raise NotImplementedError
 
-    def _process_image(self, image):
-        """Processes a single image."""
+    def _process_video(self, video_path, output_path) -> list[dict]:
+        """
+        Processes a single video and saves the output.
+
+        :param video_path: The input video path.
+        :param output_path: The output video path.
+        :return: The results array.
+        """
         raise NotImplementedError
 
-    def _process_video(self, video_path, output_path):
-        """Processes a single video."""
+    def _make_results(self, results_array: list) -> dict:
+        """
+        Creates the results dictionary.
+
+        :param results_array: The list of results.
+        :return: The results dictionary.
+        """
         raise NotImplementedError
