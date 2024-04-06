@@ -216,7 +216,7 @@ class ImageResultWidget(QWidget):
         for result_json in self._result_jsons[input_image]:
             with open(result_json, 'r') as file:
                 data = json.load(file)
-            self._model_select_combo.addItem(data['model_name'], result_json)
+            self._model_select_combo.addItem(data['weight'], result_json)
 
     def change_current_model(self):
         index = self._model_select_combo.currentIndex()
@@ -240,7 +240,7 @@ class ImageResultWidget(QWidget):
         # Add each layer to the list and scene
         for index, result in enumerate(data['results']):
             # Add the layer to the list
-            class_name = data['classes'][str(result['classid'])]
+            class_name = data['classes'][result['classid']]
             confidence = round(result['confidence'], 2)
             item_text = f"{class_name} ({index}) : {round(confidence * 100, 1)}%"
             item = QListWidgetItem(item_text)

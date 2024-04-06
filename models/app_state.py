@@ -40,8 +40,7 @@ class AppState:
 
     def update_qss(self):
         if self.config.qss == 'app':
-            stylesheet_path = get_ressource_path('qss/stylesheet.qss')
-            with open(stylesheet_path, 'r') as file:
+            with open('ressources/qss/stylesheet.qss', 'r') as file:
                 self.qss = file.read()
         else:
             self.qss = None
@@ -49,8 +48,7 @@ class AppState:
     def update_localization(self):
         if self.config.localization == 'fr':
             self._translator = QTranslator()
-            local_path = get_ressource_path('local')
-            if self._translator.load('fr.qm', local_path):
+            if self._translator.load('fr.qm', 'ressources/locale'):
                 logging.info('Loaded translator')
                 self.app.installTranslator(self._translator)
             else:

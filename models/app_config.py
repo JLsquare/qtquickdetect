@@ -7,6 +7,7 @@ class AppConfig:
     def __init__(self):
         self.localization = 'en'
         self.qss = 'app'
+        self.models = {}
 
         self.path = 'app_config.json'
 
@@ -32,6 +33,7 @@ class AppConfig:
                 if key in config:
                     try:
                         tmp = config[key]
+                        logging.debug(f'Read config key {key}: {tmp}')
                         self.__dict__[key] = tmp
                     except:
                         save = True

@@ -1,45 +1,43 @@
-from PyQt6.QtCore import pyqtSignal, QThread
-import numpy as np
-import cv2 as cv
+import logging
 import time
+import cv2 as cv
+import numpy as np
 
 
-class MediaFetcher(QThread):
-    frame_signal = pyqtSignal(np.ndarray, bool)
-
-    def __init__(self, url: str, max_fps: float):
-        super().__init__()
-        self._cancel_requested = False
+class MediaFetcher:
+    """Class to fetch frames from a video stream, not on a separate thread, has a method to fetch the frame."""
+    def __init__(self, url):
+        """Initializes the MediaFetcher."""
         self.url = url
-        self._max_fps = max_fps
-        self._last_frame = None
-        self.fps = 0.0
+        self.cap = cv.VideoCapture(self.url)
+        self.fps = self.cap.get(cv.CAP_PROP_FPS)
+        self.last_fetch_time = None
+        if not self.cap.isOpened():
+            raise IOError(f"Failed to open stream: {url}")
 
-    def request_cancel(self):
-        self._cancel_requested = True
+    def fetch_frame(self) -> tuple[np.ndarray, bool]:
+        """Fetches the latest frame from the stream."""
+        if self.cap is None or not self.cap.isOpened():
+            raise ValueError("VideoCapture is not initialized or already released.")
 
-    def run(self):
-        if self.url is None:
-            return
-        cap = cv.VideoCapture(self.url)
-        self.fps = cap.get(cv.CAP_PROP_FPS)
-        frame_interval = 1.0 / min(self.fps, self._max_fps)
-        last_frame_time = time.time()
+        current_time = time.time()
 
-        while not self._cancel_requested:
-            frame_available, frame = cap.read()
-            current_time = time.time()
-            elapsed_since_last_frame = current_time - last_frame_time
+        # Skip frames if necessary
+        if self.last_fetch_time is not None:
+            elapsed_time = current_time - self.last_fetch_time
+            frame_interval = 1.0 / self.fps
+            frames_to_skip = int(elapsed_time / frame_interval)
+            for _ in range(frames_to_skip):
+                self.cap.read()
+            logging.debug(f"Skipped {frames_to_skip} frames")
 
-            if elapsed_since_last_frame >= frame_interval:
-                if frame_available:
-                    self._last_frame = frame
-                    self.frame_signal.emit(frame, True)
-                elif self._last_frame is not None:
-                    self.frame_signal.emit(self._last_frame, False)
-                last_frame_time = current_time
+        # Fetch the frame
+        frame_available, frame = self.cap.read()
 
-            time_to_wait = frame_interval - (time.time() - current_time)
-            time.sleep(max(0.0, time_to_wait))
+        self.last_fetch_time = time.time()
+        return frame, frame_available
 
-        cap.release()
+    def release(self):
+        """Releases the VideoCapture object."""
+        if self.cap:
+            self.cap.release()

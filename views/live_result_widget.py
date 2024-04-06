@@ -4,13 +4,13 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QHBoxLayout
 from models.project import Project
-from pipeline.realtime_detection import RealtimeDetectionPipeline
+from pipeline.pipeline_manager import PipelineManager
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import logging
 
 
 class LiveResultWidget(QWidget):
-    def __init__(self, live_url: str, model_path: str, project: Project):
+    def __init__(self, live_url: str, models: dict[str, list[str]], project: Project):
         super().__init__()
 
         # PyQT6 Components
@@ -28,7 +28,8 @@ class LiveResultWidget(QWidget):
         self._main_layout: Optional[QHBoxLayout] = None
 
         self._timer = None
-        self._pipeline = RealtimeDetectionPipeline(live_url, model_path, project)
+        self._live_url = live_url
+        self._pipeline_manager = PipelineManager('detect', models, project)
         self._frame_buffer = deque(maxlen=30)
         self._buffer_rate = 0.80
         self._frame_update_count = 0
@@ -88,8 +89,8 @@ class LiveResultWidget(QWidget):
         Start the pipeline and timer
         Set the timer to update frame at the rate of pipeline fps * buffer rate
         """
-        self._pipeline.progress_signal.connect(self.receive_frame)
-        self._pipeline.start()
+        self._pipeline_manager.finished_stream_frame_signal.connect(self.receive_frame)
+        self._pipeline_manager.run_stream(self._live_url)
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update_frame)
 
@@ -99,7 +100,7 @@ class LiveResultWidget(QWidget):
         Adjust the buffer rate according to the buffer size.
         """
         if not self._timer.isActive():
-            self._timer.start(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
+            self._timer.start(int(1000.0 / (self._pipeline_manager.current_pipeline.stream_fps * self._buffer_rate)))
         if len(self._frame_buffer) < 30:
             self._frame_buffer.append(frame)
         else:
@@ -107,10 +108,10 @@ class LiveResultWidget(QWidget):
             self._frame_buffer.append(frame)
         if len(self._frame_buffer) < 20 and self._buffer_rate > 0.5:
             self._buffer_rate -= 0.005
-            self._timer.setInterval(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
+            self._timer.setInterval(int(1000.0 / (self._pipeline_manager.current_pipeline.stream_fps * self._buffer_rate)))
         elif len(self._frame_buffer) > 25 and self._buffer_rate < 0.95:
             self._buffer_rate += 0.005
-            self._timer.setInterval(int(1000.0 / (self._pipeline.fetcher.fps * self._buffer_rate)))
+            self._timer.setInterval(int(1000.0 / (self._pipeline_manager.current_pipeline.stream_fps * self._buffer_rate)))
 
     def update_frame(self):
         """
@@ -132,6 +133,11 @@ class LiveResultWidget(QWidget):
         self.update_info_label()
 
     def resize_and_add_pixmap(self, pixmap):
+        """
+        Resize the pixmap and add to the scene
+
+        :param pixmap: The pixmap to add to the scene
+        """
         view = self._scene.views()[0]
         view_size = view.size()
 
@@ -145,11 +151,11 @@ class LiveResultWidget(QWidget):
 
     def stop(self):
         """Stop the pipeline and timer"""
-        self._pipeline.request_cancel()
+        self._pipeline_manager.request_cancel()
         self._timer.stop()
         self._fps_timer.stop()
         self._timer = None
-        self._pipeline = None
+        self._pipeline_manager = None
         self._fps_timer = None
 
     def calculate_real_fps(self):
@@ -160,7 +166,7 @@ class LiveResultWidget(QWidget):
 
     def update_info_label(self):
         """Update the info label"""
-        fetcher_fps = self._pipeline.fetcher.fps
+        fetcher_fps = self._pipeline_manager.current_pipeline.stream_fps
         buffer_size = len(self._frame_buffer)
         self._real_fps_label.setText(f'FPS: {self._real_fps}')
         self._fetcher_fps_label.setText(f'Fetcher FPS: {fetcher_fps:.2f}')
