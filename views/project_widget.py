@@ -124,6 +124,7 @@ class ProjectWidget(QWidget):
     def model_ui(self) -> QWidget:
         self._model_widget = ModelWidget(self._project)
         self._model_widget.models_changed_signal.connect(self.check_enable_run)
+        self._task_widget.task_changed_signal.connect(self._model_widget.update_models)
         return self._model_widget
 
     def run_ui(self) -> QWidget:
@@ -241,6 +242,18 @@ class ProjectWidget(QWidget):
 
         current_date = datetime.now()
         formatted_date = current_date.strftime("%Y-%m-%d_%H-%M-%S")
+
+        if self._task_widget.task is None:
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No task selected'))
+            logging.error('No task selected')
+            self._btn_cancel.setEnabled(False)
+            return
+
+        if self._model_widget.models is None or len(self._model_widget.models) == 0:
+            QMessageBox.critical(self, self.tr('Error'), self.tr('No model selected'))
+            logging.error('No model selected')
+            self._btn_cancel.setEnabled(False)
+            return
 
         if self._input_widget.media_type == 'image':
             inputs = self._input_info.get_selected_files('images')

@@ -45,16 +45,7 @@ class ModelWidget(QWidget):
         self._model_tree.setHeaderHidden(True)
         self._model_tree.setColumnCount(1)
 
-        # Dynamically load models and weights from appstate.config
-        for model_key, model_info in self._appstate.config.models.items():
-            parent_item = QTreeWidgetItem(self._model_tree, [model_key])
-            parent_item.setFlags(parent_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            parent_item.setCheckState(0, Qt.CheckState.Unchecked)
-
-            for weight in model_info["weights"]:
-                child_item = QTreeWidgetItem(parent_item, [weight])
-                child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                child_item.setCheckState(0, Qt.CheckState.Unchecked)
+        self.populate_model_tree()
 
         self._model_tree.itemChanged.connect(self.check_model_selected)
 
@@ -66,6 +57,27 @@ class ModelWidget(QWidget):
 
         self.setLayout(self._model_layout)
         self.setFixedSize(240, 240)
+
+    def populate_model_tree(self):
+        """Dynamically load models and weights from appstate.config"""
+        for model_key, model_info in self._appstate.config.models.items():
+            if self._project.config.current_task not in self._appstate.config.models[model_key]["tasks"]:
+                continue
+
+            parent_item = QTreeWidgetItem(self._model_tree, [model_key])
+            has_children_checked = False
+
+            for weight in model_info["weights"]:
+                child_item = QTreeWidgetItem(parent_item, [weight])
+                child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                if self.models and model_key in self.models and weight in self.models[model_key]:
+                    child_item.setCheckState(0, Qt.CheckState.Checked)
+                    has_children_checked = True
+                else:
+                    child_item.setCheckState(0, Qt.CheckState.Unchecked)
+
+            if has_children_checked:
+                parent_item.setExpanded(True)
 
     ##############################
     #         CONTROLLER         #
@@ -93,4 +105,11 @@ class ModelWidget(QWidget):
 
         self.models = selected_models
         logging.debug('Models and weights selected: ' + str(selected_models))
+        self._project.config.current_models = selected_models
+        self._project.config.save()
+        self.models_changed_signal.emit()
+
+    def update_models(self):
+        self._model_tree.clear()
+        self.populate_model_tree()
         self.models_changed_signal.emit()

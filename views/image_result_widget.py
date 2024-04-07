@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile
 from models.project import Project
 from utils.file_explorer import open_file_explorer
-from utils.image_helpers import draw_bounding_box
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import json
 import os
@@ -257,6 +257,9 @@ class ImageResultWidget(QWidget):
                 self._project.config.image_box_color, self._project.config.image_text_color,
                 self._project.config.image_box_thickness, self._project.config.image_text_size
             )
+            # Draw the segmentation mask if it exists
+            if 'mask' in result:
+                draw_segmentation_mask(layer, np.array(result['mask']), self._project.config.image_box_color)
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)

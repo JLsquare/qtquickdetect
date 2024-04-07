@@ -40,9 +40,9 @@ class PipelineManager(QObject):
         :return: True if models and tasks are valid, False otherwise.
         """
         for model, weights in self._models.items():
+            if self._task not in self._appstate.config.models[model]['tasks']:
+                return False
             for weight in weights:
-                if self._task not in self._appstate.config.models[model]['tasks']:
-                    return False
                 if weight not in self._appstate.config.models[model]['weights']:
                     return False
         return True
