@@ -1,12 +1,17 @@
 from typing import Optional
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QPixmap, QIcon
-from PyQt6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QPushButton
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QListWidget, \
+    QStackedWidget, QListWidgetItem, QSizePolicy
 from models.app_state import AppState
-from views.app_config_window import AppConfigWindow
-from views.app_tab_widget import AppTabWidget
-from utils.ressource_path import get_ressource_path
-import logging
+from views.about_widget import AboutWidget
+from views.app_config_widget import AppConfigWidget
+from views.collections_widget import CollectionsWidget
+from views.inference_history_widget import InferenceHistoryWidget
+from views.inference_widget import InferenceWidget
+from views.models_widget import ModelsWidget
+from views.presets_widget import PresetsWidget
+from views.training_widget import TrainingWidget
 
 
 class MainWindow(QWidget):
@@ -14,14 +19,15 @@ class MainWindow(QWidget):
         super().__init__()
 
         # PyQT6 Components
-        self._top_layout: Optional[QHBoxLayout] = None
-        self._main_layout: Optional[QGridLayout] = None
-        self._title_icon: Optional[QLabel] = None
-        self._title_label: Optional[QLabel] = None
+        self._title_widget: Optional[QWidget] = None
+        self._title_list_item: Optional[QListWidgetItem] = None
+        self._sidebar_layout: Optional[QHBoxLayout] = None
+        self._main_layout: Optional[QHBoxLayout] = None
         self._title_layout: Optional[QHBoxLayout] = None
-        self._settings_button: Optional[QPushButton] = None
-        self._settings_window: Optional[AppConfigWindow] = None
-        self._app_tab_widget: Optional[AppTabWidget] = None
+        self._title_label: Optional[QLabel] = None
+        self._title_icon: Optional[QLabel] = None
+        self._side_menu: Optional[QListWidget] = None
+        self._content_stack: Optional[QStackedWidget] = None
 
         self._appstate = AppState.get_instance()
 
@@ -34,26 +40,58 @@ class MainWindow(QWidget):
 
     def init_window(self):
         self.setWindowTitle('QTQuickDetect')
-        self.setGeometry(100, 100, 1280, 720)
-        self.setMinimumSize(QSize(1280, 600))
+        self.setGeometry(100, 100, 1524, 720)
+        self.setMinimumSize(QSize(1524, 600))
         self.setStyleSheet(self._appstate.qss)
         self.setProperty('class', 'dark-bg')
 
     def init_ui(self):
-        self._top_layout = QHBoxLayout()
-        self._top_layout.addStretch(1)
-        self._top_layout.addLayout(self.title_ui())
-        self._top_layout.addStretch(1)
-        self._top_layout.addWidget(self.settings_ui())
+        self._side_menu = QListWidget()
+        self._content_stack = QStackedWidget()
 
-        self._app_tab_widget = AppTabWidget()
+        self._title_list_item = QListWidgetItem(self._side_menu)
+        self._title_list_item.setSizeHint(QSize(100, 64))
+        self._title_list_item.setFlags(self._title_list_item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
+        self._title_list_item.setFlags(self._title_list_item.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+        self._side_menu.setItemWidget(self._title_list_item, self.title_ui())
+        self._content_stack.addWidget(QWidget())  # Empty widget for title
 
-        self._main_layout = QGridLayout(self)
-        self._main_layout.addLayout(self._top_layout, 0, 0)
-        self._main_layout.addWidget(self._app_tab_widget, 1, 0)
+        self._side_menu.addItem('Models')
+        self._content_stack.addWidget(ModelsWidget())
+        self._side_menu.addItem('Presets')
+        self._content_stack.addWidget(PresetsWidget())
+        self._side_menu.addItem('Image Collections')
+        self._content_stack.addWidget(CollectionsWidget('image'))
+        self._side_menu.addItem('Video Collections')
+        self._content_stack.addWidget(CollectionsWidget('video'))
+        self._side_menu.addItem('Image Inference')
+        self._content_stack.addWidget(InferenceWidget('image'))
+        self._side_menu.addItem('Video Inference')
+        self._content_stack.addWidget(InferenceWidget('video'))
+        self._side_menu.addItem('Stream Inference')
+        self._content_stack.addWidget(QWidget())
+        self._side_menu.addItem('Inference History')
+        self._content_stack.addWidget(InferenceHistoryWidget())
+        self._side_menu.addItem('Training')
+        self._content_stack.addWidget(TrainingWidget())
+        self._side_menu.addItem('Settings')
+        self._content_stack.addWidget(AppConfigWidget())
+        self._side_menu.addItem('About')
+        self._content_stack.addWidget(AboutWidget())
+
+        self._side_menu.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self._side_menu.setFixedWidth(210)
+        self._side_menu.currentRowChanged.connect(self._content_stack.setCurrentIndex)
+
+        self._main_layout = QHBoxLayout()
+        self._main_layout.addWidget(self._side_menu)
+        self._main_layout.addWidget(self._content_stack)
+
+        self._side_menu.setCurrentRow(1)
+
         self.setLayout(self._main_layout)
 
-    def title_ui(self) -> QHBoxLayout:
+    def title_ui(self) -> QWidget:
         self._title_icon = QLabel()
         pixmap = QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
                                                                             Qt.TransformationMode.SmoothTransformation)
@@ -64,22 +102,7 @@ class MainWindow(QWidget):
         self._title_layout = QHBoxLayout()
         self._title_layout.addWidget(self._title_icon)
         self._title_layout.addWidget(self._title_label)
-        return self._title_layout
 
-    def settings_ui(self) -> QPushButton:
-        self._settings_button = QPushButton()
-        self._settings_button.setIcon(QIcon('ressources/images/settings_icon.png'))
-        self._settings_button.setIconSize(QSize(32, 32))
-        self._settings_button.setFixedSize(32, 32)
-        self._settings_button.clicked.connect(self.open_settings)
-
-        return self._settings_button
-
-    ##############################
-    #         CONTROLLER         #
-    ##############################
-
-    def open_settings(self):
-        logging.debug('Open settings')
-        self._settings_window = AppConfigWindow()
-        self._settings_window.show()
+        self._title_widget = QWidget()
+        self._title_widget.setLayout(self._title_layout)
+        return self._title_widget

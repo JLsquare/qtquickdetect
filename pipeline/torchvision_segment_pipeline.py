@@ -1,10 +1,12 @@
 import numpy as np
 import torch
 import torchvision.transforms as T
-from torchvision.models.detection import fasterrcnn_resnet50_fpn, maskrcnn_resnet50_fpn, retinanet_resnet50_fpn, ssd300_vgg16, ssdlite320_mobilenet_v3_large
+import cv2 as cv
+from torchvision.models.detection import maskrcnn_resnet50_fpn
+
 from models.preset import Preset
 from pipeline.pipeline import Pipeline
-from utils.image_helpers import draw_bounding_box
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points
 
 # COCO classes used for TorchVision models
 # https://pytorch.org/vision/0.9/models.html#object-detection-instance-segmentation-and-person-keypoint-detection
@@ -24,15 +26,14 @@ CLASS_NAMES = [
 ]
 
 
-class TorchVisionDetectPipeline(Pipeline):
-    """Pipeline for detecting objects in images and videos using TorchVision models with pre-trained weights."""
+class TorchVisionSegmentPipeline(Pipeline):
+    """Pipeline for detecting and segmenting objects in images and videos using TorchVision models with pre-trained weights."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
                  stream_url: str | None, results_path: str | None):
         """
         Initializes the pipeline.
 
-        :param weight: The weight to use.
         :param images_paths: List of image paths if processing images.
         :param videos_paths: List of video paths if processing videos.
         :param stream_url: URL of the video stream if processing a stream.
@@ -41,53 +42,40 @@ class TorchVisionDetectPipeline(Pipeline):
         """
         super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
-        self._load_model(weight)
+        self.model = maskrcnn_resnet50_fpn(pretrained=True).to(self.device)
+        self.model.eval()
         self.transform = T.Compose([T.ToTensor()])
         self.categories = CLASS_NAMES
 
-    def _load_model(self, model_name: str):
-        """
-        Loads the specified model with the specified weights.
-
-        :param model_name: The name of the model to load.
-        """
-        if model_name == 'fasterrcnn':
-            self.model = fasterrcnn_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'maskrcnn':
-            self.model = maskrcnn_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'retinanet':
-            self.model = retinanet_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'ssd300':
-            self.model = ssd300_vgg16(pretrained=True).to(self.device)
-        elif model_name == 'ssdlite320':
-            self.model = ssdlite320_mobilenet_v3_large(pretrained=True).to(self.device)
-        else:
-            raise ValueError(f"Unknown model name: {model_name}")
-        self.model.eval()
-
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
-        Processes a single image with TorchVision detection.
+        Processes a single image with TorchVision detection and segmentation.
 
         :param image: The input image.
         :return: The processed image and the results array.
         """
         # Inference
-        image_tensor = self.transform(image).unsqueeze(0).to(self.preset.device)
+        image_tensor = self.transform(image).unsqueeze(0).to(self.device)
         with torch.no_grad():
             predictions = self.model(image_tensor)[0]
 
         results_array = []
         # For each box in the result
         for i in range(len(predictions['labels'])):
-            # Extract box information
             box = predictions['boxes'][i].cpu().numpy()
-            label = int(predictions['labels'][i].item())
+            label = int(predictions['labels'][i])
             score = predictions['scores'][i].item()
-
-            # Temp, threshold
-            if score < 0.3:
+            if score < 0.5:
                 continue
+
+            # Extract mask
+            mask = predictions['masks'][i, 0].cpu().numpy()
+            mask = mask > 0.5
+
+            # Extract polygon from mask
+            contours, _ = cv.findContours((mask * 255).astype(np.uint8), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+            polygons = [contour.astype(np.float32).squeeze(axis=1).tolist() for contour in contours]
+            polygon = max(polygons, key=lambda x: len(x))
 
             # Draw bounding box
             draw_bounding_box(
@@ -96,12 +84,16 @@ class TorchVisionDetectPipeline(Pipeline):
                 self.preset.box_thickness, self.preset.text_size
             )
 
+            # Draw segmentation mask
+            draw_segmentation_mask_from_points(image, polygon, self.preset.segment_color)
+
             # Append the box to the results array
             results_array.append({
                 'x1': int(box[0]),
                 'y1': int(box[1]),
                 'x2': int(box[2]),
                 'y2': int(box[3]),
+                'mask': polygon,
                 'classid': label,
                 'confidence': score,
             })
@@ -117,7 +109,7 @@ class TorchVisionDetectPipeline(Pipeline):
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
-            'task': "detection",
+            'task': "detection and segmentation",
             'classes': self.categories,
             'results': results_array
         }

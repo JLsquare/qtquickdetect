@@ -1,9 +1,10 @@
 import logging
 import importlib
 import numpy as np
-from models.project import Project
 from models.app_state import AppState
 from PyQt6.QtCore import pyqtSignal, QObject
+
+from models.preset import Preset
 
 
 class PipelineManager(QObject):
@@ -13,18 +14,18 @@ class PipelineManager(QObject):
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
     error_signal = pyqtSignal(str, Exception)  # Source file, exception
 
-    def __init__(self, task: str, models: dict[str, list[str]], project: Project):
+    def __init__(self, task: str, preset: Preset, models: dict[str, list[str]]):
         """
         Initializes the Pipeline Manager.
 
         :param task: Task to perform.
+        :param preset: Preset object.
         :param models: List of tuples containing model name and weight
-        :param project: Project object.
         """
         super().__init__()
         self._task = task
         self._models = models
-        self._project = project
+        self._preset = preset
         self._appstate = AppState.get_instance()
         self.current_pipeline = None
 
@@ -40,11 +41,8 @@ class PipelineManager(QObject):
         :return: True if models and tasks are valid, False otherwise.
         """
         for model, weights in self._models.items():
-            if self._task not in self._appstate.config.models[model]['tasks']:
+            if self._task not in self._appstate.app_config.models[model]['task']:
                 return False
-            for weight in weights:
-                if weight not in self._appstate.config.models[model]['weights']:
-                    return False
         return True
 
     def request_cancel(self):
@@ -61,6 +59,7 @@ class PipelineManager(QObject):
         """
         for model, weights in self._models.items():
             for weight in weights:
+                print(weight)
                 self._setup_pipeline(model, weight, images_paths, None, None, results_path)
                 self._appstate.pipelines.append(self.current_pipeline)
                 self.current_pipeline.start()
@@ -102,11 +101,12 @@ class PipelineManager(QObject):
         :param stream_url: URL of the video stream if processing a stream.
         :param results_path: Path to save the results if processing images or videos.
         """
-        model_class_path = self._appstate.config.models[model]['class']
+        pipeline = self._appstate.app_config.models[model]['pipeline']
+        model_class_path = self._appstate.app_config.pipelines[pipeline]
         module_name, class_name = model_class_path.rsplit('.', 1)
         module = importlib.import_module(module_name)
         model_class = getattr(module, class_name)
-        self.current_pipeline = model_class(weight, images_path, videos_path, stream_url, results_path, self._project)
+        self.current_pipeline = model_class(weight, self._preset, images_path, videos_path, stream_url, results_path)
         self.current_pipeline.progress_signal.connect(self.progress_signal)
         self.current_pipeline.finished_file_signal.connect(self.finished_file_signal)
         self.current_pipeline.finished_stream_frame_signal.connect(self.finished_stream_frame_signal)

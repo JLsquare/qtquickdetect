@@ -1,8 +1,7 @@
 from typing import Optional
-from PyQt6.QtCore import Qt, QFile
+from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, \
     QFileDialog, QSplitter
-from models.project import Project
 from utils.file_explorer import open_file_explorer
 from views.video_player_widget import VideoPlayerWidget
 import os
@@ -11,7 +10,9 @@ import cv2 as cv
 
 
 class VideoResultWidget(QWidget):
-    def __init__(self, project: Project, result_path: str):
+    return_signal = pyqtSignal()
+
+    def __init__(self, result_path: str):
         super().__init__()
 
         # PyQT6 Components
@@ -27,14 +28,13 @@ class VideoResultWidget(QWidget):
         self._video_player: Optional[VideoPlayerWidget] = None
         self._video_layout: Optional[QVBoxLayout] = None
         self._video_container: Optional[QWidget] = None
+        self._return_button: Optional[QPushButton] = None
         self._open_result_folder_button: Optional[QPushButton] = None
         self._save_json_button: Optional[QPushButton] = None
         self._save_video_button: Optional[QPushButton] = None
         self._save_frame_button: Optional[QPushButton] = None
 
-        self._project = project
         self._result_path = result_path
-
         self._input_videos = []
         self._result_videos = {}
         self._result_jsons = {}
@@ -54,6 +54,7 @@ class VideoResultWidget(QWidget):
 
         # Bottom layout
         self._bottom_layout = QHBoxLayout()
+        self._bottom_layout.addWidget(self.return_button_ui())
         self._bottom_layout.addStretch(1)
         self._bottom_layout.addWidget(self.open_result_folder_button_ui())
         self._bottom_layout.addWidget(self.save_json_button_ui())
@@ -97,6 +98,11 @@ class VideoResultWidget(QWidget):
         self._video_container.setProperty('class', 'border')
 
         return self._video_container
+
+    def return_button_ui(self) -> QPushButton:
+        self._return_button = QPushButton(self.tr('Return'))
+        self._return_button.clicked.connect(self.return_signal.emit)
+        return self._return_button
 
     def open_result_folder_button_ui(self) -> QPushButton:
         self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
@@ -154,10 +160,7 @@ class VideoResultWidget(QWidget):
             return
 
         # Save the video
-        if self._project.config.video_format == 'mp4':
-            format_filter = "MP4 (*.mp4)"
-        else:
-            format_filter = "AVI (*.avi)"
+        format_filter = "MP4 (*.mp4)"
         file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Video'), '', format_filter)
         if file_name:
             if not file_name.lower().endswith('.mp4') and format_filter == 'Video (*.mp4)':
@@ -181,10 +184,7 @@ class VideoResultWidget(QWidget):
             return
 
         # Save the frame
-        if self._project.config.image_format == 'png':
-            format_filter = 'PNG (*.png)'
-        else:
-            format_filter = 'JPG (*.jpg)'
+        format_filter = 'PNG (*.png)'
         file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Frame'), '', format_filter)
         if file_name:
             if not file_name.lower().endswith('.png') and format_filter == 'PNG (*.png)':

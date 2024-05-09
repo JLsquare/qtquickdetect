@@ -7,6 +7,7 @@ class AppConfig:
     def __init__(self):
         self.localization = 'en'
         self.qss = 'app'
+        self.pipelines = {}
         self.models = {}
 
         self.path = 'app_config.json'

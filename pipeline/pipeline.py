@@ -4,7 +4,7 @@ import cv2 as cv
 import numpy as np
 from pathlib import Path
 from PyQt6.QtCore import pyqtSignal, QThread
-from models.project import Project
+from models.preset import Preset
 from utils.media_fetcher import MediaFetcher
 
 
@@ -15,8 +15,8 @@ class Pipeline(QThread):
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
     error_signal = pyqtSignal(str, Exception)  # Source file, exception
 
-    def __init__(self, weight: str, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None, project: Project):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
+                 stream_url: str | None, results_path: str | None):
         """
         Initializes the pipeline.
 
@@ -25,7 +25,7 @@ class Pipeline(QThread):
         :param videos_paths: List of video paths if processing videos.
         :param stream_url: URL of the video stream if processing a stream.
         :param results_path: Path to save the results if processing images or videos.
-        :param project: Project object.
+        :param preset: Preset object.
         """
         super().__init__()
         self.fetcher = None
@@ -35,7 +35,7 @@ class Pipeline(QThread):
         self.stream_url = stream_url
         self.mode = 'images' if images_paths else 'videos' if videos_paths else 'stream'
         self.results_path = Path(results_path) / Path(weight).stem if results_path else None
-        self.project = project
+        self.preset = preset
         self.cancel_requested = False
         self.processing_frame = None
         self.stream_fps = 0.0
@@ -74,7 +74,7 @@ class Pipeline(QThread):
                 # Create paths for the output files
                 file_name = Path(input_path).stem
                 file_path = self.results_path / file_name
-                image_path = f"{file_path}.{self.project.config.image_format}"
+                image_path = f"{file_path}.{self.preset.image_format}"
                 json_path = f"{file_path}.json"
 
                 # Read the image and process it
@@ -109,7 +109,7 @@ class Pipeline(QThread):
                 # Create paths for the output files
                 file_name = Path(input_path).stem
                 file_path = self.results_path / file_name
-                video_path = f"{file_path}.{self.project.config.video_format}"
+                video_path = f"{file_path}.{self.preset.video_format}"
                 json_path = f"{file_path}.json"
 
                 # Process the video and save it

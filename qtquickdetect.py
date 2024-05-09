@@ -1,4 +1,3 @@
-from PyQt6.QtCore import QTranslator
 from PyQt6.QtWidgets import QApplication
 from models.app_state import AppState
 from views.main_window import MainWindow

@@ -2,10 +2,10 @@ from typing import Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsPixmapItem, QGraphicsScene, \
     QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSplitter
 from PyQt6.QtGui import QPixmap, QImage, QPainter
-from PyQt6.QtCore import Qt, QFile
-from models.project import Project
+from PyQt6.QtCore import Qt, QFile, pyqtSignal
+from models.preset import Preset
 from utils.file_explorer import open_file_explorer
-from utils.image_helpers import draw_bounding_box, draw_segmentation_mask
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import json
 import os
@@ -13,8 +13,15 @@ import numpy as np
 
 
 class ImageResultWidget(QWidget):
-    def __init__(self, project: Project, result_path: str):
+    return_signal = pyqtSignal()
+
+    def __init__(self, preset: Preset, result_path: str):
         super().__init__()
+        self._preset = preset
+        self._result_path = result_path
+        self._input_images = []
+        self._result_jsons = {}
+        self._layer_visibility = {}
 
         # PyQT6 Components
         self._middle_layout: Optional[QSplitter] = None
@@ -32,15 +39,10 @@ class ImageResultWidget(QWidget):
         self._container_layout: Optional[QVBoxLayout] = None
         self._scene: Optional[QGraphicsScene] = None
         self._view: Optional[ResizeableGraphicsWidget] = None
+        self._return_button: Optional[QPushButton] = None
         self._open_result_folder_button: Optional[QPushButton] = None
         self._save_json_button: Optional[QPushButton] = None
         self._save_image_button: Optional[QPushButton] = None
-
-        self._project = project
-        self._result_path = result_path
-        self._input_images = []
-        self._result_jsons = {}
-        self._layer_visibility = {}
 
         self.init_ui()
 
@@ -59,6 +61,7 @@ class ImageResultWidget(QWidget):
 
         # Bottom layout
         self._bottom_layout = QHBoxLayout()
+        self._bottom_layout.addWidget(self.return_button_ui())
         self._bottom_layout.addStretch(1)
         self._bottom_layout.addWidget(self.open_result_folder_button_ui())
         self._bottom_layout.addWidget(self.save_json_button_ui())
@@ -120,6 +123,11 @@ class ImageResultWidget(QWidget):
         self._container_widget.setProperty('class', 'border')
         return self._container_widget
 
+    def return_button_ui(self) -> QPushButton:
+        self._return_button = QPushButton(self.tr('Return'))
+        self._return_button.clicked.connect(self.return_signal.emit)
+        return self._return_button
+
     def open_result_folder_button_ui(self) -> QPushButton:
         self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
         self._open_result_folder_button.clicked.connect(self.open_result_folder)
@@ -169,11 +177,7 @@ class ImageResultWidget(QWidget):
                 painter.drawPixmap(0, 0, img_size.width(), img_size.height(), layer_info['initial_pixmap'])
         painter.end()
 
-        # Save the image
-        if self._project.config.image_format == 'png':
-            format_filter = 'PNG (*.png)'
-        else:
-            format_filter = 'JPEG (*.jpg)'
+        format_filter = 'PNG (*.png)'
         file_name, _ = QFileDialog.getSaveFileName(self, self.tr('Save Image'), "", format_filter)
         if file_name:
             if not file_name.lower().endswith('.png') and format_filter == 'PNG (*.png)':
@@ -254,12 +258,12 @@ class ImageResultWidget(QWidget):
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
             draw_bounding_box(
                 layer, top_left, bottom_right, class_name, confidence,
-                self._project.config.image_box_color, self._project.config.image_text_color,
-                self._project.config.image_box_thickness, self._project.config.image_text_size
+                self._preset.box_color, self._preset.text_color,
+                self._preset.box_thickness, self._preset.text_size
             )
             # Draw the segmentation mask if it exists
             if 'mask' in result:
-                draw_segmentation_mask(layer, np.array(result['mask']), self._project.config.image_box_color)
+                draw_segmentation_mask_from_points(layer, np.array(result['mask']), self._preset.segment_color)
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)

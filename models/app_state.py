@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QTranslator
 from PyQt6.QtWidgets import QApplication
 from models.app_config import AppConfig
-from utils.ressource_path import get_ressource_path
+from models.collections import Collections
+from models.presets import Presets
 import logging
 
 
@@ -16,8 +17,9 @@ class AppState:
         AppState._instance = self
 
         self.pipelines = []
-        self.opened_projects = []
-        self.config = AppConfig()
+        self.app_config = AppConfig()
+        self.collections = Collections()
+        self.presets = Presets()
         self.qss = None
         self.app = None
 
@@ -39,14 +41,14 @@ class AppState:
             pipeline.wait()
 
     def update_qss(self):
-        if self.config.qss == 'app':
+        if self.app_config.qss == 'app':
             with open('ressources/qss/stylesheet.qss', 'r') as file:
                 self.qss = file.read()
         else:
             self.qss = None
 
     def update_localization(self):
-        if self.config.localization == 'fr':
+        if self.app_config.localization == 'fr':
             self._translator = QTranslator()
             if self._translator.load('fr.qm', 'ressources/locale'):
                 logging.info('Loaded translator')
@@ -58,6 +60,6 @@ class AppState:
             logging.info('Removed translator')
 
     def save(self):
-        self.config.save()
+        self.app_config.save()
         self.update_qss()
         self.update_localization()

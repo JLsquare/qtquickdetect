@@ -1,117 +1,272 @@
 {
     "localization": "en",
     "qss": "app",
+    "pipelines": {
+        "Yolo Detect": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+        "Yolo Segment": "pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+        "TorchVision Detect": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+        "TorchVision Segment": "pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline"
+    },
     "models": {
         "YoloV9 Detect": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+            "task": "detect",
+            "pipeline": "Yolo Detect",
             "weights": [
-                "yolov9c.pt",
-                "yolov9e.pt"
+                {
+                    "name": "yolov9c.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov9e.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": "true"
+                }
             ]
         },
         "YoloV9 Segment": {
-            "tasks": [
-                "segment"
-            ],
-            "class": "pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+            "task": "segment",
+            "pipeline": "Yolo Segment",
             "weights": [
-                "yolov9c-seg.pt",
-                "yolov9e-seg.pt"
+                {
+                    "name": "yolov9e-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov9c-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": true
+                }
             ]
         },
         "YoloV8 Detect": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+            "task": "detect",
+            "pipeline": "Yolo Detect",
             "weights": [
-                "yolov8n.pt",
-                "yolov8s.pt",
-                "yolov8m.pt",
-                "yolov8l.pt",
-                "yolov8x.pt"
+                {
+                    "name": "yolov8n.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": "true"
+                }
             ]
         },
         "YoloV8 Segment": {
-            "tasks": [
-                "segment"
-            ],
-            "class": "pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+            "task": "segment",
+            "pipeline": "Yolo Segment",
             "weights": [
-                "yolov8n-seg.pt",
-                "yolov8s-seg.pt",
-                "yolov8m-seg.pt",
-                "yolov8l-seg.pt",
-                "yolov8x-seg.pt"
+                {
+                    "name": "yolov8n-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                }
             ]
         },
         "Yolov5": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+            "task": "detect",
+            "pipeline": "Yolo Detect",
             "weights": [
-                "yolov5nu.pt",
-                "yolov5su.pt",
-                "yolov5mu.pt",
-                "yolov5lu.pt",
-                "yolov5xu.pt",
-                "yolov5n6u.pt",
-                "yolov5s6u.pt",
-                "yolov5m6u.pt",
-                "yolov5l6u.pt",
-                "yolov5x6u.pt"
+                {
+                    "name": "yolov5nu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5su.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5mu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5lu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5xu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5n6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5s6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5m6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5l6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5x6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": "true"
+                }
             ]
         },
         "YoloV3": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+            "task": "detect",
+            "pipeline": "Yolo Detect",
             "weights": [
-                "yolov3-sppu.pt",
-                "yolov3-tinyu.pt",
-                "yolov3u.pt"
+                {
+                    "name": "yolov3-sppu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov3-tinyu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov3u.pt",
+                    "type": "native",
+                    "enabled": true
+                }
             ]
         },
         "Faster-RCNN": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
             "weights": [
-                "fasterrcnn"
+                {
+                    "name": "fasterrcnn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": "true"
+                }
             ]
         },
-        "Mask-RCNN": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+        "Mask-RCNN Detect": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
             "weights": [
-                "maskrcnn"
+                {
+                    "name": "maskrcnn",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Mask-RCNN Segment": {
+            "task": "segment",
+            "pipeline": "TorchVision Segment",
+            "weights": [
+                {
+                    "name": "maskrcnn",
+                    "type": "native",
+                    "enabled": true
+                }
             ]
         },
         "RetinaNet": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
             "weights": [
-                "retinanet"
+                {
+                    "name": "retinanet",
+                    "type": "native",
+                    "enabled": true
+                }
             ]
         },
         "SSD": {
-            "tasks": [
-                "detect"
-            ],
-            "class": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
             "weights": [
-                "ssd300",
-                "ssdlite320"
+                {
+                    "name": "ssd300",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "ssdlite320",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "test.pt",
+                    "type": "custom",
+                    "enabled": "true"
+                }
             ]
         }
     }

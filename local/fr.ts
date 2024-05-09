@@ -4,22 +4,22 @@
   <context>
     <name>AppConfigWindow</name>
     <message>
-      <location filename="../views/app_config_window.py" line="27" />
+      <location filename="../views/app_config_widget.py" line="27" />
       <source>QTQuickDetect Settings</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/app_config_window.py" line="36" />
+      <location filename="../views/app_config_widget.py" line="36" />
       <source>General</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/app_config_window.py" line="43" />
+      <location filename="../views/app_config_widget.py" line="43" />
       <source>Cancel</source>
       <translation type="unfinished">Annuler</translation>
     </message>
     <message>
-      <location filename="../views/app_config_window.py" line="48" />
+      <location filename="../views/app_config_widget.py" line="48" />
       <source>Save</source>
       <translation type="unfinished" />
     </message>
@@ -85,17 +85,17 @@
   <context>
     <name>HistoryResultWindow</name>
     <message>
-      <location filename="../views/history_result_window.py" line="33" />
+      <location filename="../views/results_widget.py" line="33" />
       <source>QTQuickDetect History Result</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/history_result_window.py" line="44" />
+      <location filename="../views/results_widget.py" line="44" />
       <source>Open History:</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/history_result_window.py" line="99" />
+      <location filename="../views/results_widget.py" line="99" />
       <source>Result</source>
       <translation type="unfinished" />
     </message>
@@ -309,27 +309,27 @@
   <context>
     <name>ModelWidget</name>
     <message>
-      <location filename="../views/model_widget.py" line="40" />
+      <location filename="../views/models_selection_widget.py" line="40" />
       <source>Detect</source>
       <translation type="unfinished">Détecter</translation>
     </message>
     <message>
-      <location filename="../views/model_widget.py" line="41" />
+      <location filename="../views/models_selection_widget.py" line="41" />
       <source>Segment</source>
       <translation type="unfinished">Segmenter</translation>
     </message>
     <message>
-      <location filename="../views/model_widget.py" line="42" />
+      <location filename="../views/models_selection_widget.py" line="42" />
       <source>Classify</source>
       <translation type="unfinished">Classer</translation>
     </message>
     <message>
-      <location filename="../views/model_widget.py" line="43" />
+      <location filename="../views/models_selection_widget.py" line="43" />
       <source>Track</source>
       <translation type="unfinished">Suivre</translation>
     </message>
     <message>
-      <location filename="../views/model_widget.py" line="44" />
+      <location filename="../views/models_selection_widget.py" line="44" />
       <source>Pose</source>
       <translation type="unfinished">Poser</translation>
     </message>
@@ -574,27 +574,27 @@
   <context>
     <name>TaskWidget</name>
     <message>
-      <location filename="../views/task_widget.py" line="49" />
+      <location filename="../views/task_selection_widget.py" line="49" />
       <source>Detect</source>
       <translation type="unfinished">Détecter</translation>
     </message>
     <message>
-      <location filename="../views/task_widget.py" line="50" />
+      <location filename="../views/task_selection_widget.py" line="50" />
       <source>Segment</source>
       <translation type="unfinished">Segmenter</translation>
     </message>
     <message>
-      <location filename="../views/task_widget.py" line="51" />
+      <location filename="../views/task_selection_widget.py" line="51" />
       <source>Classify</source>
       <translation type="unfinished">Classer</translation>
     </message>
     <message>
-      <location filename="../views/task_widget.py" line="52" />
+      <location filename="../views/task_selection_widget.py" line="52" />
       <source>Track</source>
       <translation type="unfinished">Suivre</translation>
     </message>
     <message>
-      <location filename="../views/task_widget.py" line="53" />
+      <location filename="../views/task_selection_widget.py" line="53" />
       <source>Pose</source>
       <translation type="unfinished">Poser</translation>
     </message>

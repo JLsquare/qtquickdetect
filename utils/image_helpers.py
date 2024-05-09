@@ -34,7 +34,7 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 2)
 
 
-def draw_segmentation_mask(img, mask_points, mask_color: tuple[int, int, int, int]):
+def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int]):
     """
     Draws a semi-transparent polygon mask on an image.
 

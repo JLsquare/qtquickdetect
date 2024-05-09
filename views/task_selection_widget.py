@@ -2,15 +2,15 @@ import logging
 from typing import Optional
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QRadioButton, QLabel
-from models.project import Project
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QRadioButton, QLabel, QSizePolicy
 
 
-class TaskWidget(QWidget):
+class TaskSelectionWidget(QWidget):
     task_changed_signal = pyqtSignal()
 
-    def __init__(self, project: Project):
+    def __init__(self):
         super().__init__()
+        self.task = 'detect'
 
         # PyQT6 Components
         self._task_icon_layout: Optional[QHBoxLayout] = None
@@ -23,9 +23,6 @@ class TaskWidget(QWidget):
         self._task_radio_posing: Optional[QRadioButton] = None
         self._task_radio_widget: Optional[QWidget] = None
         self._task_layout: Optional[QVBoxLayout] = None
-
-        self._project = project
-        self.task = self._project.config.current_task
 
         self.init_ui()
 
@@ -80,6 +77,8 @@ class TaskWidget(QWidget):
         self._task_radio_layout.addWidget(self._task_radio_classification)
         self._task_radio_layout.addWidget(self._task_radio_tracking)
         self._task_radio_layout.addWidget(self._task_radio_posing)
+        self._task_radio_layout.addStretch()
+        self._task_radio_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._task_radio_widget = QWidget()
         self._task_radio_widget.setLayout(self._task_radio_layout)
@@ -89,10 +88,9 @@ class TaskWidget(QWidget):
         self._task_layout = QVBoxLayout()
         self._task_layout.addLayout(self._task_icon_layout)
         self._task_layout.addWidget(self._task_radio_widget)
-        self._task_layout.addStretch()
 
         self.setLayout(self._task_layout)
-        self.setFixedSize(240, 240)
+        self.setFixedSize(240, 360)
 
     ##############################
     #         CONTROLLER         #
@@ -109,7 +107,5 @@ class TaskWidget(QWidget):
             self.task = 'track'
         elif self._task_radio_posing.isChecked():
             self.task = 'pose'
-        self._project.config.current_task = self.task
-        self._project.save()
         logging.debug('Task selected: ' + self.task)
         self.task_changed_signal.emit()

@@ -1,5 +1,8 @@
 import numpy as np
+import torch
 from ultralytics import YOLO
+
+from models.preset import Preset
 from pipeline.pipeline import Pipeline
 from utils.image_helpers import draw_bounding_box
 
@@ -7,8 +10,8 @@ from utils.image_helpers import draw_bounding_box
 class YoloDetectPipeline(Pipeline):
     """Pipeline for detecting objects in images and videos using YoloV8."""
 
-    def __init__(self, weight: str, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None, project):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
+                 stream_url: str | None, results_path: str | None):
         """
         Initializes the pipeline.
 
@@ -17,10 +20,11 @@ class YoloDetectPipeline(Pipeline):
         :param videos_paths: List of video paths if processing videos.
         :param stream_url: URL of the video stream if processing a stream.
         :param results_path: Path to save the results if processing images or videos.
-        :param project: Project object.
+        :param preset: Project object.
         """
-        super().__init__(weight, images_paths, videos_paths, stream_url, results_path, project)
-        self.model = YOLO(weight).to(self.project.device)
+        super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
+        self.device = torch.device(self.preset.device)
+        self.model = YOLO(weight).to(self.device)
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -30,8 +34,8 @@ class YoloDetectPipeline(Pipeline):
         :return: The processed image and the results array.
         """
         # Inference
-        result = self.model(image, half=(self.project.device.type == 'cuda' and self.project.config.half_precision),
-                            verbose=False, iou=self.project.config.iou_threshold)[0].cpu()
+        result = self.model(image, half=(self.device.type == 'cuda' and self.preset.half_precision),
+                            verbose=False, iou=self.preset.iou_threshold)[0].cpu()
 
         results_array = []
         # For each box in the result
@@ -45,8 +49,8 @@ class YoloDetectPipeline(Pipeline):
             # Draw bounding box
             draw_bounding_box(
                 image, top_left, bottom_right, class_name, conf,
-                self.project.config.video_box_color, self.project.config.video_text_color,
-                self.project.config.video_box_thickness, self.project.config.video_text_size
+                self.preset.box_color, self.preset.text_color,
+                self.preset.box_thickness, self.preset.text_size
             )
 
             # Append the box to the results array

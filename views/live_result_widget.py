@@ -10,7 +10,7 @@ import logging
 
 
 class LiveResultWidget(QWidget):
-    def __init__(self, live_url: str, models: dict[str, list[str]], project: Project):
+    def __init__(self, live_url: str, task: str, models: dict[str, list[str]], project: Project):
         super().__init__()
 
         # PyQT6 Components
@@ -29,7 +29,7 @@ class LiveResultWidget(QWidget):
 
         self._timer = None
         self._live_url = live_url
-        self._pipeline_manager = PipelineManager('detect', models, project)
+        self._pipeline_manager = PipelineManager(task, models, project)
         self._frame_buffer = deque(maxlen=30)
         self._buffer_rate = 0.80
         self._frame_update_count = 0

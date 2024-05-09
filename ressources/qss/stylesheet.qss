@@ -17,6 +17,7 @@ QWidget {
     border: 1px solid #797979;
     border-radius: 8px;
     margin: 4px;
+    padding: 4px;
 }
 
 /* ==== QPushButton ==== */
@@ -34,33 +35,43 @@ QPushButton:disabled {
     background-color: rgba(73, 74, 81, 51);
     color: rgba(255, 255, 255, 51);
 }
-QPushButton.input {
+QPushButton.blue {
     background-color: #27a9d2;
     border: 1px solid #87c1d3;
 }
-QPushButton.input:hover {
+QPushButton.blue:hover {
     background-color: #1b8eb0;
 }
-QPushButton.run {
+QPushButton.blue:disabled {
+    background-color: rgba(39, 169, 210, 51);
+    color: rgba(255, 255, 255, 51);
+    border: 1px solid rgba(135, 193, 211, 51);
+}
+QPushButton.green {
     background-color: #79D962;
     border: 1px solid #b7e2ab;
 }
-QPushButton.run:hover {
+QPushButton.green:hover {
     background-color: #5dbd4f;
 }
-QPushButton.run:disabled {
+QPushButton.green:disabled {
     background-color: rgba(121, 217, 98, 51);
     color: rgba(255, 255, 255, 51);
     border: 1px solid rgba(183, 226, 171, 51);
 }
-QPushButton.cancel {
+QPushButton.red {
     background-color: #D96262;
     border: 1px solid #e2abab;
 }
-QPushButton.cancel:hover {
+QPushButton.red:hover {
     background-color: #bd4f4f;
 }
-QPushButton.cancel:disabled {
+QPushButton.red:disabled {
+    background-color: rgba(217, 98, 98, 51);
+    color: rgba(255, 255, 255, 51);
+    border: 1px solid rgba(226, 171, 171, 51);
+}
+QPushButton.red:disabled {
     background-color: rgba(217, 98, 98, 51);
     color: rgba(255, 255, 255, 51);
     border: 1px solid rgba(226, 171, 171, 51);
@@ -211,13 +222,13 @@ QListWidget {
     background-color: #5D5D65;
     border: 1px solid #797979;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px;
     margin: 4px;
 }
 QListWidget::item {
     background-color: #5D5D65;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px;
     margin: 2px;
 }
 QListWidget::item:hover {
@@ -235,6 +246,15 @@ QListWidget::indicator:unchecked {
     background-color: #5D5D65;
     border: 1px solid #797979;
     border-radius: 4px;
+}
+
+/* ==== QStackedWidget ==== */
+QStackedWidget {
+    background-color: #5D5D65;
+    border: 1px solid #797979;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: 4px;
 }
 
 /* ==== ScrollBar ==== */
@@ -267,13 +287,13 @@ QTreeView {
     background-color: #5D5D65;
     border: 1px solid #797979;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px;
     margin: 4px;
 }
 QTreeView::item {
     background-color: #5D5D65;
     border-radius: 8px;
-    padding: 4px 8px;
+    padding: 4px;
     margin: 2px 4px 2px 0px;
 }
 QTreeView::item:hover {
@@ -296,7 +316,7 @@ QTreeView::indicator:unchecked {
 /* ==== QRadioButton ==== */
 QRadioButton {
     background-color: #5D5D65;
-    padding: 4px 8px;
+    padding: 4px;
     margin: 4px;
 }
 QRadioButton::indicator {

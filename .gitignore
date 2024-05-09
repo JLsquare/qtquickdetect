@@ -3,7 +3,7 @@
 *__pycache__*
 *.pt
 tmp/
-projects/
-build/
-dist/
+history/
+collections/
+presets/
 qtquickdetect.spec
