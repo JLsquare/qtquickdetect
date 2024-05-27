@@ -81,13 +81,13 @@ class MainWindow(QWidget):
 
         self._side_menu.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self._side_menu.setFixedWidth(210)
-        self._side_menu.currentRowChanged.connect(self._content_stack.setCurrentIndex)
+        self._side_menu.currentRowChanged.connect(self.onRowChanged)
 
         self._main_layout = QHBoxLayout()
         self._main_layout.addWidget(self._side_menu)
         self._main_layout.addWidget(self._content_stack)
 
-        self._side_menu.setCurrentRow(1)
+        self._side_menu.setCurrentRow(5)
 
         self.setLayout(self._main_layout)
 
@@ -106,3 +106,8 @@ class MainWindow(QWidget):
         self._title_widget = QWidget()
         self._title_widget.setLayout(self._title_layout)
         return self._title_widget
+
+    def onRowChanged(self, row):
+        self._content_stack.setCurrentIndex(row)
+        if hasattr(self._content_stack.currentWidget(), 'update_ui'):
+            self._content_stack.currentWidget().update_ui()

@@ -59,10 +59,15 @@ class PresetSelectionWidget(QWidget):
         self._scroll_area.setWidget(self._preset_radio_widget)
         self._scroll_area.setProperty('class', 'border')
 
+        self._description = QLabel(self.tr('Select a preset'))
+        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._description.setProperty('class', 'description')
+
         # Preset Layout
         self._preset_layout = QVBoxLayout()
         self._preset_layout.addLayout(self._preset_icon_layout)
         self._preset_layout.addWidget(self._scroll_area)
+        self._preset_layout.addWidget(self._description)
 
         self.setLayout(self._preset_layout)
         self.setFixedSize(240, 360)

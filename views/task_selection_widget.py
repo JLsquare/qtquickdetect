@@ -84,10 +84,17 @@ class TaskSelectionWidget(QWidget):
         self._task_radio_widget.setLayout(self._task_radio_layout)
         self._task_radio_widget.setProperty('class', 'border')
 
+        # Description
+        self._description = QLabel(self.tr('Select a task, <a href="https://docs.ultralytics.com/tasks/">more</a>'))
+        self._description.setOpenExternalLinks(True)
+        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._description.setProperty('class', 'description')
+
         # Task Layout
         self._task_layout = QVBoxLayout()
         self._task_layout.addLayout(self._task_icon_layout)
         self._task_layout.addWidget(self._task_radio_widget)
+        self._task_layout.addWidget(self._description)
 
         self.setLayout(self._task_layout)
         self.setFixedSize(240, 360)

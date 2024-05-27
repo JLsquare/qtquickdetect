@@ -62,10 +62,15 @@ class CollectionSelectionWidget(QWidget):
         self._scroll_area.setWidget(self._collection_radio_widget)
         self._scroll_area.setProperty('class', 'border')
 
+        self._description = QLabel('Select a collection')
+        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._description.setProperty('class', 'description')
+
         # Task Layout
         self._collection_layout = QVBoxLayout()
         self._collection_layout.addLayout(self._collection_icon_layout)
         self._collection_layout.addWidget(self._scroll_area)
+        self._collection_layout.addWidget(self._description)
 
         self.setLayout(self._collection_layout)
         self.setFixedSize(240, 360)

@@ -45,10 +45,17 @@ class ModelsSelectionWidget(QWidget):
         self.populate_model_tree()
         self._model_tree.itemChanged.connect(self.check_model_selected)
 
+        # Description
+        self._description = QLabel('Select the models weights')
+        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._description.setProperty('class', 'description')
+
+
         # Model Layout
         self._model_layout = QVBoxLayout()
         self._model_layout.addLayout(self._model_icon_layout)
         self._model_layout.addWidget(self._model_tree)
+        self._model_layout.addWidget(self._description)
 
         self.setLayout(self._model_layout)
         self.setFixedSize(240, 360)

@@ -61,10 +61,16 @@ class InferenceHistoryWidget(QWidget):
             self._table.setItem(i, 3, task_item)
             self._table.setItem(i, 4, date_item)
             self._table.setItem(i, 5, weights_item)
+        self._table.resizeColumnsToContents()
+        for i in range(6):
+            self._table.setColumnWidth(i, self._table.columnWidth(i) + 16)
 
     ##############################
     #         CONTROLLER         #
     ##############################
+
+    def update_ui(self):
+        self.populate_table()
 
     def get_history(self) -> list[dict]:
         """
@@ -82,6 +88,7 @@ class InferenceHistoryWidget(QWidget):
                 info['weights'] = ', '.join(info['weights'])
                 self._row_folder.append(folder)
                 history.append(info)
+        history.sort(key=lambda x: x['date'], reverse=True)
         return history
 
     def open_result(self, item: QTableWidgetItem):

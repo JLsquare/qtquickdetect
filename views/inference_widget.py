@@ -33,6 +33,7 @@ class InferenceWidget(QWidget):
         self._run_icon: Optional[QLabel] = None
         self._run_layout: Optional[QVBoxLayout] = None
         self._run_widget: Optional[QWidget] = None
+        self._run_description: Optional[QLabel] = None
         self._btn_run: Optional[QPushButton] = None
         self._btn_cancel: Optional[QPushButton] = None
 
@@ -46,10 +47,10 @@ class InferenceWidget(QWidget):
         self._main_layout = QVBoxLayout()
         self._h_layout = QHBoxLayout()
         self._h_layout.addStretch()
-        self._h_layout.addWidget(self.collection_ui())
-        self._h_layout.addWidget(self.preset_ui())
         self._h_layout.addWidget(self.task_ui())
         self._h_layout.addWidget(self.models_ui())
+        self._h_layout.addWidget(self.preset_ui())
+        self._h_layout.addWidget(self.collection_ui())
         self._h_layout.addWidget(self.run_ui())
         self._h_layout.addStretch()
         self._main_layout.addStretch()
@@ -114,11 +115,17 @@ class InferenceWidget(QWidget):
         self._btn_cancel.clicked.connect(self.cancel_current_pipeline)
         self._btn_cancel.setEnabled(False)
 
+        # Run description
+        self._run_description = QLabel(self.tr('Run the pipeline'))
+        self._run_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._run_description.setProperty('class', 'description')
+
         # Run Layout
         self._run_layout = QVBoxLayout()
         self._run_layout.addLayout(self._run_icon_layout)
         self._run_layout.addWidget(self._btn_run)
         self._run_layout.addWidget(self._btn_cancel)
+        self._run_layout.addWidget(self._run_description)
         self._run_layout.addStretch()
 
         self._run_widget = QWidget()
