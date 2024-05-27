@@ -65,9 +65,9 @@ class MainWindow(QWidget):
         self._side_menu.addItem('Video Collections')
         self._content_stack.addWidget(CollectionsWidget('video'))
         self._side_menu.addItem('Image Inference')
-        self._content_stack.addWidget(InferenceWidget('image'))
+        self._content_stack.addWidget(InferenceWidget('image', self.open_last_inference))
         self._side_menu.addItem('Video Inference')
-        self._content_stack.addWidget(InferenceWidget('video'))
+        self._content_stack.addWidget(InferenceWidget('video', self.open_last_inference))
         self._side_menu.addItem('Stream Inference')
         self._content_stack.addWidget(QWidget())
         self._side_menu.addItem('Inference History')
@@ -81,7 +81,7 @@ class MainWindow(QWidget):
 
         self._side_menu.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self._side_menu.setFixedWidth(210)
-        self._side_menu.currentRowChanged.connect(self.onRowChanged)
+        self._side_menu.currentRowChanged.connect(self._content_stack.setCurrentIndex)
 
         self._main_layout = QHBoxLayout()
         self._main_layout.addWidget(self._side_menu)
@@ -107,7 +107,7 @@ class MainWindow(QWidget):
         self._title_widget.setLayout(self._title_layout)
         return self._title_widget
 
-    def onRowChanged(self, row):
-        self._content_stack.setCurrentIndex(row)
-        if hasattr(self._content_stack.currentWidget(), 'update_ui'):
-            self._content_stack.currentWidget().update_ui()
+    def open_last_inference(self):
+        self._content_stack.setCurrentIndex(8)
+        if isinstance(self._content_stack.currentWidget(), InferenceHistoryWidget):
+            self._content_stack.currentWidget().open_last_inference()

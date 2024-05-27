@@ -69,8 +69,13 @@ class InferenceHistoryWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def update_ui(self):
+    def open_last_inference(self):
+        """
+        Open the last inference result
+        """
+        self.return_to_main_view()
         self.populate_table()
+        self.open_result(self._table.item(0, 0))
 
     def get_history(self) -> list[dict]:
         """
@@ -80,16 +85,24 @@ class InferenceHistoryWidget(QWidget):
         """
         if not os.path.exists('./history'):
             return []
+
         folders = os.listdir('./history')
         history = []
+        row_folder = []
+
         for folder in folders:
             with open(f'./history/{folder}/info.json') as f:
                 info = json.load(f)
                 info['weights'] = ', '.join(info['weights'])
-                self._row_folder.append(folder)
+                row_folder.append(folder)
                 history.append(info)
-        history.sort(key=lambda x: x['date'], reverse=True)
-        return history
+
+        # Sort the history by date and the row folder list accordingly
+        paired = list(zip(history, row_folder))
+        paired.sort(key=lambda x: x[0]['date'], reverse=True)
+        sorted_history, self._row_folder = zip(*paired)
+
+        return list(sorted_history)
 
     def open_result(self, item: QTableWidgetItem):
         """
@@ -104,6 +117,7 @@ class InferenceHistoryWidget(QWidget):
         result_folder = self._row_folder[row]
         result_path = f'./history/{result_folder}'
         preset = Preset(preset_name)
+        logging.debug(f'Opening result {media_type} {collection_name} {preset_name} {result_folder}')
 
         if media_type == 'image':
             widget = ImageResultWidget(preset, result_path)
@@ -147,6 +161,7 @@ class InferenceHistoryWidget(QWidget):
 
             # For each image name in the collection
             for image_stem, image in collection_images_stem.items():
+                logging.debug(f'Checking image {image_stem} in {dir_images}')
                 # Check if the image name from the collection is in the weight directory
                 if image_stem in dir_images:
                     result_json = weight_dir / f'{image_stem}.json'

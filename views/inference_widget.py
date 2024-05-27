@@ -17,9 +17,10 @@ from views.preset_selection_widget import PresetSelectionWidget
 
 
 class InferenceWidget(QWidget):
-    def __init__(self, media_type: str):
+    def __init__(self, media_type: str, open_last_inference: callable):
         super().__init__()
         self.media_type = media_type
+        self.open_last_inference = open_last_inference
         self.app_state = AppState.get_instance()
         self.pipeline_manager: Optional[PipelineManager] = None
 
@@ -196,6 +197,10 @@ class InferenceWidget(QWidget):
             logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
             self.file_count += 1
             self._progress_bar.update_progress_bar(self.file_count, total_files, 0, os.path.basename(input_path))
+            if self.file_count == total_files:
+                self._btn_run.setEnabled(True)
+                self._btn_cancel.setEnabled(False)
+                self.open_last_inference()
 
         def callback_err(input_media_path: str, exception: Exception) -> None:
             logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
