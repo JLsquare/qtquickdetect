@@ -1,10 +1,9 @@
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Optional
-
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem
-
 from models.app_state import AppState
 from models.preset import Preset
 from views.image_result_widget import ImageResultWidget
@@ -68,6 +67,11 @@ class InferenceHistoryWidget(QWidget):
     ##############################
 
     def get_history(self) -> list[dict]:
+        """
+        Get the history of the inference results
+
+        :return: List of dictionaries containing the history of the inference results
+        """
         if not os.path.exists('./history'):
             return []
         folders = os.listdir('./history')
@@ -81,6 +85,11 @@ class InferenceHistoryWidget(QWidget):
         return history
 
     def open_result(self, item: QTableWidgetItem):
+        """
+        Open the result of the inference
+
+        :param item: The item that was double-clicked
+        """
         row = item.row()
         media_type = self._table.item(row, 0).text()
         collection_name = self._table.item(row, 1).text()
@@ -104,40 +113,84 @@ class InferenceHistoryWidget(QWidget):
         self._main_layout.addWidget(widget)
         self._current_widget = widget
 
-    def _process_image_results(self, widget: ImageResultWidget, result_path, collection_name):
-        for weight_dir in os.listdir(result_path):
-            if weight_dir == 'info.json':
+    def _process_image_results(self, widget: ImageResultWidget, result_path: str, collection_name: str):
+        """
+        Process the image results
+
+        :param widget: The widget to add the results to
+        :param result_path: The path to the results
+        :param collection_name: The name of the collection
+        """
+        result_path = Path(result_path)
+        if not result_path.is_dir():
+            logging.error(f"Result path {result_path} is not a directory")
+            return
+
+        # Get the image names from the collection
+        collection_images = self._appstate.collections.get_collection_file_paths(collection_name, 'image')
+        collection_images_stem = {Path(image).stem: image for image in collection_images}
+
+        # For each weight directory in the result path
+        for weight_dir in result_path.iterdir():
+            if weight_dir.name == 'info.json' or not weight_dir.is_dir():
                 continue
-            weight_path = os.path.join(result_path, weight_dir)
-            for image in self._appstate.collections.get_collection_file_paths(collection_name, 'image'):
-                image_name = os.path.basename(image)
-                if image_name in os.listdir(weight_path):
-                    image_basename = Path(image).stem
-                    result_json = os.path.join(weight_path, f'{image_basename}.json')
-                    widget.add_input_and_result(image, result_json)
 
-    def _process_video_results(self, widget: VideoResultWidget, result_path, collection_name):
-        for weight_dir in os.listdir(result_path):
-            if weight_dir == 'info.json':
+            # Get the image names from the weight directory
+            dir_images = {Path(image).stem for image in weight_dir.iterdir() if image.is_file()}
+
+            # For each image name in the collection
+            for image_stem, image in collection_images_stem.items():
+                # Check if the image name from the collection is in the weight directory
+                if image_stem in dir_images:
+                    result_json = weight_dir / f'{image_stem}.json'
+                    if result_json.exists():
+                        widget.add_input_and_result(image, str(result_json))
+                    else:
+                        logging.warning(f'Expected JSON result file {result_json} does not exist')
+
+    def _process_video_results(self, widget: VideoResultWidget, result_path: str, collection_name: str):
+        """
+        Process the video results
+
+        :param widget: The widget to add the results to
+        :param result_path: The path to the results
+        :param collection_name: The name of the collection
+        """
+        result_path = Path(result_path)
+        if not result_path.is_dir():
+            logging.error(f"Result path {result_path} is not a directory")
+            return
+
+        # Get the video names from the collection
+        collection_videos = self._appstate.collections.get_collection_file_paths(collection_name, 'video')
+        collection_videos_stem = {Path(video).stem: video for video in collection_videos}
+
+        # For each weight directory in the result path
+        for weight_dir in result_path.iterdir():
+            if weight_dir.name == 'info.json' or not weight_dir.is_dir():
                 continue
-            weight_path = os.path.join(result_path, weight_dir)
-            for video in self._appstate.collections.get_collection_file_paths(collection_name, 'video'):
-                video_name = os.path.basename(video)
-                video_basename = Path(video).stem
-                result_files = os.listdir(weight_path)
 
-                result_video = next((f for f in result_files
-                                     if f.startswith(video_basename)
-                                     and f != video_name
-                                     and not f.endswith('.json')
-                                     and (f.endswith('.mp4') or f.endswith('.avi'))), None)
+            # Get the video names from the weight directory
+            result_files = list(weight_dir.iterdir())
+            result_files_stem = {f.stem: f for f in result_files if
+                                 f.is_file() and f.suffix in ['.mp4', '.avi'] and not f.name.endswith('.json')}
 
+            # For each video name in the collection
+            for video_stem, video in collection_videos_stem.items():
+                result_video = result_files_stem.get(video_stem)
+
+                # Check if the video name from the collection is in the weight directory
                 if result_video:
-                    result_video_path = os.path.join(weight_path, result_video)
-                    result_json = os.path.join(weight_path, f'{video_basename}.json')
-                    widget.add_input_and_result(video, result_video_path, result_json)
+                    result_json = weight_dir / f'{video_stem}.json'
+                    if result_json.exists():
+                        widget.add_input_and_result(video, str(result_video), str(result_json))
+                    else:
+                        logging.warning(f'Expected JSON result file {result_json} does not exist')
 
     def return_to_main_view(self):
+        """
+        Return to the main view
+        """
         self._main_layout.removeWidget(self._current_widget)
         self._current_widget.deleteLater()
         self._current_widget = None
