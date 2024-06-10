@@ -161,7 +161,6 @@ class InferenceHistoryWidget(QWidget):
 
             # For each image name in the collection
             for image_stem, image in collection_images_stem.items():
-                logging.debug(f'Checking image {image_stem} in {dir_images}')
                 # Check if the image name from the collection is in the weight directory
                 if image_stem in dir_images:
                     result_json = weight_dir / f'{image_stem}.json'
@@ -213,8 +212,9 @@ class InferenceHistoryWidget(QWidget):
         """
         Return to the main view
         """
-        self._main_layout.removeWidget(self._current_widget)
-        self._current_widget.deleteLater()
-        self._current_widget = None
+        if self._current_widget is not None:
+            self._main_layout.removeWidget(self._current_widget)
+            self._current_widget.deleteLater()
+            self._current_widget = None
         self._main_layout.addWidget(self._table)
         self._table.show()
