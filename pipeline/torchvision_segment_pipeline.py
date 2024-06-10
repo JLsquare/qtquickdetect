@@ -6,7 +6,7 @@ from torchvision.models.detection import maskrcnn_resnet50_fpn
 
 from models.preset import Preset
 from pipeline.pipeline import Pipeline
-from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
 
 # COCO classes used for TorchVision models
 # https://pytorch.org/vision/0.9/models.html#object-detection-instance-segmentation-and-person-keypoint-detection
@@ -78,14 +78,22 @@ class TorchVisionSegmentPipeline(Pipeline):
             polygon = max(polygons, key=lambda x: len(x))
 
             # Draw bounding box
+            if self.preset.box_color_per_class:
+                box_color = generate_color(label)
+            else:
+                box_color = self.preset.box_color
             draw_bounding_box(
                 image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), self.categories[label], score,
-                self.preset.box_color, self.preset.text_color,
+                box_color, self.preset.text_color,
                 self.preset.box_thickness, self.preset.text_size
             )
 
             # Draw segmentation mask
-            draw_segmentation_mask_from_points(image, polygon, self.preset.segment_color)
+            if self.preset.segment_color_per_class:
+                segment_color = generate_color(label)
+            else:
+                segment_color = self.preset.segment_color
+            draw_segmentation_mask_from_points(image, polygon, segment_color)
 
             # Append the box to the results array
             results_array.append({

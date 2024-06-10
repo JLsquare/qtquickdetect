@@ -1,3 +1,5 @@
+import random
+
 import cv2 as cv
 import numpy as np
 
@@ -31,7 +33,7 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     box_coords = ((top_left[0], text_top_left_y - 2), (top_left[0] + text_width + 2, text_top_left_y + text_height + 7))
 
     cv.rectangle(img, box_coords[0], box_coords[1], box_color, cv.FILLED)
-    cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 2)
+    cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 1 if text_size < 1 else 2)
 
 
 def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int]):
@@ -53,3 +55,25 @@ def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, 
     img_masked = cv.bitwise_and(mask_colored, mask_colored, mask=mask)
 
     cv.addWeighted(img, 1, img_masked, 0.5, 0, img)
+
+
+def generate_color(class_id: int) -> tuple[int, int, int, int]:
+    """
+    Generates a color for a class id.
+
+    :param class_id: The class id.
+    :return: The color (R, G, B, A).
+    """
+    random.seed(class_id)  # Ensure the same color is generated for the same class id
+
+    # Generate a vivid color with at least one channel at full intensity
+    channels = [0, 0, 0]
+    max_channel = random.randint(0, 2)
+    channels[max_channel] = 255  # Set one channel to 255 for vividness
+
+    # Set the other channels to a value between 50 and 200
+    for i in range(3):
+        if i != max_channel:
+            channels[i] = random.randint(50, 200)
+
+    return (*channels, 255)

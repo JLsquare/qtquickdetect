@@ -16,11 +16,12 @@ class Preset:
         self.video_format = 'mp4'
 
         self.box_color = (0, 255, 0, 255)
+        self.box_color_per_class = False
         self.segment_color = (0, 255, 0, 255)
+        self.segment_color_per_class = False
         self.text_color = (0, 0, 0, 255)
         self.box_thickness = 2
         self.text_size = 1.5
-        self.color_per_class = False
 
         self.path = f'presets/{preset_name}'
 
@@ -111,9 +112,14 @@ class Preset:
             self.text_size = 1.5
             changed = True
 
-        if not isinstance(self.color_per_class, bool):
-            logging.warning(f'Invalid color per class in config: {self.color_per_class}')
+        if not isinstance(self.box_color_per_class, bool):
+            logging.warning(f'Invalid box color per class in config: {self.box_color_per_class}')
             self.color_per_class = False
+            changed = True
+
+        if not isinstance(self.segment_color_per_class, bool):
+            logging.warning(f'Invalid segment color per class in config: {self.segment_color_per_class}')
+            self.segment_color_per_class = False
             changed = True
 
         return changed

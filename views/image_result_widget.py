@@ -5,7 +5,7 @@ from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from models.preset import Preset
 from utils.file_explorer import open_file_explorer
-from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
 from views.resizeable_graphics_widget import ResizeableGraphicsWidget
 import json
 import os
@@ -256,14 +256,25 @@ class ImageResultWidget(QWidget):
             top_left = (int(result['x1']), int(result['y1']))
             bottom_right = (int(result['x2']), int(result['y2']))
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
+
+            if self._preset.box_color_per_class:
+                box_color = generate_color(result['classid'])
+            else:
+                box_color = self._preset.box_color
             draw_bounding_box(
                 layer, top_left, bottom_right, class_name, confidence,
-                self._preset.box_color, self._preset.text_color,
+                box_color, self._preset.text_color,
                 self._preset.box_thickness, self._preset.text_size
             )
+
             # Draw the segmentation mask if it exists
             if 'mask' in result:
-                draw_segmentation_mask_from_points(layer, np.array(result['mask']), self._preset.segment_color)
+                if self._preset.segment_color_per_class:
+                    segment_color = generate_color(result['classid'])
+                else:
+                    segment_color = self._preset.segment_color
+                draw_segmentation_mask_from_points(layer, np.array(result['mask']), segment_color)
+
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)

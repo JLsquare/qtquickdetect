@@ -4,7 +4,7 @@ import torchvision.transforms as T
 from torchvision.models.detection import fasterrcnn_resnet50_fpn, maskrcnn_resnet50_fpn, retinanet_resnet50_fpn, ssd300_vgg16, ssdlite320_mobilenet_v3_large
 from models.preset import Preset
 from pipeline.pipeline import Pipeline
-from utils.image_helpers import draw_bounding_box
+from utils.image_helpers import draw_bounding_box, generate_color
 
 # COCO classes used for TorchVision models
 # https://pytorch.org/vision/0.9/models.html#object-detection-instance-segmentation-and-person-keypoint-detection
@@ -90,9 +90,13 @@ class TorchVisionDetectPipeline(Pipeline):
                 continue
 
             # Draw bounding box
+            if self.preset.box_color_per_class:
+                box_color = generate_color(label)
+            else:
+                box_color = self.preset.box_color
             draw_bounding_box(
                 image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), self.categories[label], score,
-                self.preset.box_color, self.preset.text_color,
+                box_color, self.preset.text_color,
                 self.preset.box_thickness, self.preset.text_size
             )
 

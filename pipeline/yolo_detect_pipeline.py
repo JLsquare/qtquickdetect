@@ -1,10 +1,12 @@
+import logging
+
 import numpy as np
 import torch
 from ultralytics import YOLO
 
 from models.preset import Preset
 from pipeline.pipeline import Pipeline
-from utils.image_helpers import draw_bounding_box
+from utils.image_helpers import draw_bounding_box, generate_color
 
 
 class YoloDetectPipeline(Pipeline):
@@ -47,9 +49,13 @@ class YoloDetectPipeline(Pipeline):
             conf = float(box.conf[0])
 
             # Draw bounding box
+            if self.preset.box_color_per_class:
+                box_color = generate_color(class_id)
+            else:
+                box_color = self.preset.box_color
             draw_bounding_box(
                 image, top_left, bottom_right, class_name, conf,
-                self.preset.box_color, self.preset.text_color,
+                box_color, self.preset.text_color,
                 self.preset.box_thickness, self.preset.text_size
             )
 

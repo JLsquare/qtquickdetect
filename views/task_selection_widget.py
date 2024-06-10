@@ -19,7 +19,6 @@ class TaskSelectionWidget(QWidget):
         self._task_radio_detection: Optional[QRadioButton] = None
         self._task_radio_segmentation: Optional[QRadioButton] = None
         self._task_radio_classification: Optional[QRadioButton] = None
-        self._task_radio_tracking: Optional[QRadioButton] = None
         self._task_radio_posing: Optional[QRadioButton] = None
         self._task_radio_widget: Optional[QWidget] = None
         self._task_layout: Optional[QVBoxLayout] = None
@@ -46,19 +45,16 @@ class TaskSelectionWidget(QWidget):
         self._task_radio_detection = QRadioButton(self.tr('Detect'))
         self._task_radio_segmentation = QRadioButton(self.tr('Segment'))
         self._task_radio_classification = QRadioButton(self.tr('Classify'))
-        self._task_radio_tracking = QRadioButton(self.tr('Track'))
         self._task_radio_posing = QRadioButton(self.tr('Pose'))
 
         self._task_radio_detection.setObjectName('detect')
         self._task_radio_segmentation.setObjectName('segment')
         self._task_radio_classification.setObjectName('classify')
-        self._task_radio_tracking.setObjectName('track')
         self._task_radio_posing.setObjectName('pose')
 
         self._task_radio_detection.toggled.connect(self._check_task_selected)
         self._task_radio_segmentation.toggled.connect(self._check_task_selected)
         self._task_radio_classification.toggled.connect(self._check_task_selected)
-        self._task_radio_tracking.toggled.connect(self._check_task_selected)
         self._task_radio_posing.toggled.connect(self._check_task_selected)
 
         if self.task == 'detect':
@@ -67,15 +63,12 @@ class TaskSelectionWidget(QWidget):
             self._task_radio_segmentation.setChecked(True)
         elif self.task == 'classify':
             self._task_radio_classification.setChecked(True)
-        elif self.task == 'track':
-            self._task_radio_tracking.setChecked(True)
         elif self.task == 'pose':
             self._task_radio_posing.setChecked(True)
 
         self._task_radio_layout.addWidget(self._task_radio_detection)
         self._task_radio_layout.addWidget(self._task_radio_segmentation)
         self._task_radio_layout.addWidget(self._task_radio_classification)
-        self._task_radio_layout.addWidget(self._task_radio_tracking)
         self._task_radio_layout.addWidget(self._task_radio_posing)
         self._task_radio_layout.addStretch()
         self._task_radio_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -110,8 +103,6 @@ class TaskSelectionWidget(QWidget):
             self.task = 'segment'
         elif self._task_radio_classification.isChecked():
             self.task = 'classify'
-        elif self._task_radio_tracking.isChecked():
-            self.task = 'track'
         elif self._task_radio_posing.isChecked():
             self.task = 'pose'
         logging.debug('Task selected: ' + self.task)

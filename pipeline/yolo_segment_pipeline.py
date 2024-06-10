@@ -4,7 +4,7 @@ from ultralytics import YOLO
 
 from models.preset import Preset
 from pipeline.pipeline import Pipeline
-from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points
+from utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
 
 
 class YoloSegmentPipeline(Pipeline):
@@ -47,14 +47,22 @@ class YoloSegmentPipeline(Pipeline):
             conf = float(box.conf[0])
 
             # Draw bounding box
+            if self.preset.box_color_per_class:
+                box_color = generate_color(class_id)
+            else:
+                box_color = self.preset.box_color
             draw_bounding_box(
                 image, top_left, bottom_right, class_name, conf,
-                self.preset.box_color, self.preset.text_color,
+                box_color, self.preset.text_color,
                 self.preset.box_thickness, self.preset.text_size
             )
 
             # Draw segmentation mask
-            draw_segmentation_mask_from_points(image, result.masks.xy[index], self.preset.segment_color)
+            if self.preset.segment_color_per_class:
+                segment_color = generate_color(class_id)
+            else:
+                segment_color = self.preset.segment_color
+            draw_segmentation_mask_from_points(image, result.masks.xy[index], segment_color)
 
             # Append the box to the results array
             results_array.append({

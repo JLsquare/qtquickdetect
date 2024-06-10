@@ -2,7 +2,7 @@ import torch
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QWidget, QListWidget, QHBoxLayout, QListWidgetItem, QLineEdit, QVBoxLayout, \
-    QPushButton, QRadioButton, QLabel, QComboBox, QSlider, QColorDialog, QScrollArea
+    QPushButton, QRadioButton, QLabel, QComboBox, QSlider, QColorDialog, QScrollArea, QCheckBox
 from models.app_state import AppState
 from models.preset import Preset
 from typing import Optional
@@ -25,13 +25,14 @@ class PresetsWidget(QWidget):
         self._preset_layout: Optional[QVBoxLayout] = None
         self._main_layout: Optional[QHBoxLayout] = None
         self._device_combo: Optional[QComboBox] = None
-        self._half_precision_enabled: Optional[QRadioButton] = None
-        self._half_precision_disabled: Optional[QRadioButton] = None
+        self._half_precision_checkbox: Optional[QCheckBox] = None
         self._iou_slider: Optional[QSlider] = None
         self._image_format_combo: Optional[QComboBox] = None
         self._video_format_combo: Optional[QComboBox] = None
         self._box_color_button: Optional[QPushButton] = None
+        self._box_color_by_class_checkbox: Optional[QCheckBox] = None
         self._segment_color_button: Optional[QPushButton] = None
+        self._segment_color_by_class_checkbox: Optional[QCheckBox] = None
         self._text_color_button: Optional[QPushButton] = None
         self._box_thickness_slider: Optional[QSlider] = None
         self._text_size_slider: Optional[QSlider] = None
@@ -67,15 +68,10 @@ class PresetsWidget(QWidget):
         self._preset_layout.addWidget(self._device_combo)
 
         # Half precision toggle
-        self._half_precision_enabled = QRadioButton("Enabled")
-        self._half_precision_disabled = QRadioButton("Disabled")
-        self._half_precision_enabled.toggled.connect(lambda: self.set_half_precision(True))
-        self._half_precision_disabled.toggled.connect(lambda: self.set_half_precision(False))
-        precision_layout = QVBoxLayout()
-        precision_layout.addWidget(QLabel("Half Precision:"))
-        precision_layout.addWidget(self._half_precision_enabled)
-        precision_layout.addWidget(self._half_precision_disabled)
-        self._preset_layout.addLayout(precision_layout)
+        self._half_precision_checkbox = QCheckBox("Enable Half Precision (FP16)")
+        self._half_precision_checkbox.toggled.connect(self.set_half_precision)
+        self._preset_layout.addWidget(QLabel("Half Precision:"))
+        self._preset_layout.addWidget(self._half_precision_checkbox)
 
         # IOU Slider
         self._iou_slider = QSlider(Qt.Orientation.Horizontal)
@@ -104,11 +100,21 @@ class PresetsWidget(QWidget):
         self._preset_layout.addWidget(QLabel("Box Color:"))
         self._preset_layout.addWidget(self._box_color_button)
 
+        # Box color by class
+        self._box_color_by_class_checkbox = QCheckBox("Random Box Color by Class")
+        self._box_color_by_class_checkbox.toggled.connect(self.set_box_color_by_class)
+        self._preset_layout.addWidget(self._box_color_by_class_checkbox)
+
         # Segment color picker
         self._segment_color_button = QPushButton("Set Segment Color")
         self._segment_color_button.clicked.connect(self.set_segment_color)
         self._preset_layout.addWidget(QLabel("Segment Color:"))
         self._preset_layout.addWidget(self._segment_color_button)
+
+        # Segment color by class
+        self._segment_color_by_class_checkbox = QCheckBox("Random Segment Color by Class")
+        self._segment_color_by_class_checkbox.toggled.connect(self.set_segment_color_by_class)
+        self._preset_layout.addWidget(self._segment_color_by_class_checkbox)
 
         # Text color picker
         self._text_color_button = QPushButton("Set Text Color")
@@ -194,13 +200,20 @@ class PresetsWidget(QWidget):
         self.current_preset = self.app_state.presets.get_preset(preset)
         self._preset_name_field.setText(preset)
         self._device_combo.setCurrentText(self.get_device())
-        self._half_precision_enabled.setChecked(self.current_preset.half_precision)
-        self._half_precision_disabled.setChecked(not self.current_preset.half_precision)
+        self._half_precision_checkbox.setChecked(self.current_preset.half_precision)
         self._iou_slider.setValue(int(self.current_preset.iou_threshold * 100))
         self._image_format_combo.setCurrentText(self.current_preset.image_format)
         self._video_format_combo.setCurrentText(self.current_preset.video_format)
         self._box_thickness_slider.setValue(self.current_preset.box_thickness)
-        self._text_size_slider.setValue(int(self.current_preset.text_size))
+        self._text_size_slider.setValue(int(self.current_preset.text_size * 10.0))
+        box_color = self.current_preset.box_color
+        segment_color = self.current_preset.segment_color
+        text_color = self.current_preset.text_color
+        self._box_color_button.setStyleSheet(f'background-color: rgb({box_color[0]}, {box_color[1]}, {box_color[2]});')
+        self._segment_color_button.setStyleSheet(f'background-color: rgb({segment_color[0]}, {segment_color[1]}, {segment_color[2]});')
+        self._text_color_button.setStyleSheet(f'background-color: rgb({text_color[0]}, {text_color[1]}, {text_color[2]});')
+        self._box_color_by_class_checkbox.setChecked(self.current_preset.box_color_per_class)
+        self._segment_color_by_class_checkbox.setChecked(self.current_preset.segment_color_per_class)
         self._scroll_area.show()
 
     def rename_preset(self) -> None:
@@ -287,10 +300,18 @@ class PresetsWidget(QWidget):
     def set_text_color(self):
         self.set_color('text_color')
 
+    def set_box_color_by_class(self, value):
+        self.current_preset.box_color_per_class = value
+        self.current_preset.save()
+
+    def set_segment_color_by_class(self, value):
+        self.current_preset.segment_color_per_class = value
+        self.current_preset.save()
+
     def set_box_thickness(self, value):
         self.current_preset.box_thickness = value
         self.current_preset.save()
 
     def set_text_size(self, value):
-        self.current_preset.text_size = value
+        self.current_preset.text_size = value / 10.0
         self.current_preset.save()
