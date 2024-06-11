@@ -8,3 +8,4 @@ app_config.json
 build/
 dist/
 qtquickdetect.spec
+*qtquickdetect.egg-info*
