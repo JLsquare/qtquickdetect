@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qtquickdetect"
+version = "0.9.0"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+where = ["qtquickdetect"]
+
+[project.scripts]
+qtquickdetect = "qtquickdetect.qtquickdetect:main"
+
+

@@ -7,3 +7,5 @@ history/
 collections/
 presets/
 qtquickdetect.spec
+*.egg-info
+build/
