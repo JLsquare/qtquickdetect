@@ -4,6 +4,7 @@
     "pipelines": {
         "Yolo Detect": "pipeline.yolo_detect_pipeline.YoloDetectPipeline",
         "Yolo Segment": "pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+        "Yolo Classify": "pipeline.yolo_classify_pipeline.YoloClassifyPipeline",
         "TorchVision Detect": "pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
         "TorchVision Segment": "pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline"
     },
@@ -97,6 +98,37 @@
                 },
                 {
                     "name": "yolov8x-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV8 Classify": {
+            "task": "classify",
+            "pipeline": "Yolo Classify",
+            "weights": [
+                {
+                    "name": "yolov8n-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x-cls.pt",
                     "type": "native",
                     "enabled": true
                 }

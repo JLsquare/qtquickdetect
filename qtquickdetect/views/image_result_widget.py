@@ -251,21 +251,22 @@ class ImageResultWidget(QWidget):
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked)
             self._layer_list.addItem(item)
-
-            # Add the layer to the scene
-            top_left = (int(result['x1']), int(result['y1']))
-            bottom_right = (int(result['x2']), int(result['y2']))
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
 
-            if self._preset.box_color_per_class:
-                box_color = generate_color(result['classid'])
-            else:
-                box_color = self._preset.box_color
-            draw_bounding_box(
-                layer, top_left, bottom_right, class_name, confidence,
-                box_color, self._preset.text_color,
-                self._preset.box_thickness, self._preset.text_size
-            )
+            # Draw the box if it exists
+            if 'x1' in result:
+                top_left = (int(result['x1']), int(result['y1']))
+                bottom_right = (int(result['x2']), int(result['y2']))
+
+                if self._preset.box_color_per_class:
+                    box_color = generate_color(result['classid'])
+                else:
+                    box_color = self._preset.box_color
+                draw_bounding_box(
+                    layer, top_left, bottom_right, class_name, confidence,
+                    box_color, self._preset.text_color,
+                    self._preset.box_thickness, self._preset.text_size
+                )
 
             # Draw the segmentation mask if it exists
             if 'mask' in result:
@@ -275,6 +276,7 @@ class ImageResultWidget(QWidget):
                     segment_color = self._preset.segment_color
                 draw_segmentation_mask_from_points(layer, np.array(result['mask']), segment_color)
 
+            # Add the layer to the scene
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),
                            QImage.Format.Format_RGBA8888)
             layer_pixmap = QPixmap(q_img)

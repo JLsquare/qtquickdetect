@@ -164,7 +164,7 @@ class Pipeline(QThread):
         # Release the frame fetcher when cancelled
         media_fetcher.release()
 
-    def _process_video(self, video_path: str, output_path: str) -> list[dict]:
+    def _process_video(self, video_path: str, output_path: str) -> list[list[dict]]:
         """
         Processes a single video and saves the output.
 
@@ -192,7 +192,7 @@ class Pipeline(QThread):
             # Write the frame to the output video
             out.write(result_frame)
             # Append the results to the results array
-            results_array.extend(result_json)
+            results_array.append(result_json)
             # Emit the progress signal for the progress bar
             self.progress_signal.emit(cap.get(cv.CAP_PROP_POS_FRAMES) / cap.get(cv.CAP_PROP_FRAME_COUNT))
 
