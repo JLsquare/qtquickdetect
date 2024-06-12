@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap
@@ -81,13 +82,13 @@ class MainWindow(QWidget):
 
         self._side_menu.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self._side_menu.setFixedWidth(210)
-        self._side_menu.currentRowChanged.connect(self._content_stack.setCurrentIndex)
+        self._side_menu.currentRowChanged.connect(self.change_row)
 
         self._main_layout = QHBoxLayout()
         self._main_layout.addWidget(self._side_menu)
         self._main_layout.addWidget(self._content_stack)
 
-        self._side_menu.setCurrentRow(5)
+        self.change_row(5)
 
         self.setLayout(self._main_layout)
 
@@ -107,7 +108,23 @@ class MainWindow(QWidget):
         self._title_widget.setLayout(self._title_layout)
         return self._title_widget
 
+    def change_row(self, row: int):
+        logging.info(f'Change row {row}')
+        self._side_menu.setCurrentRow(row)
+
+        # Re-instantiate the InferenceWidget to update the collection / model / preset list (temp ?)
+        if row == 5:  # Image Inference
+            new_widget = InferenceWidget('image', self.open_last_inference)
+            self._content_stack.insertWidget(row, new_widget)
+            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
+        elif row == 6:  # Video Inference
+            new_widget = InferenceWidget('video', self.open_last_inference)
+            self._content_stack.insertWidget(row, new_widget)
+            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
+
+        self._content_stack.setCurrentIndex(row)
+
     def open_last_inference(self):
-        self._content_stack.setCurrentIndex(8)
+        self.change_row(8)
         if isinstance(self._content_stack.currentWidget(), InferenceHistoryWidget):
             self._content_stack.currentWidget().open_last_inference()

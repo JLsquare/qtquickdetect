@@ -50,7 +50,6 @@ class ModelsSelectionWidget(QWidget):
         self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._description.setProperty('class', 'description')
 
-
         # Model Layout
         self._model_layout = QVBoxLayout()
         self._model_layout.addLayout(self._model_icon_layout)
@@ -109,11 +108,9 @@ class ModelsSelectionWidget(QWidget):
         self.weights = selected_models
         self.models_changed_signal.emit()
 
-    def update_models(self):
+    def set_task(self, task: str):
+        self.task = task
         self._model_tree.clear()
         self.populate_model_tree()
         self.models_changed_signal.emit()
 
-    def set_task(self, task: str):
-        self.task = task
-        self.update_models()
