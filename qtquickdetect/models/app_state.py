@@ -1,8 +1,10 @@
+import os
 from PyQt6.QtCore import QTranslator
 from PyQt6.QtWidgets import QApplication
 from models.app_config import AppConfig
 from models.collections import Collections
 from models.presets import Presets
+import utils.filepaths as filepaths
 import logging
 
 
@@ -42,7 +44,7 @@ class AppState:
 
     def update_qss(self):
         if self.app_config.qss == 'app':
-            with open('ressources/qss/stylesheet.qss', 'r') as file:
+            with open(os.path.join(filepaths.get_app_dir(), 'ressources', 'qss', 'stylesheet.qss'), 'r') as file:
                 self.qss = file.read()
         else:
             self.qss = None
@@ -50,7 +52,8 @@ class AppState:
     def update_localization(self):
         if self.app_config.localization == 'fr':
             self._translator = QTranslator()
-            if self._translator.load('fr.qm', 'ressources/locale'):
+
+            if self._translator.load('qtbase_fr.qm', os.path.join(filepaths.get_app_dir(), 'ressources', 'locale')):
                 logging.info('Loaded translator')
                 self.app.installTranslator(self._translator)
             else:

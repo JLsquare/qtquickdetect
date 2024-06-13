@@ -1,13 +1,13 @@
 import os
-
+import utils.filepaths as filepaths
 from models.preset import Preset
 
 
 class Presets:
     def __init__(self):
-        if not os.path.exists('presets'):
-            os.mkdir('presets')
-        if not os.path.exists('presets/default.json'):
+        if not os.path.exists(os.path.join(filepaths.get_base_data_dir(), 'presets')):
+            os.mkdir(os.path.join(filepaths.get_base_data_dir(), 'presets'))
+        if not os.path.exists(os.path.join(filepaths.get_base_data_dir(), 'presets', 'default.json')):
             Preset('default.json')
 
     @staticmethod
@@ -15,7 +15,8 @@ class Presets:
         """
         Get the names of the presets.
         """
-        return os.listdir('presets')
+
+        return os.listdir(os.path.join(filepaths.get_base_data_dir(), 'presets'))
 
     @staticmethod
     def get_preset(preset_name: str):
@@ -24,6 +25,7 @@ class Presets:
 
         :param preset_name: Name of the preset.
         """
+
         return Preset(preset_name)
 
     @staticmethod
@@ -33,7 +35,8 @@ class Presets:
 
         :param preset_name: Name of the preset.
         """
-        if os.path.exists(f'presets/{preset_name}'):
+
+        if os.path.exists(os.path.join(filepaths.get_base_data_dir(), 'presets', preset_name)):
             raise FileExistsError(f'Preset {preset_name} already exists!')
         Preset(preset_name)
 
@@ -45,7 +48,10 @@ class Presets:
         :param preset_name: Name of the preset.
         :param preset_new_name: New name of the preset.
         """
-        os.rename(f'presets/{preset_name}', f'presets/{preset_new_name}')
+
+        old_preset = os.path.join(filepaths.get_base_data_dir(), 'presets', preset_name)
+        new_preset = os.path.join(filepaths.get_base_data_dir(), 'presets', preset_new_name)
+        os.rename(old_preset, new_preset)
 
     @staticmethod
     def delete_preset(preset_name: str):
@@ -54,4 +60,5 @@ class Presets:
 
         :param preset_name: Name of the preset.
         """
-        os.remove(f'presets/{preset_name}')
+
+        os.remove(os.path.join(filepaths.get_base_data_dir(), 'presets', preset_name))

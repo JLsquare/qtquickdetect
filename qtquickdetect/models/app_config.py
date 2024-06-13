@@ -1,7 +1,7 @@
 import logging
 import json
 import os
-
+import utils.filepaths as filepaths
 
 class AppConfig:
     def __init__(self):
@@ -9,8 +9,10 @@ class AppConfig:
         self.qss = 'app'
         self.pipelines = {}
         self.models = {}
+        
+        filepaths.create_config_dir()
 
-        self.path = 'app_config.json'
+        self.path = os.path.join(filepaths.get_base_config_dir(), 'app_config.json')
 
         if os.path.exists(self.path):
             if os.path.isfile(self.path):
@@ -75,3 +77,4 @@ class AppConfig:
             data = self.__dict__.copy()
             del data['path']
             json.dump(data, f, indent=4)
+

@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import re
+import utils.filepaths as filepaths
 
 DEVICE_VALIDATION_REGEX = re.compile(r'^(cpu|cuda)(:\d+)?$')
 
@@ -23,7 +24,7 @@ class Preset:
         self.box_thickness = 2
         self.text_size = 1.5
 
-        self.path = f'presets/{preset_name}'
+        self.path = os.path.join(filepaths.get_base_data_dir(), 'presets', preset_name)
 
         if os.path.exists(self.path):
             self._read_config()
