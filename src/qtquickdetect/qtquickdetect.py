@@ -14,7 +14,7 @@ def main():
 
     # Ensure 'projects' directory exists
     try:
-        os.makedirs('projects', exist_ok=True)
+        os.makedirs(os.path.join(filepaths.get_base_data_dir(), 'projects'), exist_ok=True)
     except Exception as e:
         logging.error(f"Failed to create 'projects' directory: {e}")
         sys.exit(1)
@@ -22,6 +22,8 @@ def main():
     filepaths.create_cache_dir()
     filepaths.create_config_dir()
     filepaths.create_data_dir()
+
+    print("Starting QtQuickDetect")
 
     # Set up the QApplication
     app = QApplication([])

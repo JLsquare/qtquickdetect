@@ -1,19 +1,17 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
 
 [project]
 name = "qtquickdetect"
-version = "0.9.0"
+version = "0.9.6"
 dynamic = ["dependencies"]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
-
-[tool.setuptools.packages.find]
-where = ["qtquickdetect"]
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
 
 [project.scripts]
 qtquickdetect = "qtquickdetect.qtquickdetect:main"
 
-
+[tool.hatch.build.targets.wheel]
+packages = ["src/qtquickdetect"]

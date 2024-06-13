@@ -92,4 +92,5 @@ def get_app_dir() -> str:
     Returns the folder where the application code is stored
     @return: The folder path
     """
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # Doing it twice to go up a directory
+    path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return path
