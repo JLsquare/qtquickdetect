@@ -12,12 +12,12 @@ from ..utils.media_fetcher import MediaFetcher
 class Pipeline(QThread):
     """Generic pipeline class for handling pipeline execution."""
     progress_signal = pyqtSignal(float)  # Progress percentage on the current file
-    finished_file_signal = pyqtSignal(str, str, str)  # Source file, output file, JSON file
+    finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
-    error_signal = pyqtSignal(str, Exception)  # Source file, exception
+    error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
+                 stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 
@@ -35,7 +35,7 @@ class Pipeline(QThread):
         self.videos_paths = videos_paths
         self.stream_url = stream_url
         self.mode = 'images' if images_paths else 'videos' if videos_paths else 'stream'
-        self.results_path = Path(results_path) / Path(weight).stem if results_path else None
+        self.results_path = results_path / Path(weight).stem if results_path else None
         self.preset = preset
         self.cancel_requested = False
         self.processing_frame = None
@@ -57,7 +57,7 @@ class Pipeline(QThread):
         elif self.mode == 'stream':
             self._run_stream(self.stream_url)
 
-    def _run_images(self, inputs: list[str]):
+    def _run_images(self, inputs: list[Path]):
         """
         Process a list of image paths.
 
@@ -75,15 +75,15 @@ class Pipeline(QThread):
                 # Create paths for the output files
                 file_name = Path(input_path).stem
                 file_path = self.results_path / file_name
-                image_path = f"{file_path}.{self.preset.image_format}"
-                json_path = f"{file_path}.json"
+                image_path = file_path.with_suffix(f".{self.preset.image_format}")
+                json_path = file_path.with_suffix('.json')
 
                 # Read the image and process it
-                image = cv.imread(input_path)
+                image = cv.imread(str(input_path))
                 result_image, results_array = self._process_image(image)
 
                 # Save the result image and JSON file
-                cv.imwrite(image_path, result_image)
+                cv.imwrite(str(image_path), result_image)
                 with open(json_path, 'w') as f:
                     results = self._make_results(results_array)
                     json.dump(results, f, indent=4)
@@ -92,7 +92,7 @@ class Pipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(input_path, e)
 
-    def _run_videos(self, inputs: list[str]):
+    def _run_videos(self, inputs: list[Path]):
         """
         Process a list of video paths.
 
@@ -165,7 +165,7 @@ class Pipeline(QThread):
         # Release the frame fetcher when cancelled
         media_fetcher.release()
 
-    def _process_video(self, video_path: str, output_path: str) -> list[list[dict]]:
+    def _process_video(self, video_path: Path, output_path: Path) -> list[list[dict]]:
         """
         Processes a single video and saves the output.
 
@@ -174,12 +174,12 @@ class Pipeline(QThread):
         :return: The results array.
         """
         # Open the video
-        cap = cv.VideoCapture(video_path)
+        cap = cv.VideoCapture(str(video_path))
         width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         fps = cap.get(cv.CAP_PROP_FPS)
         codec = cv.VideoWriter_fourcc(*'mp4v')
-        out = cv.VideoWriter(output_path, codec, fps, (width, height))
+        out = cv.VideoWriter(str(output_path), codec, fps, (width, height))
 
         results_array = []
         # Process each frame
@@ -203,7 +203,7 @@ class Pipeline(QThread):
 
         return results_array
 
-    def _process_image(self, image) -> tuple[np.ndarray, list[dict]]:
+    def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
         Processes a single image.
 

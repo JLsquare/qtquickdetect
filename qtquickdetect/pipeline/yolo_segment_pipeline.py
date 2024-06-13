@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+from pathlib import Path
 from ultralytics import YOLO
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
@@ -10,8 +11,8 @@ from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from
 class YoloSegmentPipeline(Pipeline):
     """Pipeline for detecting objects in images and videos using YoloV8."""
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
+                 stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 

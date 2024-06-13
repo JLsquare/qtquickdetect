@@ -1,6 +1,6 @@
-import os
 import shutil
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
@@ -168,7 +168,7 @@ class CollectionsWidget(QWidget):
         self._collection_file_list.clear()
         files = self.app_state.collections.get_collection_file_paths(collection, self.media_type)
         for file in files:
-            file_name = file.split('/')[-1]
+            file_name = file.name
             list_item = QListWidgetItem(file_name)
             list_item.setData(1, file)
             self._collection_file_list.addItem(list_item)
@@ -186,7 +186,7 @@ class CollectionsWidget(QWidget):
         """
         selected_file_path = item.data(1)
         self._file_preview_scene.clear()
-        base_image_pixmap = QPixmap(selected_file_path)
+        base_image_pixmap = QPixmap(str(selected_file_path))
         base_image_item = QGraphicsPixmapItem(base_image_pixmap)
         self._file_preview_scene.addItem(base_image_item)
         self._file_preview_view.resizeEvent(None)
@@ -231,7 +231,7 @@ class CollectionsWidget(QWidget):
         name_filter = ["Images (*.png *.jpg *.jpeg)"] if self.media_type == 'image' else ["Videos (*.mp4 *.avi *.mov *.webm)"]
         dialog.setNameFilters(name_filter)
         if dialog.exec():
-            file_paths = dialog.selectedFiles() if dialog.selectedFiles() is not None else []
+            file_paths = [Path(file) for file in dialog.selectedFiles() if file != '']
             self.process_files(file_paths)
 
     def add_folder(self):
@@ -244,11 +244,10 @@ class CollectionsWidget(QWidget):
         dialog.setOption(QFileDialog.Option.ShowDirsOnly, True)
         if dialog.exec():
             folder_path = dialog.selectedFiles()[0]
-            file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
-                          if any(f.lower().endswith(ext) for ext in file_extensions)]
+            file_paths = [file for file in Path(folder_path).rglob('*') if file.suffix in file_extensions]
             self.process_files(file_paths)
 
-    def process_files(self, file_paths: list[str]):
+    def process_files(self, file_paths: list[Path]):
         """
         Adds the files to the collection
 
@@ -257,8 +256,8 @@ class CollectionsWidget(QWidget):
         collection = self._collection_list.currentItem().data(0)
         collection_path = self.app_state.collections.get_collection_path(collection, self.media_type)
         for file_path in file_paths:
-            file_name = file_path.split('/')[-1]
-            new_file_path = os.path.join(collection_path, file_name)
+            file_name = file_path.name
+            new_file_path = collection_path / file_name
             shutil.copyfile(file_path, new_file_path)
             list_item = QListWidgetItem(file_name)
             list_item.setData(1, new_file_path)
@@ -268,11 +267,9 @@ class CollectionsWidget(QWidget):
         """
         Deletes the selected files from the collection
         """
-        collection = self._collection_list.currentItem().data(0)
-        collection_path = self.app_state.collections.get_collection_path(collection, self.media_type)
         for item in self._collection_file_list.selectedItems():
             file_path = item.data(1)
-            os.remove(file_path)
+            Path(file_path).unlink()
             self._collection_file_list.takeItem(self._collection_file_list.row(item))
         self._file_preview_scene.clear()
 

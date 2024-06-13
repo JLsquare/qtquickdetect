@@ -2,6 +2,7 @@ import logging
 import importlib
 import numpy as np
 
+from pathlib import Path
 from PyQt6.QtCore import pyqtSignal, QObject
 from ..models.app_state import AppState
 from ..models.preset import Preset
@@ -10,9 +11,9 @@ from ..models.preset import Preset
 class PipelineManager(QObject):
     """Pipeline Manager class to manage the pipeline execution."""
     progress_signal = pyqtSignal(float)  # Progress percentage on the current file
-    finished_file_signal = pyqtSignal(str, str, str)  # Source file, output file, JSON file
+    finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
-    error_signal = pyqtSignal(str, Exception)  # Source file, exception
+    error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
     def __init__(self, task: str, preset: Preset, models: dict[str, list[str]]):
         """
@@ -50,7 +51,7 @@ class PipelineManager(QObject):
         if self.current_pipeline:
             self.current_pipeline.request_cancel()
 
-    def run_image(self, images_paths: list[str], results_path: str):
+    def run_image(self, images_paths: list[Path], results_path: Path):
         """
         Runs the pipeline, one pipeline per weight.
 
@@ -64,7 +65,7 @@ class PipelineManager(QObject):
                 self._appstate.pipelines.append(self.current_pipeline)
                 self.current_pipeline.start()
 
-    def run_video(self, videos_paths: list[str], results_path: str):
+    def run_video(self, videos_paths: list[Path], results_path: Path):
         """
         Runs the pipeline, one pipeline per weight.
 
@@ -89,8 +90,8 @@ class PipelineManager(QObject):
         self._appstate.pipelines.append(self.current_pipeline)
         self.current_pipeline.start()
 
-    def _setup_pipeline(self, model: str, weight: str, images_path: list[str] | None, videos_path: list[str] | None,
-                        stream_url: str | None, results_path: str | None):
+    def _setup_pipeline(self, model: str, weight: str, images_path: list[Path] | None, videos_path: list[Path] | None,
+                        stream_url: str | None, results_path: Path | None):
         """
         Sets up the pipeline for the given model and weight.
 

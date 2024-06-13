@@ -1,6 +1,5 @@
 import logging
 import json
-import os
 
 from ..utils import filepaths
 
@@ -14,10 +13,10 @@ class AppConfig:
         
         filepaths.create_config_dir()
 
-        self.path = os.path.join(filepaths.get_base_config_dir(), 'app_config.json')
+        self.path = filepaths.get_base_config_dir() / 'app_config.json'
 
-        if os.path.exists(self.path):
-            if os.path.isfile(self.path):
+        if self.path.exists():
+            if self.path.is_file():
                 self._read_config()
             else:
                 raise Exception('app_config.json is a directory!')

@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 
+from pathlib import Path
 from torchvision.models.detection import fasterrcnn_resnet50_fpn, maskrcnn_resnet50_fpn, retinanet_resnet50_fpn, ssd300_vgg16, ssdlite320_mobilenet_v3_large
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
@@ -28,8 +29,8 @@ CLASS_NAMES = [
 class TorchVisionDetectPipeline(Pipeline):
     """Pipeline for detecting objects in images and videos using TorchVision models with pre-trained weights."""
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
+                 stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 

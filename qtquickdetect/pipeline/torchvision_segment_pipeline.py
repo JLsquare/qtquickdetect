@@ -3,6 +3,7 @@ import torch
 import torchvision.transforms as T
 import cv2 as cv
 
+from pathlib import Path
 from torchvision.models.detection import maskrcnn_resnet50_fpn
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
@@ -29,8 +30,8 @@ CLASS_NAMES = [
 class TorchVisionSegmentPipeline(Pipeline):
     """Pipeline for detecting and segmenting objects in images and videos using TorchVision models with pre-trained weights."""
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[str] | None, videos_paths: list[str] | None,
-                 stream_url: str | None, results_path: str | None):
+    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
+                 stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 

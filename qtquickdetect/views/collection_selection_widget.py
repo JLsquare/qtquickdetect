@@ -3,6 +3,7 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QRadioButton, QLabel, QScrollArea
 from ..models.app_state import AppState
+from ..utils import filepaths
 
 
 class CollectionSelectionWidget(QWidget):
@@ -36,8 +37,9 @@ class CollectionSelectionWidget(QWidget):
         self._collection_icon_layout.addStretch()
         self._collection_icon = QLabel()
         self._collection_icon.setPixmap(
-            QPixmap('ressources/images/input_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                              Qt.TransformationMode.SmoothTransformation))
+            QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'input_icon.png'))
+            .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        )
         self._collection_icon_layout.addWidget(self._collection_icon)
         self._collection_icon_layout.addStretch()
 

@@ -3,6 +3,7 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QListWidget, QTreeWidget, QTreeWidgetItem, \
     QSizePolicy
+from ..utils import filepaths
 from ..models.app_state import AppState
 
 
@@ -33,8 +34,9 @@ class ModelsSelectionWidget(QWidget):
         self._model_icon_layout.addStretch()
         self._model_icon = QLabel()
         self._model_icon.setPixmap(
-            QPixmap('ressources/images/model_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                               Qt.TransformationMode.SmoothTransformation))
+            QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'model_icon.png'))
+            .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        )
         self._model_icon_layout.addWidget(self._model_icon)
         self._model_icon_layout.addStretch()
 

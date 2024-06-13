@@ -2,6 +2,7 @@ import os
 import json
 import cv2 as cv
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QMessageBox, \
@@ -13,7 +14,7 @@ from ..views.video_player_widget import VideoPlayerWidget
 class VideoResultWidget(QWidget):
     return_signal = pyqtSignal()
 
-    def __init__(self, result_path: str):
+    def __init__(self, result_path: Path):
         super().__init__()
 
         # PyQT6 Components
@@ -88,7 +89,7 @@ class VideoResultWidget(QWidget):
         self._left_widget.setLayout(self._left_layout)
         return self._left_widget
 
-    def video_ui(self, video_path: str) -> QWidget:
+    def video_ui(self, video_path: Path) -> QWidget:
         self._video_player = VideoPlayerWidget(video_path)
 
         self._video_layout = QVBoxLayout()
@@ -228,18 +229,18 @@ class VideoResultWidget(QWidget):
         result_video = self._result_videos[input_video][index - 1]
         self.change_current_video(result_video)
 
-    def change_current_video(self, video_path: str):
+    def change_current_video(self, video_path: Path):
         # Update the video
         video_widget = self.video_ui(video_path)
         self._middle_layout.replaceWidget(1, video_widget)
 
-    def add_input_and_result(self, input_video: str, result_video: str, result_json: str):
+    def add_input_and_result(self, input_video: Path, result_video: Path, result_json: Path):
         # Add the input if it's not already here
         if input_video not in self._input_videos:
             self._input_videos.append(input_video)
             self._result_videos[input_video] = []
             self._result_jsons[input_video] = []
-            self._file_select_combo.addItem(os.path.basename(input_video), input_video)
+            self._file_select_combo.addItem(input_video.name, input_video)
 
         # Add the result to the list of results of the input
         self._result_videos[input_video].append(result_video)

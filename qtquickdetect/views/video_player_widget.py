@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import QUrl, Qt
 from PyQt6.QtMultimedia import QMediaPlayer
@@ -9,7 +10,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSlider, QPushButton, QStyle, 
 
 
 class VideoPlayerWidget(QWidget):
-    def __init__(self, video_path: str):
+    def __init__(self, video_path: Path):
         super().__init__()
 
         # PyQT6 Components
@@ -38,7 +39,7 @@ class VideoPlayerWidget(QWidget):
         self._video_widget = QVideoWidget()
 
         self._player = QMediaPlayer()
-        self._player.setSource(QUrl.fromLocalFile(self._video_path))
+        self._player.setSource(QUrl.fromLocalFile(str(self._video_path)))
         self._player.setVideoOutput(self._video_widget)
         self._player.play()
         self._player.mediaStatusChanged.connect(self.auto_replay)
@@ -94,7 +95,7 @@ class VideoPlayerWidget(QWidget):
         self._position_slider.setValue(self._player.position())
 
     def get_current_frame(self) -> np.ndarray | None:
-        cap = cv2.VideoCapture(self._video_path)
+        cap = cv2.VideoCapture(str(self._video_path))
 
         if not cap.isOpened():
             return None

@@ -2,18 +2,20 @@ import os
 import subprocess
 import sys
 
+from pathlib import Path
 
-def open_file_explorer(path):
-    if not os.path.exists(path):
+
+def open_file_explorer(path: Path) -> None:
+    if not path.exists():
         raise Exception(f"Path '{path}' does not exist")
 
-    path = os.path.normpath(path)
+    path = path.resolve()
 
     if sys.platform.startswith('linux'):
-        subprocess.run(['xdg-open', path])
+        subprocess.run(['xdg-open', str(path)])
     elif sys.platform == 'darwin':
-        subprocess.run(['open', path])
+        subprocess.run(['open', str(path)])
     elif sys.platform == 'win32':
-        os.startfile(path)
+        os.startfile(str(path))
     else:
         raise Exception(f"Platform '{sys.platform}' not supported")

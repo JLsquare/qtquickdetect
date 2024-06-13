@@ -84,19 +84,21 @@ class InferenceHistoryWidget(QWidget):
 
         :return: List of dictionaries containing the history of the inference results
         """
-        if not os.path.exists('./history'):
+        history_dir = Path('./history')
+        if not history_dir.exists():
             return []
 
-        folders = os.listdir('./history')
         history = []
         row_folder = []
 
-        for folder in folders:
-            with open(f'./history/{folder}/info.json') as f:
-                info = json.load(f)
-                info['weights'] = ', '.join(info['weights'])
-                row_folder.append(folder)
-                history.append(info)
+        for folder in history_dir.iterdir():
+            info_path = folder / 'info.json'
+            if info_path.exists():
+                with info_path.open() as f:
+                    info = json.load(f)
+                    info['weights'] = ', '.join(info['weights'])
+                    row_folder.append(folder.name)
+                    history.append(info)
 
         # Sort the history by date and the row folder list accordingly
         paired = list(zip(history, row_folder))
@@ -116,7 +118,7 @@ class InferenceHistoryWidget(QWidget):
         collection_name = self._table.item(row, 1).text()
         preset_name = self._table.item(row, 2).text()
         result_folder = self._row_folder[row]
-        result_path = f'./history/{result_folder}'
+        result_path = Path('./history') / result_folder
         preset = Preset(preset_name)
         logging.debug(f'Opening result {media_type} {collection_name} {preset_name} {result_folder}')
 

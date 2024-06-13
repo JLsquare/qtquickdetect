@@ -1,7 +1,7 @@
 import json
-import os
 import numpy as np
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QGraphicsPixmapItem, QGraphicsScene, \
     QComboBox, QLabel, QListWidget, QListWidgetItem, QFileDialog, QMessageBox, QSplitter
@@ -16,7 +16,7 @@ from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 class ImageResultWidget(QWidget):
     return_signal = pyqtSignal()
 
-    def __init__(self, preset: Preset, result_path: str):
+    def __init__(self, preset: Preset, result_path: Path):
         super().__init__()
         self._preset = preset
         self._result_path = result_path
@@ -57,7 +57,7 @@ class ImageResultWidget(QWidget):
         # Middle layout
         self._middle_layout = QSplitter(Qt.Orientation.Horizontal)
         self._middle_layout.addWidget(self.left_ui())
-        self._middle_layout.addWidget(self.image_ui(''))
+        self._middle_layout.addWidget(self.image_ui(Path()))
         self._middle_layout.setSizes([self.width() // 2, self.width() // 2])
 
         # Bottom layout
@@ -103,15 +103,14 @@ class ImageResultWidget(QWidget):
         self._left_widget.setLayout(self._left_layout)
         return self._left_widget
 
-    def image_ui(self, input_image: str) -> QWidget:
+    def image_ui(self, input_image: Path) -> QWidget:
         # Create UI for displaying input images
-
         self._container_widget = QWidget(self)
         self._container_layout = QVBoxLayout(self._container_widget)
 
         self._scene = QGraphicsScene(self._container_widget)
 
-        base_image_pixmap = QPixmap(input_image)
+        base_image_pixmap = QPixmap(str(input_image))
         base_image_item = QGraphicsPixmapItem(base_image_pixmap)
         self._scene.addItem(base_image_item)
 
@@ -231,13 +230,13 @@ class ImageResultWidget(QWidget):
         self._scene.clear()
         self._layer_visibility.clear()
         input_image = self._file_select_combo.currentData()
-        self._scene.addPixmap(QPixmap(input_image))
+        self._scene.addPixmap(QPixmap(str(input_image)))
 
         if index < 1:
             return
 
         result_json = self._result_jsons[input_image][index - 1]
-        img_size = QPixmap(input_image).size()
+        img_size = QPixmap(str(input_image)).size()
 
         with open(result_json, 'r') as file:
             data = json.load(file)
@@ -291,12 +290,12 @@ class ImageResultWidget(QWidget):
                 'initial_pixmap': layer_pixmap
             }
 
-    def add_input_and_result(self, input_image: str, result_json: str):
+    def add_input_and_result(self, input_image: Path, result_json: Path):
         # Add the input if it's not already there
         if input_image not in self._input_images:
             self._input_images.append(input_image)
             self._result_jsons[input_image] = []
-            self._file_select_combo.addItem(os.path.basename(input_image), input_image)
+            self._file_select_combo.addItem(input_image.name, input_image)
 
         # Add the result to the list of results for the input image
         self._result_jsons[input_image].append(result_json)

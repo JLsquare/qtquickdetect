@@ -1,12 +1,13 @@
 import logging
-import os
 import shutil
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QShowEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTreeWidgetItem, QTreeWidget, QFileDialog
 from ..models.app_state import AppState
+from ..utils import filepaths
 
 
 class ModelsWidget(QWidget):
@@ -31,7 +32,7 @@ class ModelsWidget(QWidget):
 
     def populate_tree(self):
         models_config = self._appstate.app_config.models
-        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        project_root = filepaths.get_app_dir()
         for model_name, model_details in models_config.items():
             parent_item = QTreeWidgetItem(self._tree_widget)
             parent_item.setText(0, model_name)
@@ -39,8 +40,8 @@ class ModelsWidget(QWidget):
             for weight in model_details['weights']:
                 child_item = QTreeWidgetItem(parent_item)
                 child_item.setText(0, weight['name'])
-                file_path = os.path.join(project_root, weight['name'])
-                if os.path.exists(file_path):
+                file_path = project_root / weight['name']
+                if file_path.exists():
                     if weight['type'] == 'custom':
                         child_item.setText(1, 'Custom')
                     else:
@@ -83,15 +84,13 @@ class ModelsWidget(QWidget):
                                                    "Pytorch (*.pt);;All Files (*)",
                                                    options=QFileDialog.Option.DontUseNativeDialog)
         if file_name:
-            project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-            shutil.copyfile(file_name, os.path.join(project_root, os.path.basename(file_name)))
-
+            project_root = filepaths.get_app_dir()
+            shutil.copyfile(file_name, project_root / Path(file_name).name)
             if model_name in self._appstate.app_config.weights:
                 model_details = self._appstate.app_config.weights[model_name]
-                if os.path.basename(file_name) not in model_details['weights']:
+                if Path(file_name).name not in model_details['weights']:
                     new_weight = {
-                        'name': os.path.basename(file_name),
+                        'name': Path(file_name).name,
                         'type': 'custom',
                         'enabled': 'true'
                     }

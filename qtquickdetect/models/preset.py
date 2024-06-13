@@ -1,6 +1,5 @@
 import logging
 import json
-import os
 import re
 
 from ..utils import filepaths
@@ -25,9 +24,9 @@ class Preset:
         self.box_thickness = 2
         self.text_size = 1.5
 
-        self.path = os.path.join(filepaths.get_base_data_dir(), 'presets', preset_name)
+        self.path = filepaths.get_base_data_dir() / 'presets' / preset_name
 
-        if os.path.exists(self.path):
+        if self.path.exists():
             self._read_config()
         else:
             self.save()

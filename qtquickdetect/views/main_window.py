@@ -5,6 +5,8 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QListWidget, \
     QStackedWidget, QListWidgetItem, QSizePolicy
+
+from ..utils import filepaths
 from ..models.app_state import AppState
 from ..views.about_widget import AboutWidget
 from ..views.app_config_widget import AppConfigWidget
@@ -95,8 +97,8 @@ class MainWindow(QWidget):
 
     def title_ui(self) -> QWidget:
         self._title_icon = QLabel()
-        pixmap = QPixmap('ressources/images/qtquickdetect_icon.png').scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                                                            Qt.TransformationMode.SmoothTransformation)
+        pixmap = (QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'qtquickdetect_icon.png'))
+                  .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         self._title_icon.setPixmap(pixmap)
         self._title_icon.setFixedWidth(32)
         self._title_label = QLabel('QTQuickDetect')

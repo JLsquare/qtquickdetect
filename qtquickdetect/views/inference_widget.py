@@ -1,12 +1,13 @@
 import datetime
 import json
 import logging
-import os
 
+from pathlib import Path
 from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QMessageBox
+from ..utils import filepaths
 from ..models.app_state import AppState
 from ..models.preset import Preset
 from ..pipeline.pipeline_manager import PipelineManager
@@ -99,9 +100,10 @@ class InferenceWidget(QWidget):
         self._run_icon_layout = QHBoxLayout()
         self._run_icon_layout.addStretch()
         self._run_icon = QLabel()
-        self._run_icon.setPixmap(QPixmap('ressources/images/run_icon.png')
-                                 .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio,
-                                         Qt.TransformationMode.SmoothTransformation))
+        self._run_icon.setPixmap(
+            QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'run_icon.png'))
+            .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        )
         self._run_icon_layout.addWidget(self._run_icon)
         self._run_icon_layout.addStretch()
 
@@ -175,8 +177,9 @@ class InferenceWidget(QWidget):
             self._btn_cancel.setEnabled(False)
             return
 
-        result_path = f'history/{self.media_type}_{self._task.task}_{formatted_date}'
-        os.makedirs(result_path, exist_ok=True)
+        result_path = Path('history') / f'{self.media_type}_{self._task.task}_{formatted_date}'
+        result_path.mkdir(parents=True, exist_ok=True)
+
         preset = Preset(self._preset.preset)
         self.pipeline_manager = PipelineManager(self._task.task, preset, self._models.weights)
         self.file_count = 0
@@ -191,24 +194,24 @@ class InferenceWidget(QWidget):
             'date': formatted_date,
             'weights': weights
         }
-        with open(os.path.join(result_path, 'info.json'), 'w') as f:
+        with open(result_path / 'info.json', 'w') as f:
             json.dump(info, f, indent=4)
 
-        def callback_ok(input_path: str, output_path: str, output_json_path: str) -> None:
-            logging.info('Detection done for ' + input_path + ', output in ' + output_json_path)
+        def callback_ok(input_path: Path, output_path: Path, output_json_path: Path) -> None:
+            logging.info('Detection done for ' + input_path.name + ', output in ' + output_json_path.name)
             self.file_count += 1
-            self._progress_bar.update_progress_bar(self.file_count, total_files, 0, os.path.basename(input_path))
+            self._progress_bar.update_progress_bar(self.file_count, total_files, 0, input_path.name)
             if self.file_count == total_files:
                 self._btn_run.setEnabled(True)
                 self._btn_cancel.setEnabled(False)
                 self.open_last_inference()
 
-        def callback_err(input_media_path: str, exception: Exception) -> None:
-            logging.error('Detection failed for ' + input_media_path + ' : ' + str(exception))
+        def callback_err(input_media_path: Path, exception: Exception) -> None:
+            logging.error('Detection failed for ' + input_media_path.name + ' : ' + str(exception))
 
         def callback_progress(progress: float) -> None:
             logging.info('Progress: ' + str(progress))
-            self._progress_bar.update_progress_bar(self.file_count, total_files, progress, os.path.basename(inputs[self.file_count]))
+            self._progress_bar.update_progress_bar(self.file_count, total_files, progress, inputs[self.file_count].name)
 
         self.pipeline_manager.finished_file_signal.connect(callback_ok)
         self.pipeline_manager.error_signal.connect(callback_err)
