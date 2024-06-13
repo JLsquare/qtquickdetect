@@ -45,7 +45,7 @@ def get_base_data_dir() -> str:
         
         return os.path.join(homedir, '.local', 'share', 'qtquickdetect')
     
-def create_data_dirs() -> None:
+def create_data_dir() -> None:
     """
     Creates the filesystem tree for the application data if it does not exist
     """

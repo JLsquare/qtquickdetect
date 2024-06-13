@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QApplication
 from models.app_state import AppState
 from views.main_window import MainWindow
+import utils.filepaths as filepaths
 import logging
 import os
 import sys
@@ -17,6 +18,10 @@ def main():
     except Exception as e:
         logging.error(f"Failed to create 'projects' directory: {e}")
         sys.exit(1)
+
+    filepaths.create_cache_dir()
+    filepaths.create_config_dir()
+    filepaths.create_data_dir()
 
     # Set up the QApplication
     app = QApplication([])
