@@ -15,3 +15,6 @@ qtquickdetect = "qtquickdetect.qtquickdetect:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["qtquickdetect"]
+
+[tool.pytest.ini_options]
+testpaths = ["qtquickdetect/tests"]
