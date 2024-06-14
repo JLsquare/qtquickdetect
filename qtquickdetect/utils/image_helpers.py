@@ -35,7 +35,7 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 1 if text_size < 1 else 2)
 
 
-def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int]):
+def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int):
     """
     Draws a semi-transparent polygon mask on an image.
 
@@ -54,6 +54,7 @@ def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, 
     img_masked = cv.bitwise_and(mask_colored, mask_colored, mask=mask)
 
     cv.addWeighted(img, 1, img_masked, 0.5, 0, img)
+    cv.polylines(img, polygon, True, mask_color, thickness)
 
 
 def draw_classification_label(img, class_name: str, confidence: float, text_color: tuple[int, int, int, int], index: int):

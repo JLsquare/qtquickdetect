@@ -17,7 +17,7 @@ qtquickdetect = "qtquickdetect.qtquickdetect:main"
 packages = ["qtquickdetect"]
 
 [tool.pytest.ini_options]
-testpaths = ["qtquickdetect/tests"]
+testpaths = ["tests"]
 
 [project.optional-dependencies]
 test = ["pytest==8.2.2", "pytest-qt==4.4.0"]

@@ -36,6 +36,7 @@ class PresetsWidget(QWidget):
         self._segment_color_by_class_checkbox: Optional[QCheckBox] = None
         self._text_color_button: Optional[QPushButton] = None
         self._box_thickness_slider: Optional[QSlider] = None
+        self._segment_thickness_slider: Optional[QSlider] = None
         self._text_size_slider: Optional[QSlider] = None
         self._preset_widget: Optional[QWidget] = None
         self._scroll_area: Optional[QScrollArea] = None
@@ -130,6 +131,13 @@ class PresetsWidget(QWidget):
         self._preset_layout.addWidget(QLabel("Box Thickness:"))
         self._preset_layout.addWidget(self._box_thickness_slider)
 
+        # Segment thickness
+        self._segment_thickness_slider = QSlider(Qt.Orientation.Horizontal)
+        self._segment_thickness_slider.setRange(1, 10)
+        self._segment_thickness_slider.valueChanged.connect(self.set_segment_thickness)
+        self._preset_layout.addWidget(QLabel("Segment Thickness:"))
+        self._preset_layout.addWidget(self._segment_thickness_slider)
+
         # Text size
         self._text_size_slider = QSlider(Qt.Orientation.Horizontal)
         self._text_size_slider.setRange(1, 30)
@@ -206,6 +214,7 @@ class PresetsWidget(QWidget):
         self._image_format_combo.setCurrentText(self.current_preset.image_format)
         self._video_format_combo.setCurrentText(self.current_preset.video_format)
         self._box_thickness_slider.setValue(self.current_preset.box_thickness)
+        self._segment_thickness_slider.setValue(self.current_preset.segment_thickness)
         self._text_size_slider.setValue(int(self.current_preset.text_size * 10.0))
         box_color = self.current_preset.box_color
         segment_color = self.current_preset.segment_color
@@ -311,6 +320,10 @@ class PresetsWidget(QWidget):
 
     def set_box_thickness(self, value):
         self.current_preset.box_thickness = value
+        self.current_preset.save()
+
+    def set_segment_thickness(self, value):
+        self.current_preset.segment_thickness = value
         self.current_preset.save()
 
     def set_text_size(self, value):

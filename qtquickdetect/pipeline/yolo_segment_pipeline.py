@@ -63,7 +63,7 @@ class YoloSegmentPipeline(Pipeline):
                 segment_color = generate_color(class_id)
             else:
                 segment_color = self.preset.segment_color
-            draw_segmentation_mask_from_points(image, result.masks.xy[index], segment_color)
+            draw_segmentation_mask_from_points(image, result.masks.xy[index], segment_color, self.preset.segment_thickness)
 
             # Append the box to the results array
             results_array.append({

@@ -273,7 +273,7 @@ class ImageResultWidget(QWidget):
                     segment_color = generate_color(result['classid'])
                 else:
                     segment_color = self._preset.segment_color
-                draw_segmentation_mask_from_points(layer, np.array(result['mask']), segment_color)
+                draw_segmentation_mask_from_points(layer, np.array(result['mask']), segment_color, self._preset.segment_thickness)
 
             if data['task'] == 'classification':
                 draw_classification_label(layer, class_name, confidence, self._preset.text_color, index)

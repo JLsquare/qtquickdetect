@@ -18,10 +18,11 @@ class Preset:
 
         self.box_color = (0, 255, 0, 255)
         self.box_color_per_class = False
+        self.box_thickness = 2
         self.segment_color = (0, 255, 0, 255)
         self.segment_color_per_class = False
+        self.segment_thickness = 2
         self.text_color = (0, 0, 0, 255)
-        self.box_thickness = 2
         self.text_size = 1.5
 
         self.path = filepaths.get_base_data_dir() / 'presets' / preset_name
@@ -89,28 +90,8 @@ class Preset:
             changed = True
 
         if not self._check_color(self.box_color):
-            logging.warning(f'Invalid image box color in config: {self.box_color}')
+            logging.warning(f'Invalid box color in config: {self.box_color}')
             self.box_color = (0, 255, 0, 255)
-            changed = True
-
-        if not self._check_color(self.segment_color):
-            logging.warning(f'Invalid image segment color in config: {self.segment_color}')
-            self.segment_color = (0, 255, 0, 255)
-            changed = True
-
-        if not self._check_color(self.text_color):
-            logging.warning(f'Invalid image text color in config: {self.text_color}')
-            self.text_color = (0, 0, 0, 255)
-            changed = True
-
-        if not isinstance(self.box_thickness, int) and self.box_thickness < 0:
-            logging.warning(f'Invalid video box thickness in config: {self.box_thickness}')
-            self.box_thickness = 2
-            changed = True
-
-        if not isinstance(self.text_size, float) and self.text_size < 0:
-            logging.warning(f'Invalid video text size in config: {self.text_size}')
-            self.text_size = 1.5
             changed = True
 
         if not isinstance(self.box_color_per_class, bool):
@@ -118,9 +99,34 @@ class Preset:
             self.color_per_class = False
             changed = True
 
+        if not isinstance(self.box_thickness, int) and self.box_thickness < 0:
+            logging.warning(f'Invalid box thickness in config: {self.box_thickness}')
+            self.box_thickness = 2
+            changed = True
+
+        if not self._check_color(self.segment_color):
+            logging.warning(f'Invalid segment color in config: {self.segment_color}')
+            self.segment_color = (0, 255, 0, 255)
+            changed = True
+
         if not isinstance(self.segment_color_per_class, bool):
             logging.warning(f'Invalid segment color per class in config: {self.segment_color_per_class}')
             self.segment_color_per_class = False
+            changed = True
+
+        if not isinstance(self.segment_thickness, int) and self.segment_thickness < 0:
+            logging.warning(f'Invalid segment thickness in config: {self.segment_thickness}')
+            self.segment_thickness = 2
+            changed = True
+
+        if not self._check_color(self.text_color):
+            logging.warning(f'Invalid text color in config: {self.text_color}')
+            self.text_color = (0, 0, 0, 255)
+            changed = True
+
+        if not isinstance(self.text_size, float) and self.text_size < 0:
+            logging.warning(f'Invalid text size in config: {self.text_size}')
+            self.text_size = 1.5
             changed = True
 
         return changed
