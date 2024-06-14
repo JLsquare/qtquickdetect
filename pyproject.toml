@@ -20,4 +20,4 @@ packages = ["qtquickdetect"]
 testpaths = ["qtquickdetect/tests"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest==8.2.2", "pytest-qt==4.4.0"]
