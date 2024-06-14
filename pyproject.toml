@@ -18,3 +18,6 @@ packages = ["qtquickdetect"]
 
 [tool.pytest.ini_options]
 testpaths = ["qtquickdetect/tests"]
+
+[project.optional-dependencies]
+test = ["pytest"]
