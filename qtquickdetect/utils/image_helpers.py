@@ -56,6 +56,20 @@ def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, 
     cv.addWeighted(img, 1, img_masked, 0.5, 0, img)
 
 
+def draw_classification_label(img, class_name: str, confidence: float, text_color: tuple[int, int, int, int], index: int):
+    """
+    Draws classification labels on an image.
+
+    :param img: The input image (numpy array).
+    :param class_name: The name of the class.
+    :param confidence: The confidence of the model.
+    :param text_color: The color of the text (R, G, B, A).
+    :param index: The index of the label.
+    """
+    text = '{} : {:.2f}%'.format(class_name, confidence * 100)
+    cv.putText(img, text, (10, 30 + 30 * index), FONT, 1, text_color, 2)
+
+
 def generate_color(class_id: int) -> tuple[int, int, int, int]:
     """
     Generates a color for a class id.

@@ -73,7 +73,7 @@ class Pipeline(QThread):
 
             try:
                 # Create paths for the output files
-                file_name = Path(input_path).stem
+                file_name = input_path.name
                 file_path = self.results_path / file_name
                 image_path = file_path.with_suffix(f".{self.preset.image_format}")
                 json_path = file_path.with_suffix('.json')
@@ -108,10 +108,10 @@ class Pipeline(QThread):
 
             try:
                 # Create paths for the output files
-                file_name = Path(input_path).stem
+                file_name = input_path.name
                 file_path = self.results_path / file_name
-                video_path = f"{file_path}.{self.preset.video_format}"
-                json_path = f"{file_path}.json"
+                video_path = file_path.with_suffix(f".{self.preset.video_format}")
+                json_path = file_path.with_suffix('.json')
 
                 # Process the video and save it
                 results_array = self._process_video(input_path, video_path)

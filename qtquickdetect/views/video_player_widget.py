@@ -34,6 +34,7 @@ class VideoPlayerWidget(QWidget):
         self._main_layout.addWidget(self.video_ui())
         self._main_layout.addLayout(self.control_ui())
         self.setLayout(self._main_layout)
+        self._player.durationChanged.connect(self.update_duration)
 
     def video_ui(self) -> QVideoWidget:
         self._video_widget = QVideoWidget()
@@ -66,6 +67,9 @@ class VideoPlayerWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
+    def update_duration(self, duration: int):
+        self._position_slider.setRange(0, duration)
+
     def auto_replay(self, status: QMediaPlayer.MediaStatus):
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self._player.setPosition(0)
@@ -91,8 +95,8 @@ class VideoPlayerWidget(QWidget):
         self._player.setPosition(position)
         self.pause()
 
-    def update_position_slider(self):
-        self._position_slider.setValue(self._player.position())
+    def update_position_slider(self, position: int):
+        self._position_slider.setValue(position)
 
     def get_current_frame(self) -> np.ndarray | None:
         cap = cv2.VideoCapture(str(self._video_path))

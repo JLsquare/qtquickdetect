@@ -9,7 +9,8 @@ from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from ..models.preset import Preset
 from ..utils.file_explorer import open_file_explorer
-from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
+from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color, \
+    draw_classification_label
 from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
@@ -253,8 +254,7 @@ class ImageResultWidget(QWidget):
             self._layer_list.addItem(item)
             layer = np.full((img_size.height(), img_size.width(), 4), 0, np.uint8)
 
-            # Draw the box if it exists
-            if 'x1' in result:
+            if data['task'] == 'detection':
                 top_left = (int(result['x1']), int(result['y1']))
                 bottom_right = (int(result['x2']), int(result['y2']))
 
@@ -268,13 +268,15 @@ class ImageResultWidget(QWidget):
                     self._preset.box_thickness, self._preset.text_size
                 )
 
-            # Draw the segmentation mask if it exists
-            if 'mask' in result:
+            if data['task'] == 'segmentation':
                 if self._preset.segment_color_per_class:
                     segment_color = generate_color(result['classid'])
                 else:
                     segment_color = self._preset.segment_color
                 draw_segmentation_mask_from_points(layer, np.array(result['mask']), segment_color)
+
+            if data['task'] == 'classification':
+                draw_classification_label(layer, class_name, confidence, self._preset.text_color, index)
 
             # Add the layer to the scene
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),

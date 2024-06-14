@@ -3,6 +3,8 @@ import torch
 
 from pathlib import Path
 from ultralytics import YOLO
+
+from utils.image_helpers import draw_classification_label
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
 
@@ -37,12 +39,18 @@ class YoloClassifyPipeline(Pipeline):
         result = self.model(image, half=(self.device.type == 'cuda' and self.preset.half_precision),
                             verbose=False, iou=self.preset.iou_threshold)[0].cpu()
 
+        top5_classe_ids = result.probs.top5
+        top5_confidences = result.probs.top5conf
+        top5_classe_names = [self.model.names[int(class_id)] for class_id in top5_classe_ids]
+
         results_array = []
         # add top 5 classes to results array
         for i in range(5):
+            draw_classification_label(image, top5_classe_names[i], top5_confidences[i], self.preset.text_color, i)
+
             results_array.append({
-                'classid': int(result.probs.top5[i]),
-                'confidence': float(result.probs.top5conf[i])
+                'classid': int(top5_classe_ids[i]),
+                'confidence': float(top5_confidences[i])
             })
 
         return image, results_array
