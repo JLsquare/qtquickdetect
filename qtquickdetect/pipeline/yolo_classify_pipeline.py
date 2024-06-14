@@ -3,7 +3,6 @@ import torch
 
 from pathlib import Path
 from ultralytics import YOLO
-
 from utils.image_helpers import draw_classification_label
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline

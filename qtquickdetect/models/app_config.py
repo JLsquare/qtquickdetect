@@ -1,5 +1,6 @@
 import logging
 import json
+import shutil
 
 from ..utils import filepaths
 
@@ -21,7 +22,8 @@ class AppConfig:
             else:
                 raise Exception('app_config.json is a directory!')
         else:
-            self.save()
+            shutil.copy(filepaths.get_app_dir() / 'ressources' / 'default_app_config.json', self.path)
+            self._read_config()
 
     def _read_config(self):
         """

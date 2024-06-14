@@ -1,0 +1,781 @@
+{
+    "localization": "en",
+    "qss": "app",
+    "pipelines": {
+        "Yolo Detect": "qtquickdetect.pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+        "Yolo Segment": "qtquickdetect.pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+        "Yolo Classify": "qtquickdetect.pipeline.yolo_classify_pipeline.YoloClassifyPipeline",
+        "TorchVision Detect": "qtquickdetect.pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+        "TorchVision Segment": "qtquickdetect.pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline",
+        "TorchVision Classify": "qtquickdetect.pipeline.torchvision_classify_pipeline.TorchVisionClassifyPipeline"
+    },
+    "models": {
+        "YoloV9 Detect": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                {
+                    "name": "yolov9c.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov9e.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV9 Segment": {
+            "task": "segment",
+            "pipeline": "Yolo Segment",
+            "weights": [
+                {
+                    "name": "yolov9e-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov9c-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV8 Detect": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                {
+                    "name": "yolov8n.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV8 Segment": {
+            "task": "segment",
+            "pipeline": "Yolo Segment",
+            "weights": [
+                {
+                    "name": "yolov8n-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x-seg.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV8 Classify": {
+            "task": "classify",
+            "pipeline": "Yolo Classify",
+            "weights": [
+                {
+                    "name": "yolov8n-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Yolov5": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                {
+                    "name": "yolov5nu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5su.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5mu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5lu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5xu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5n6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5s6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5m6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5l6u.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov5x6u.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "YoloV3": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                {
+                    "name": "yolov3-sppu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov3-tinyu.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov3u.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Faster-RCNN": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                {
+                    "name": "fasterrcnn",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Mask-RCNN Detect": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                {
+                    "name": "maskrcnn",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Mask-RCNN Segment": {
+            "task": "segment",
+            "pipeline": "TorchVision Segment",
+            "weights": [
+                {
+                    "name": "maskrcnn",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "RetinaNet": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                {
+                    "name": "retinanet",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "SSD": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                {
+                    "name": "ssd300",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "ssdlite320",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "AlexNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "alexnet",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "ConvNeXt": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "convnext_tiny",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "convnext_small",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "convnext_large",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "convnext_base",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "DenseNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "densenet121",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "densenet161",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "densenet169",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "densenet201",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "EfficientNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "efficientnet_b0",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b1",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b2",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b3",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b4",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b5",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b6",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_b7",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "EfficientNetV2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "efficientnet_v2_s",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_v2_m",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "efficientnet_v2_l",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "GoogLeNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "googlenet",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Inception V3": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "inception_v3",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "MaxVit": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "maxvit_t",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "MNASNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "mnasnet0_5",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "mnasnet0_75",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "mnasnet1_0",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "mnasnet1_3",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "MobileNet V2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "mobilenet_v2",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "MobileNet V3": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "mobilenet_v3_small",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "mobilenet_v3_large",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "RegNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "regnet_y_400mf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_y_800mf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_y_1_6gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_y_3_2gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_y_8gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_y_16gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_400mf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_800mf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_1_6gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_3_2gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_8gf",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "regnet_x_16gf",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "ResNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "resnet18",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnet34",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnet50",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnet101",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnet152",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "ResNeXt": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "resnext50_32x4d",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnext101_32x8d",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "resnext101_64x4d",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "ShuffleNet V2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "shufflenet_v2_x1_0",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "shufflenet_v2_x1_5",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "shufflenet_v2_x0_5",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "shufflenet_v2_x2_0",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "SqueezeNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "squeezenet1_0",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "squeezenet1_1",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "SwinTransformer": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "swin_t",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "swin_s",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "swin_b",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "swin_v2_t",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "swin_v2_s",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "swin_v2_b",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "VGG": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "vgg11",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg11_bn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg13",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg13_bn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg16",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg16_bn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg19",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vgg19_bn",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "VisionTransformer": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "vit_b_16",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vit_b_32",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vit_h_14",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vit_l_16",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "vit_l_32",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Wide ResNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                {
+                    "name": "wide_resnet50_2",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "wide_resnet101_2",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        }
+    }
+}
