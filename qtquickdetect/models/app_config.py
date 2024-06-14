@@ -80,4 +80,3 @@ class AppConfig:
             data = self.__dict__.copy()
             del data['path']
             json.dump(data, f, indent=4)
-

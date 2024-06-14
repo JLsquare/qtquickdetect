@@ -424,17 +424,6 @@
                 }
             ]
         },
-        "MaxVit": {
-            "task": "classify",
-            "pipeline": "TorchVision Classify",
-            "weights": [
-                {
-                    "name": "maxvit_t",
-                    "type": "native",
-                    "enabled": true
-                }
-            ]
-        },
         "MNASNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
@@ -725,37 +714,6 @@
                 },
                 {
                     "name": "vgg19_bn",
-                    "type": "native",
-                    "enabled": true
-                }
-            ]
-        },
-        "VisionTransformer": {
-            "task": "classify",
-            "pipeline": "TorchVision Classify",
-            "weights": [
-                {
-                    "name": "vit_b_16",
-                    "type": "native",
-                    "enabled": true
-                },
-                {
-                    "name": "vit_b_32",
-                    "type": "native",
-                    "enabled": true
-                },
-                {
-                    "name": "vit_h_14",
-                    "type": "native",
-                    "enabled": true
-                },
-                {
-                    "name": "vit_l_16",
-                    "type": "native",
-                    "enabled": true
-                },
-                {
-                    "name": "vit_l_32",
                     "type": "native",
                     "enabled": true
                 }
