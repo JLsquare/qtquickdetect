@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from ..models.preset import Preset
 from ..utils.file_explorer import open_file_explorer
 from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color, \
-    draw_classification_label
+    draw_classification_label, draw_keypoints
 from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
@@ -245,7 +245,7 @@ class ImageResultWidget(QWidget):
         # Add each layer to the list and scene
         for index, result in enumerate(data['results']):
             # Add the layer to the list
-            class_name = data['classes'][result['classid']]
+            class_name = 'person' if data['task'] == 'pose' else data['classes'][result['classid']]
             confidence = round(result['confidence'], 2)
             item_text = f"{class_name} ({index}) : {round(confidence * 100, 1)}%"
             item = QListWidgetItem(item_text)
@@ -277,6 +277,10 @@ class ImageResultWidget(QWidget):
 
             if data['task'] == 'classification':
                 draw_classification_label(layer, class_name, confidence, self._preset.text_color, index)
+
+            if data['task'] == 'pose':
+                xy = result['xy']
+                draw_keypoints(layer, xy, generate_color(0), 3)
 
             # Add the layer to the scene
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),

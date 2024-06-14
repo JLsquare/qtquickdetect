@@ -82,7 +82,7 @@ class TorchVisionClassifyPipeline(Pipeline):
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
-            'task': "classification",
+            'task': 'classification',
             'classes': CLASS_NAMES,
             'results': results_array
         }

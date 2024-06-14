@@ -118,7 +118,7 @@ class TorchVisionSegmentPipeline(Pipeline):
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
-            'task': "detection and segmentation",
+            'task': 'segmentation',
             'classes': self.categories,
             'results': results_array
         }

@@ -80,7 +80,7 @@ class YoloDetectPipeline(Pipeline):
         return {
             'model_name': 'Yolo',
             'weight': self.weight,
-            'task': "detection",
+            'task': 'detection',
             'classes': list(self.model.names.values()),
             'results': results_array
         }

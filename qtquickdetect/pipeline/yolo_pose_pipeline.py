@@ -1,15 +1,17 @@
+import logging
+
 import numpy as np
 import torch
 
 from pathlib import Path
 from ultralytics import YOLO
-from utils.image_helpers import draw_classification_label
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
+from ..utils.image_helpers import draw_bounding_box, generate_color, draw_keypoints
 
 
-class YoloClassifyPipeline(Pipeline):
-    """Pipeline for classifying objects in images and videos using YoloV8."""
+class YoloPosePipeline(Pipeline):
+    """Pipeline for detecting objects in images and videos using YoloV8."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
@@ -29,7 +31,7 @@ class YoloClassifyPipeline(Pipeline):
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
-        Processes a single image with YoloV8 classification.
+        Processes a single image with YoloV8 detection.
 
         :param image: The input image.
         :return: The processed image and the results array.
@@ -38,18 +40,16 @@ class YoloClassifyPipeline(Pipeline):
         result = self.model(image, half=(self.device.type == 'cuda' and self.preset.half_precision),
                             verbose=False, iou=self.preset.iou_threshold)[0].cpu()
 
-        top5_classe_ids = result.probs.top5
-        top5_confidences = result.probs.top5conf
-        top5_classe_names = [self.model.names[int(class_id)] for class_id in top5_classe_ids]
-
         results_array = []
-        # add top 5 classes to results array
-        for i in range(5):
-            draw_classification_label(image, top5_classe_names[i], top5_confidences[i], self.preset.text_color, i)
+        # For each box in the result
+        for pose in result:
+            # Draw keypoints
+            xy = [(int(xy[0]), int(xy[1])) for xy in pose.keypoints[0].xy[0]]
+            draw_keypoints(image, xy, generate_color(0), 3)
 
             results_array.append({
-                'classid': int(top5_classe_ids[i]),
-                'confidence': float(top5_confidences[i])
+                'xy': xy,
+                'confidence': np.mean([float(conf) for conf in pose.keypoints[0].conf[0]])
             })
 
         return image, results_array
@@ -64,7 +64,7 @@ class YoloClassifyPipeline(Pipeline):
         return {
             'model_name': 'Yolo',
             'weight': self.weight,
-            'task': 'classification',
+            'task': 'pose',
             'classes': list(self.model.names.values()),
             'results': results_array
         }

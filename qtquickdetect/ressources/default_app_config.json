@@ -5,6 +5,7 @@
         "Yolo Detect": "qtquickdetect.pipeline.yolo_detect_pipeline.YoloDetectPipeline",
         "Yolo Segment": "qtquickdetect.pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
         "Yolo Classify": "qtquickdetect.pipeline.yolo_classify_pipeline.YoloClassifyPipeline",
+        "Yolo Pose": "qtquickdetect.pipeline.yolo_pose_pipeline.YoloPosePipeline",
         "TorchVision Detect": "qtquickdetect.pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
         "TorchVision Segment": "qtquickdetect.pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline",
         "TorchVision Classify": "qtquickdetect.pipeline.torchvision_classify_pipeline.TorchVisionClassifyPipeline"
@@ -130,6 +131,37 @@
                 },
                 {
                     "name": "yolov8x-cls.pt",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Yolov8 Pose": {
+            "task": "pose",
+            "pipeline": "Yolo Pose",
+            "weights": [
+                {
+                    "name": "yolov8n-pose.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8s-pose.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8m-pose.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8l-pose.pt",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "yolov8x-pose.pt",
                     "type": "native",
                     "enabled": true
                 }

@@ -71,6 +71,43 @@ def draw_classification_label(img, class_name: str, confidence: float, text_colo
     cv.putText(img, text, (10, 30 + 30 * index), FONT, 1, text_color, 2)
 
 
+def draw_keypoints(img, keypoints: list[tuple[int, int]], color: tuple[int, int, int, int], radius: int):
+    """
+    Draws keypoints on an image.
+
+    :param img: The input image (numpy array).
+    :param keypoints: The list of keypoints.
+    :param color: The color of the keypoints (R, G, B, A).
+    :param radius: The radius of the keypoints.
+    """
+    keypoints = np.array(keypoints)
+    skeleton = [
+        (0, 1), (0, 2), (1, 3), (2, 4),       # Head
+        (5, 6),                               # Shoulders
+        (5, 11), (6, 12),                     # Chest (Shoulders to Hips)
+        (5, 7), (7, 9),                       # Left Arm
+        (6, 8), (8, 10),                      # Right Arm
+        (11, 12),                             # Hips
+        (11, 13), (13, 15),                   # Left Leg
+        (12, 14), (14, 16)                    # Right Leg
+    ]
+
+    valid_keypoints = [(x, y) for x, y in keypoints if (x, y) != (0, 0)]
+
+    # Draw the keypoints
+    for keypoint in valid_keypoints:
+        center = tuple(keypoint)
+        cv.circle(img, center, radius, color, cv.FILLED)
+
+    # Draw the skeleton
+    for start, end in skeleton:
+        if start < len(keypoints) and end < len(keypoints):
+            pt1 = tuple(keypoints[start])
+            pt2 = tuple(keypoints[end])
+            if pt1 != (0, 0) and pt2 != (0, 0):
+                cv.line(img, pt1, pt2, color, 2)
+
+
 def generate_color(class_id: int) -> tuple[int, int, int, int]:
     """
     Generates a color for a class id.

@@ -88,7 +88,7 @@ class YoloSegmentPipeline(Pipeline):
         return {
             'model_name': 'Yolo',
             'weight': self.weight,
-            'task': "segmentation",
+            'task': 'segmentation',
             'classes': list(self.model.names.values()),
             'results': results_array
         }

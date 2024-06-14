@@ -123,7 +123,7 @@ class TorchVisionDetectPipeline(Pipeline):
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
-            'task': "detection",
+            'task': 'detection',
             'classes': self.categories,
             'results': results_array
         }
