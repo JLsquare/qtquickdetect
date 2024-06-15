@@ -5,11 +5,11 @@ from pathlib import Path
 from ultralytics import YOLO
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
-from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
+from ..utils.image_helpers import draw_segmentation_mask_from_points, generate_color
 
 
 class YoloSegmentPipeline(Pipeline):
-    """Pipeline for detecting objects in images and videos using YoloV8."""
+    """Pipeline for segmenting objects in images and videos using YoloV8."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
@@ -47,17 +47,6 @@ class YoloSegmentPipeline(Pipeline):
             class_id, class_name = int(box.cls), self.model.names[int(box.cls)]
             conf = float(box.conf[0])
 
-            # Draw bounding box
-            if self.preset.box_color_per_class:
-                box_color = generate_color(class_id)
-            else:
-                box_color = self.preset.box_color
-            draw_bounding_box(
-                image, top_left, bottom_right, class_name, conf,
-                box_color, self.preset.text_color,
-                self.preset.box_thickness, self.preset.text_size
-            )
-
             # Draw segmentation mask
             if self.preset.segment_color_per_class:
                 segment_color = generate_color(class_id)
@@ -83,7 +72,7 @@ class YoloSegmentPipeline(Pipeline):
         Creates the results dictionary with YoloV8 specific information.
 
         :param results_array: The list of results.
-        :return: The results dictionary.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'Yolo',

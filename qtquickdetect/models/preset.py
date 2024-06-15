@@ -19,9 +19,18 @@ class Preset:
         self.box_color = (0, 255, 0, 255)
         self.box_color_per_class = False
         self.box_thickness = 2
+
         self.segment_color = (0, 255, 0, 255)
         self.segment_color_per_class = False
         self.segment_thickness = 2
+
+        self.pose_head_color = (0, 255, 0, 255)
+        self.pose_chest_color = (0, 255, 0, 255)
+        self.pose_leg_color = (0, 255, 0, 255)
+        self.pose_arm_color = (0, 255, 0, 255)
+        self.pose_point_size = 3
+        self.pose_line_thickness = 2
+
         self.text_color = (0, 0, 0, 255)
         self.text_size = 1.5
 
@@ -119,6 +128,36 @@ class Preset:
             self.segment_thickness = 2
             changed = True
 
+        if not self._check_color(self.pose_head_color):
+            logging.warning(f'Invalid pose head color in config: {self.pose_head_color}')
+            self.pose_head_color = (0, 255, 0, 255)
+            changed = True
+
+        if not self._check_color(self.pose_chest_color):
+            logging.warning(f'Invalid pose chest color in config: {self.pose_chest_color}')
+            self.pose_chest_color = (0, 255, 0, 255)
+            changed = True
+
+        if not self._check_color(self.pose_leg_color):
+            logging.warning(f'Invalid pose leg color in config: {self.pose_leg_color}')
+            self.pose_leg_color = (0, 255, 0, 255)
+            changed = True
+
+        if not self._check_color(self.pose_arm_color):
+            logging.warning(f'Invalid pose arm color in config: {self.pose_arm_color}')
+            self.pose_arm_color = (0, 255, 0, 255)
+            changed = True
+
+        if not isinstance(self.pose_point_size, int) and self.pose_point_size < 0:
+            logging.warning(f'Invalid pose point size in config: {self.pose_point_size}')
+            self.pose_point_size = 3
+            changed = True
+
+        if not isinstance(self.pose_line_thickness, int) and self.pose_line_thickness < 0:
+            logging.warning(f'Invalid pose line thickness in config: {self.pose_line_thickness}')
+            self.pose_line_thickness = 2
+            changed = True
+
         if not self._check_color(self.text_color):
             logging.warning(f'Invalid text color in config: {self.text_color}')
             self.text_color = (0, 0, 0, 255)
@@ -133,9 +172,6 @@ class Preset:
 
     @staticmethod
     def _check_color(color) -> bool:
-        if not isinstance(color, list):
-            return False
-
         if len(color) != 4:
             return False
 

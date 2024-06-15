@@ -2,13 +2,15 @@ import random
 import cv2 as cv
 import numpy as np
 
+from ..models.preset import Preset
+
 # Static resource
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 
 def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str, confidence: float,
                       box_color: tuple[int, int, int, int], text_color: tuple[int, int, int, int], thickness: int,
-                      text_size: float):
+                      text_size: float) -> None:
     """
     Draws a rectangle, a label with background and a percentage on a loaded openCV image.
 
@@ -32,16 +34,18 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     box_coords = ((top_left[0], text_top_left_y - 2), (top_left[0] + text_width + 2, text_top_left_y + text_height + 7))
 
     cv.rectangle(img, box_coords[0], box_coords[1], box_color, cv.FILLED)
-    cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color, 1 if text_size < 1 else 2)
+    cv.putText(img, text, (top_left[0], text_top_left_y + text_height), FONT, text_size, text_color,
+               1 if text_size < 1 else 2)
 
 
-def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int):
+def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int) -> None:
     """
     Draws a semi-transparent polygon mask on an image.
 
     :param img: The input image (numpy array).
     :param mask_points: The points of the mask (numpy array).
     :param mask_color: The color of the mask (R, G, B, A).
+    :param thickness: The thickness of the mask.
     """
     polygon = np.array([mask_points], dtype=np.int32)
 
@@ -57,7 +61,8 @@ def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, 
     cv.polylines(img, polygon, True, mask_color, thickness)
 
 
-def draw_classification_label(img, class_name: str, confidence: float, text_color: tuple[int, int, int, int], index: int):
+def draw_classification_label(img, class_name: str, confidence: float, text_color: tuple[int, int, int, int],
+                              index: int) -> None:
     """
     Draws classification labels on an image.
 
@@ -71,33 +76,52 @@ def draw_classification_label(img, class_name: str, confidence: float, text_colo
     cv.putText(img, text, (10, 30 + 30 * index), FONT, 1, text_color, 2)
 
 
-def draw_keypoints(img, keypoints: list[tuple[int, int]], color: tuple[int, int, int, int], radius: int):
+def draw_keypoints(img, keypoints: list[tuple[int, int]], preset: Preset) -> None:
     """
     Draws keypoints on an image.
 
     :param img: The input image (numpy array).
     :param keypoints: The list of keypoints.
-    :param color: The color of the keypoints (R, G, B, A).
-    :param radius: The radius of the keypoints.
+    :param preset: The preset object.
     """
     keypoints = np.array(keypoints)
     skeleton = [
-        (0, 1), (0, 2), (1, 3), (2, 4),       # Head
-        (5, 6),                               # Shoulders
-        (5, 11), (6, 12),                     # Chest (Shoulders to Hips)
-        (5, 7), (7, 9),                       # Left Arm
-        (6, 8), (8, 10),                      # Right Arm
-        (11, 12),                             # Hips
-        (11, 13), (13, 15),                   # Left Leg
-        (12, 14), (14, 16)                    # Right Leg
+        (0, 1), (0, 2), (1, 3), (2, 4),  # Head
+        (5, 6),  # Shoulders
+        (5, 11), (6, 12),  # Chest (Shoulders to Hips)
+        (5, 7), (7, 9),  # Left Arm
+        (6, 8), (8, 10),  # Right Arm
+        (11, 12),  # Hips
+        (11, 13), (13, 15),  # Left Leg
+        (12, 14), (14, 16)  # Right Leg
     ]
 
-    valid_keypoints = [(x, y) for x, y in keypoints if (x, y) != (0, 0)]
+    # Group keypoints for color assignment
+    head_parts = {0, 1, 2, 3, 4}
+    chest_parts = {5, 6, 11, 12}
+    left_arm_parts = {7, 9}
+    right_arm_parts = {8, 10}
+    left_leg_parts = {13, 15}
+    right_leg_parts = {14, 16}
 
     # Draw the keypoints
-    for keypoint in valid_keypoints:
-        center = tuple(keypoint)
-        cv.circle(img, center, radius, color, cv.FILLED)
+    for i, keypoint in enumerate(keypoints):
+        if tuple(keypoint) != (0, 0):
+            center = tuple(keypoint)
+            color = None
+            if i in head_parts:
+                color = preset.pose_head_color
+            elif i in chest_parts:
+                color = preset.pose_chest_color
+            elif i in left_arm_parts:
+                color = preset.pose_arm_color
+            elif i in right_arm_parts:
+                color = preset.pose_arm_color
+            elif i in left_leg_parts:
+                color = preset.pose_leg_color
+            elif i in right_leg_parts:
+                color = preset.pose_leg_color
+            cv.circle(img, center, preset.pose_point_size, color, cv.FILLED)
 
     # Draw the skeleton
     for start, end in skeleton:
@@ -105,7 +129,24 @@ def draw_keypoints(img, keypoints: list[tuple[int, int]], color: tuple[int, int,
             pt1 = tuple(keypoints[start])
             pt2 = tuple(keypoints[end])
             if pt1 != (0, 0) and pt2 != (0, 0):
-                cv.line(img, pt1, pt2, color, 2)
+                color = None
+                if {start, end}.intersection(head_parts):
+                    color = preset.pose_head_color
+                elif ({start, end}.intersection(chest_parts) and not (
+                        {start, end}.intersection(left_arm_parts)
+                        or {start, end}.intersection(right_arm_parts)
+                        or {start, end}.intersection(left_leg_parts)
+                        or {start, end}.intersection(right_leg_parts))):
+                    color = preset.pose_chest_color
+                elif {start, end}.intersection(left_arm_parts):
+                    color = preset.pose_arm_color
+                elif {start, end}.intersection(right_arm_parts):
+                    color = preset.pose_arm_color
+                elif {start, end}.intersection(left_leg_parts):
+                    color = preset.pose_leg_color
+                elif {start, end}.intersection(right_leg_parts):
+                    color = preset.pose_leg_color
+                cv.line(img, pt1, pt2, color, preset.pose_line_thickness)
 
 
 def generate_color(class_id: int) -> tuple[int, int, int, int]:

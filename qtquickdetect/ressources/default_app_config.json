@@ -244,12 +244,33 @@
                 }
             ]
         },
-        "Faster-RCNN": {
+        "Faster-RCNN ResNet": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
             "weights": [
                 {
-                    "name": "fasterrcnn",
+                    "name": "fasterrcnn_resnet50_fpn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "fasterrcnn_resnet50_fpn_v2",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Faster-RCNN MobileNet": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                {
+                    "name": "fasterrcnn_mobilenet_v3_large_fpn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "fasterrcnn_mobilenet_v3_large_320_fpn",
                     "type": "native",
                     "enabled": true
                 }
@@ -260,7 +281,7 @@
             "pipeline": "TorchVision Detect",
             "weights": [
                 {
-                    "name": "maskrcnn",
+                    "name": "maskrcnn_resnet50_fpn",
                     "type": "native",
                     "enabled": true
                 }
@@ -271,7 +292,12 @@
             "pipeline": "TorchVision Segment",
             "weights": [
                 {
-                    "name": "maskrcnn",
+                    "name": "maskrcnn_resnet50_fpn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "maskrcnn_resnet50_fpn_v2",
                     "type": "native",
                     "enabled": true
                 }
@@ -282,7 +308,12 @@
             "pipeline": "TorchVision Detect",
             "weights": [
                 {
-                    "name": "retinanet",
+                    "name": "retinanet_resnet50_fpn",
+                    "type": "native",
+                    "enabled": true
+                },
+                {
+                    "name": "retinanet_resnet50_fpn_v2",
                     "type": "native",
                     "enabled": true
                 }
@@ -293,12 +324,12 @@
             "pipeline": "TorchVision Detect",
             "weights": [
                 {
-                    "name": "ssd300",
+                    "name": "ssd300_vgg16",
                     "type": "native",
                     "enabled": true
                 },
                 {
-                    "name": "ssdlite320",
+                    "name": "ssdlite320_mobilenet_v3_large",
                     "type": "native",
                     "enabled": true
                 }

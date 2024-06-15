@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 import torch
 import torchvision.transforms as T
@@ -30,18 +28,9 @@ class TorchVisionClassifyPipeline(Pipeline):
         """
         super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
-        self.model = self._load_model(weight)
-        self.transform = T.Compose([T.ToTensor()])
+        self.model = getattr(models, weight)(pretrained=True).to(self.device)
         self.model.eval()
-
-    def _load_model(self, model_name: str):
-        """
-        Loads the specified TorchVision model with pre-trained weights.
-
-        :param model_name: The name of the model to load.
-        """
-        model = getattr(models, model_name)(pretrained=True).to(self.device)
-        return model
+        self.transform = T.Compose([T.ToTensor()])
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -52,12 +41,10 @@ class TorchVisionClassifyPipeline(Pipeline):
         """
         # Preprocess image
         image_tensor = self.transform(image).unsqueeze(0).to(self.device)
-
         with torch.no_grad():
-            outputs = self.model(image_tensor)[0].squeeze().softmax(0)
-            logging.info(len(outputs))
-            top5_probs, top5_indices = torch.topk(outputs, 5)
+            predictions = self.model(image_tensor)[0].squeeze().softmax(0)
 
+        top5_probs, top5_indices = torch.topk(predictions, 5)
         results_array = []
         # Process top 5 predictions
         for i in range(5):
@@ -78,6 +65,7 @@ class TorchVisionClassifyPipeline(Pipeline):
         Creates the results dictionary with TorchVision specific information.
 
         :param results_array: The list of results.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'TorchVision',

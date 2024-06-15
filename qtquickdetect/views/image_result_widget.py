@@ -280,7 +280,7 @@ class ImageResultWidget(QWidget):
 
             if data['task'] == 'pose':
                 xy = result['xy']
-                draw_keypoints(layer, xy, generate_color(0), 3)
+                draw_keypoints(layer, xy, self._preset)
 
             # Add the layer to the scene
             q_img = QImage(layer.data, img_size.width(), img_size.height(), 4 * img_size.width(),

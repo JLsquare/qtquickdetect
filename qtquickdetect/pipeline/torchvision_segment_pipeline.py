@@ -1,13 +1,13 @@
 import numpy as np
 import torch
 import torchvision.transforms as T
+import torchvision.models as models
 import cv2 as cv
 
 from pathlib import Path
-from torchvision.models.detection import maskrcnn_resnet50_fpn
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
-from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color
+from ..utils.image_helpers import draw_segmentation_mask_from_points, generate_color
 
 # COCO classes used for TorchVision models
 # https://pytorch.org/vision/0.9/models.html#object-detection-instance-segmentation-and-person-keypoint-detection
@@ -28,7 +28,7 @@ CLASS_NAMES = [
 
 
 class TorchVisionSegmentPipeline(Pipeline):
-    """Pipeline for detecting and segmenting objects in images and videos using TorchVision models with pre-trained weights."""
+    """Pipeline for segmenting objects in images and videos using TorchVision models with pre-trained weights."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
@@ -43,10 +43,9 @@ class TorchVisionSegmentPipeline(Pipeline):
         """
         super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
-        self.model = maskrcnn_resnet50_fpn(pretrained=True).to(self.device)
+        self.model = getattr(models.detection, weight)(pretrained=True).to(self.device)
         self.model.eval()
         self.transform = T.Compose([T.ToTensor()])
-        self.categories = CLASS_NAMES
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -78,23 +77,12 @@ class TorchVisionSegmentPipeline(Pipeline):
             polygons = [contour.astype(np.float32).squeeze(axis=1).tolist() for contour in contours]
             polygon = max(polygons, key=lambda x: len(x))
 
-            # Draw bounding box
-            if self.preset.box_color_per_class:
-                box_color = generate_color(label)
-            else:
-                box_color = self.preset.box_color
-            draw_bounding_box(
-                image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), self.categories[label], score,
-                box_color, self.preset.text_color,
-                self.preset.box_thickness, self.preset.text_size
-            )
-
             # Draw segmentation mask
             if self.preset.segment_color_per_class:
                 segment_color = generate_color(label)
             else:
                 segment_color = self.preset.segment_color
-            draw_segmentation_mask_from_points(image, polygon, segment_color)
+            draw_segmentation_mask_from_points(image, polygon, segment_color, self.preset.segment_thickness)
 
             # Append the box to the results array
             results_array.append({
@@ -114,11 +102,12 @@ class TorchVisionSegmentPipeline(Pipeline):
         Creates the results dictionary with TorchVision specific information.
 
         :param results_array: The list of results.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
             'task': 'segmentation',
-            'classes': self.categories,
+            'classes': CLASS_NAMES,
             'results': results_array
         }

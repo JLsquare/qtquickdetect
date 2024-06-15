@@ -38,6 +38,12 @@ class PresetsWidget(QWidget):
         self._box_thickness_slider: Optional[QSlider] = None
         self._segment_thickness_slider: Optional[QSlider] = None
         self._text_size_slider: Optional[QSlider] = None
+        self._pose_head_color_button: Optional[QPushButton] = None
+        self._pose_chest_color_button: Optional[QPushButton] = None
+        self._pose_leg_color_button: Optional[QPushButton] = None
+        self._pose_arm_color_button: Optional[QPushButton] = None
+        self._pose_point_size_slider: Optional[QSlider] = None
+        self._pose_line_thickness_slider: Optional[QSlider] = None
         self._preset_widget: Optional[QWidget] = None
         self._scroll_area: Optional[QScrollArea] = None
 
@@ -145,6 +151,44 @@ class PresetsWidget(QWidget):
         self._preset_layout.addWidget(QLabel("Text Size:"))
         self._preset_layout.addWidget(self._text_size_slider)
 
+        # Pose head color picker
+        self._pose_head_color_button = QPushButton("Set Pose Head Color")
+        self._pose_head_color_button.clicked.connect(lambda: self.set_color('pose_head_color'))
+        self._preset_layout.addWidget(QLabel("Pose Head Color:"))
+        self._preset_layout.addWidget(self._pose_head_color_button)
+
+        # Pose chest color picker
+        self._pose_chest_color_button = QPushButton("Set Pose Chest Color")
+        self._pose_chest_color_button.clicked.connect(lambda: self.set_color('pose_chest_color'))
+        self._preset_layout.addWidget(QLabel("Pose Chest Color:"))
+        self._preset_layout.addWidget(self._pose_chest_color_button)
+
+        # Pose leg color picker
+        self._pose_leg_color_button = QPushButton("Set Pose Leg Color")
+        self._pose_leg_color_button.clicked.connect(lambda: self.set_color('pose_leg_color'))
+        self._preset_layout.addWidget(QLabel("Pose Leg Color:"))
+        self._preset_layout.addWidget(self._pose_leg_color_button)
+
+        # Pose arm color picker
+        self._pose_arm_color_button = QPushButton("Set Pose Arm Color")
+        self._pose_arm_color_button.clicked.connect(lambda: self.set_color('pose_arm_color'))
+        self._preset_layout.addWidget(QLabel("Pose Arm Color:"))
+        self._preset_layout.addWidget(self._pose_arm_color_button)
+
+        # Pose point size
+        self._pose_point_size_slider = QSlider(Qt.Orientation.Horizontal)
+        self._pose_point_size_slider.setRange(1, 10)
+        self._pose_point_size_slider.valueChanged.connect(self.set_pose_point_size)
+        self._preset_layout.addWidget(QLabel("Pose Point Size:"))
+        self._preset_layout.addWidget(self._pose_point_size_slider)
+
+        # Pose line thickness
+        self._pose_line_thickness_slider = QSlider(Qt.Orientation.Horizontal)
+        self._pose_line_thickness_slider.setRange(1, 10)
+        self._pose_line_thickness_slider.valueChanged.connect(self.set_pose_line_thickness)
+        self._preset_layout.addWidget(QLabel("Pose Line Thickness:"))
+        self._preset_layout.addWidget(self._pose_line_thickness_slider)
+
         self._preset_widget = QWidget()
         self._preset_widget.setLayout(self._preset_layout)
 
@@ -224,6 +268,12 @@ class PresetsWidget(QWidget):
         self._text_color_button.setStyleSheet(f'background-color: rgb({text_color[0]}, {text_color[1]}, {text_color[2]});')
         self._box_color_by_class_checkbox.setChecked(self.current_preset.box_color_per_class)
         self._segment_color_by_class_checkbox.setChecked(self.current_preset.segment_color_per_class)
+        self._pose_head_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_head_color[0]}, {self.current_preset.pose_head_color[1]}, {self.current_preset.pose_head_color[2]});')
+        self._pose_chest_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_chest_color[0]}, {self.current_preset.pose_chest_color[1]}, {self.current_preset.pose_chest_color[2]});')
+        self._pose_leg_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_leg_color[0]}, {self.current_preset.pose_leg_color[1]}, {self.current_preset.pose_leg_color[2]});')
+        self._pose_arm_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_arm_color[0]}, {self.current_preset.pose_arm_color[1]}, {self.current_preset.pose_arm_color[2]});')
+        self._pose_point_size_slider.setValue(self.current_preset.pose_point_size)
+        self._pose_line_thickness_slider.setValue(self.current_preset.pose_line_thickness)
         self._scroll_area.show()
 
     def rename_preset(self) -> None:
@@ -328,4 +378,12 @@ class PresetsWidget(QWidget):
 
     def set_text_size(self, value):
         self.current_preset.text_size = value / 10.0
+        self.current_preset.save()
+
+    def set_pose_point_size(self, value):
+        self.current_preset.pose_point_size = value
+        self.current_preset.save()
+
+    def set_pose_line_thickness(self, value):
+        self.current_preset.pose_line_thickness = value
         self.current_preset.save()

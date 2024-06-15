@@ -1,9 +1,9 @@
 import numpy as np
 import torch
 import torchvision.transforms as T
+import torchvision.models as models
 
 from pathlib import Path
-from torchvision.models.detection import fasterrcnn_resnet50_fpn, maskrcnn_resnet50_fpn, retinanet_resnet50_fpn, ssd300_vgg16, ssdlite320_mobilenet_v3_large
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
 from ..utils.image_helpers import draw_bounding_box, generate_color
@@ -43,29 +43,9 @@ class TorchVisionDetectPipeline(Pipeline):
         """
         super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
-        self._load_model(weight)
-        self.transform = T.Compose([T.ToTensor()])
-        self.categories = CLASS_NAMES
-
-    def _load_model(self, model_name: str):
-        """
-        Loads the specified model with the specified weights.
-
-        :param model_name: The name of the model to load.
-        """
-        if model_name == 'fasterrcnn':
-            self.model = fasterrcnn_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'maskrcnn':
-            self.model = maskrcnn_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'retinanet':
-            self.model = retinanet_resnet50_fpn(pretrained=True).to(self.device)
-        elif model_name == 'ssd300':
-            self.model = ssd300_vgg16(pretrained=True).to(self.device)
-        elif model_name == 'ssdlite320':
-            self.model = ssdlite320_mobilenet_v3_large(pretrained=True).to(self.device)
-        else:
-            raise ValueError(f"Unknown model name: {model_name}")
+        self.model = getattr(models.detection, weight)(pretrained=True).to(self.device)
         self.model.eval()
+        self.transform = T.Compose([T.ToTensor()])
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -75,7 +55,7 @@ class TorchVisionDetectPipeline(Pipeline):
         :return: The processed image and the results array.
         """
         # Inference
-        image_tensor = self.transform(image).unsqueeze(0).to(self.preset.device)
+        image_tensor = self.transform(image).unsqueeze(0).to(self.device)
         with torch.no_grad():
             predictions = self.model(image_tensor)[0]
 
@@ -97,7 +77,7 @@ class TorchVisionDetectPipeline(Pipeline):
             else:
                 box_color = self.preset.box_color
             draw_bounding_box(
-                image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), self.categories[label], score,
+                image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), CLASS_NAMES[label], score,
                 box_color, self.preset.text_color,
                 self.preset.box_thickness, self.preset.text_size
             )
@@ -119,11 +99,12 @@ class TorchVisionDetectPipeline(Pipeline):
         Creates the results dictionary with TorchVision specific information.
 
         :param results_array: The list of results.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'TorchVision',
             'weight': self.weight,
             'task': 'detection',
-            'classes': self.categories,
+            'classes': CLASS_NAMES,
             'results': results_array
         }

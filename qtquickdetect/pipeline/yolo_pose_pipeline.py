@@ -11,7 +11,7 @@ from ..utils.image_helpers import draw_bounding_box, generate_color, draw_keypoi
 
 
 class YoloPosePipeline(Pipeline):
-    """Pipeline for detecting objects in images and videos using YoloV8."""
+    """Pipeline for posing objects in images and videos using YoloV8."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
@@ -45,7 +45,7 @@ class YoloPosePipeline(Pipeline):
         for pose in result:
             # Draw keypoints
             xy = [(int(xy[0]), int(xy[1])) for xy in pose.keypoints[0].xy[0]]
-            draw_keypoints(image, xy, generate_color(0), 3)
+            draw_keypoints(image, xy, self.preset)
 
             results_array.append({
                 'xy': xy,
@@ -59,7 +59,7 @@ class YoloPosePipeline(Pipeline):
         Creates the results dictionary with YoloV8 specific information.
 
         :param results_array: The list of results.
-        :return: The results dictionary.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'Yolo',

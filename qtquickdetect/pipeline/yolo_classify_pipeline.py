@@ -59,7 +59,7 @@ class YoloClassifyPipeline(Pipeline):
         Creates the results dictionary with YoloV8 specific information.
 
         :param results_array: The list of results.
-        :return: The results dictionary.
+        :return: The result's dictionary.
         """
         return {
             'model_name': 'Yolo',
