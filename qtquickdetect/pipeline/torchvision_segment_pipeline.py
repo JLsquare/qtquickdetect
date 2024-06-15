@@ -60,7 +60,6 @@ class TorchVisionSegmentPipeline(Pipeline):
             predictions = self.model(image_tensor)[0]
 
         results_array = []
-        # For each box in the result
         for i in range(len(predictions['labels'])):
             box = predictions['boxes'][i].cpu().numpy()
             label = int(predictions['labels'][i])

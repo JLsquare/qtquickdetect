@@ -41,6 +41,7 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
 def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int) -> None:
     """
     Draws a semi-transparent polygon mask on an image.
+    https://pytorch.org/vision/stable/auto_examples/others/plot_visualization_utils.html#keypoint-output
 
     :param img: The input image (numpy array).
     :param mask_points: The points of the mask (numpy array).

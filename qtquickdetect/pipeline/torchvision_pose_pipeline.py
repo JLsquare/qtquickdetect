@@ -1,24 +1,23 @@
-import logging
-
 import numpy as np
 import torch
+import torchvision.transforms as T
+import torchvision.models as models
 
 from pathlib import Path
-from ultralytics import YOLO
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
 from ..utils.image_helpers import draw_keypoints
 
 
-class YoloPosePipeline(Pipeline):
-    """Pipeline for posing persons in images and videos using YoloV8."""
+class TorchVisionPosePipeline(Pipeline):
+    """Pipeline for posing persons in images using TorchVision models with pre-trained weights."""
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 
-        :param weight: The weight file path to use.
+        :param weight: The weight to use.
         :param images_paths: List of image paths if processing images.
         :param videos_paths: List of video paths if processing videos.
         :param stream_url: URL of the video stream if processing a stream.
@@ -27,42 +26,49 @@ class YoloPosePipeline(Pipeline):
         """
         super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
-        self.model = YOLO(weight).to(self.device)
+        self.model = getattr(models.detection, weight)(pretrained=True).to(self.device)
+        self.model.eval()
+        self.transform = T.Compose([T.ToTensor()])
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
-        Processes a single image with YoloV8 detection.
+        Processes a single image with TorchVision posing.
 
         :param image: The input image.
         :return: The processed image and the results array.
         """
-        # Inference
-        result = self.model(image, half=(self.device.type == 'cuda' and self.preset.half_precision),
-                            verbose=False, iou=self.preset.iou_threshold)[0].cpu()
+        # Preprocess image
+        image_tensor = self.transform(image).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            predictions = self.model(image_tensor)[0]
 
         results_array = []
+        keypoints = predictions['keypoints'].cpu().numpy()
+        scores = predictions['scores'].cpu().numpy()
         # For each pose in the result
-        for pose in result:
-            # Draw keypoints
-            xy = [(int(xy[0]), int(xy[1])) for xy in pose.keypoints[0].xy[0]]
+        for i in range(len(keypoints)):
+            if scores[i] < self.preset.iou_threshold:
+                continue
+
+            xy = [(int(keypoint[0]), int(keypoint[1])) for keypoint in keypoints[i]]
             draw_keypoints(image, xy, self.preset)
 
             results_array.append({
                 'xy': xy,
-                'confidence': np.mean([float(conf) for conf in pose.keypoints[0].conf[0]])
+                'confidence': float(scores[i])
             })
 
         return image, results_array
 
     def _make_results(self, results_array: list) -> dict:
         """
-        Creates the results dictionary with YoloV8 specific information.
+        Creates the results dictionary with TorchVision specific information.
 
         :param results_array: The list of results.
         :return: The result's dictionary.
         """
         return {
-            'model_name': 'Yolo',
+            'model_name': 'TorchVision',
             'weight': self.weight,
             'task': 'pose',
             'classes': ['person'],

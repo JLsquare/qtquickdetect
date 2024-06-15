@@ -8,7 +8,8 @@
         "Yolo Pose": "qtquickdetect.pipeline.yolo_pose_pipeline.YoloPosePipeline",
         "TorchVision Detect": "qtquickdetect.pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
         "TorchVision Segment": "qtquickdetect.pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline",
-        "TorchVision Classify": "qtquickdetect.pipeline.torchvision_classify_pipeline.TorchVisionClassifyPipeline"
+        "TorchVision Classify": "qtquickdetect.pipeline.torchvision_classify_pipeline.TorchVisionClassifyPipeline",
+        "TorchVision Pose": "qtquickdetect.pipeline.torchvision_pose_pipeline.TorchVisionPosePipeline"
     },
     "models": {
         "YoloV9 Detect": {
@@ -793,6 +794,17 @@
                 },
                 {
                     "name": "wide_resnet101_2",
+                    "type": "native",
+                    "enabled": true
+                }
+            ]
+        },
+        "Keypoint RCNN": {
+            "task": "pose",
+            "pipeline": "TorchVision Pose",
+            "weights": [
+                {
+                    "name": "keypointrcnn_resnet50_fpn",
                     "type": "native",
                     "enabled": true
                 }
