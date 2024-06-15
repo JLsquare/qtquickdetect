@@ -53,7 +53,7 @@ class TorchVisionClassifyPipeline(Pipeline):
             class_id = top5_indices[i].item()
             confidence = top5_probs[i].item()
             class_name = CLASS_NAMES[class_id]
-            draw_classification_label(image, class_name, confidence, self.preset.text_color, i)
+            draw_classification_label(image, class_name, confidence, self.preset, i)
 
             results_array.append({
                 'classid': class_id,

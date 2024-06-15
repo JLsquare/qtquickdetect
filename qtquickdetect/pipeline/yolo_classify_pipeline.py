@@ -47,7 +47,7 @@ class YoloClassifyPipeline(Pipeline):
         results_array = []
         # add top 5 classes to results array
         for i in range(5):
-            draw_classification_label(image, top5_classe_names[i], top5_confidences[i], self.preset.text_color, i)
+            draw_classification_label(image, top5_classe_names[i], top5_confidences[i], self.preset, i)
 
             results_array.append({
                 'classid': int(top5_classe_ids[i]),

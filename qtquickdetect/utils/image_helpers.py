@@ -17,11 +17,9 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     :param top_left: The top left coordinates of the rectangle.
     :param bottom_right: The bottom right coordinates of the rectangle.
     :param classname: The name of the class.
+    :param class_id: The id of the class (used for color generation)
     :param confidence: The confidence of the model.
-    :param box_color: The color of the rectangle.
-    :param text_color: The color of the text.
-    :param thickness: The thickness of the rectangle lines.
-    :param text_size: The size of the text.
+    :param preset: The associated preset object.
     """
     text_color = preset.text_color
     thickness = preset.box_thickness
@@ -45,15 +43,23 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
                1 if text_size < 1 else 2)
 
 
-def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int) -> None:
+def draw_segmentation_mask_from_points(img, mask_points, class_id: int, preset: Preset) -> None:
     """
     Draws a semi-transparent polygon mask on an image.
 
     :param img: The input image (numpy array).
     :param mask_points: The points of the mask (numpy array).
-    :param mask_color: The color of the mask (R, G, B, A).
-    :param thickness: The thickness of the mask.
+    :param class_id: The class id (used for color generation).
+    :param preset: The associated preset object.
     """
+    # mask_color = preset.segment_color
+    if preset.segment_color_per_class:
+        mask_color = generate_color(class_id)
+    else:
+        mask_color = preset.segment_color
+        
+    thickness = preset.segment_thickness
+
     polygon = np.array([mask_points], dtype=np.int32)
 
     mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
@@ -68,7 +74,7 @@ def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, 
     cv.polylines(img, polygon, True, mask_color, thickness)
 
 
-def draw_classification_label(img, class_name: str, confidence: float, text_color: tuple[int, int, int, int],
+def draw_classification_label(img, class_name: str, confidence: float, preset: Preset,
                               index: int) -> None:
     """
     Draws classification labels on an image.
@@ -76,9 +82,11 @@ def draw_classification_label(img, class_name: str, confidence: float, text_colo
     :param img: The input image (numpy array).
     :param class_name: The name of the class.
     :param confidence: The confidence of the model.
-    :param text_color: The color of the text (R, G, B, A).
-    :param index: The index of the label.
+    :param preset: The associated preset object.
+    :param index: The index of the label (Y rank among labels)
     """
+    text_color = preset.text_color
+
     text = '{} : {:.2f}%'.format(class_name, confidence * 100)
     cv.putText(img, text, (10, 30 + 30 * index), FONT, 1, text_color, 2)
 

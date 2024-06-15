@@ -78,12 +78,7 @@ class TorchVisionSegmentPipeline(Pipeline):
             polygons = [contour.astype(np.float32).squeeze(axis=1).tolist() for contour in contours]
             polygon = max(polygons, key=lambda x: len(x))
 
-            # Draw segmentation mask
-            if self.preset.segment_color_per_class:
-                segment_color = generate_color(label)
-            else:
-                segment_color = self.preset.segment_color
-            draw_segmentation_mask_from_points(image, polygon, segment_color, self.preset.segment_thickness)
+            draw_segmentation_mask_from_points(image, polygon, label, self.preset)
 
             # Append the box to the results array
             results_array.append({
