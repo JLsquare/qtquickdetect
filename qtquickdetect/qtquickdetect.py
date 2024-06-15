@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import pathlib
 
 from PyQt6.QtWidgets import QApplication
 from .models.app_state import AppState
@@ -9,6 +10,10 @@ from .utils import filepaths
 
 
 def main():
+    # get path to python package
+    package_path = pathlib.Path(__file__).absolute().parent.parent
+    os.chdir(package_path)
+
     # Configure logging
     log_format = '%(asctime)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=log_format)
