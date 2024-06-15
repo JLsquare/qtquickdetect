@@ -72,9 +72,9 @@ class ModelsSelectionWidget(QWidget):
             has_children_checked = False
 
             for weight in model_info["weights"]:
-                child_item = QTreeWidgetItem(parent_item, [weight["name"]])
+                child_item = QTreeWidgetItem(parent_item, [weight])
                 child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                if model_key in self.weights and weight["name"] in self.weights[model_key]:
+                if model_key in self.weights and weight in self.weights[model_key]:
                     child_item.setCheckState(0, Qt.CheckState.Checked)
                     has_children_checked = True
                 else:
