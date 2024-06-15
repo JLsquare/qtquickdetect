@@ -278,7 +278,7 @@ class CollectionsWidget(QWidget):
         Deletes the selected collection
         """
         collection = self._collection_list.currentItem().data(0)
-        self.app_state.collections.delete_preset(collection, self.media_type)
+        self.app_state.collections.delete_collection(collection, self.media_type)
         self._collection_list.takeItem(self._collection_list.currentRow())
         self._collection_name_field.setText('')
         self._add_file_button.setEnabled(False)
