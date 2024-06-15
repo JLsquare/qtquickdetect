@@ -34,7 +34,7 @@ class ModelsSelectionWidget(QWidget):
         self._model_icon_layout.addStretch()
         self._model_icon = QLabel()
         self._model_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'model_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'model_icon.png'))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._model_icon_layout.addWidget(self._model_icon)

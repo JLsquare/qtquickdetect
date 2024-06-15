@@ -48,10 +48,10 @@ class ModelsWidget(QWidget):
                         child_item.setText(1, 'Downloaded')
                 else:
                     child_item.setText(1, 'Not downloaded')
-                    child_item.setIcon(2, QIcon('ressources/images/download_icon.png'))
+                    child_item.setIcon(2, QIcon('resources/images/download_icon.png'))
             child_item = QTreeWidgetItem(parent_item)
             child_item.setText(0, 'Add new weights')
-            child_item.setIcon(2, QIcon('ressources/images/add_icon.png'))
+            child_item.setIcon(2, QIcon('resources/images/add_icon.png'))
         self._tree_widget.itemClicked.connect(self.handle_item_clicked)
 
     ##############################

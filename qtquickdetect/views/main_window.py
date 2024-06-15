@@ -98,7 +98,7 @@ class MainWindow(QWidget):
 
     def title_ui(self) -> QWidget:
         self._title_icon = QLabel()
-        pixmap = (QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'qtquickdetect_icon.png'))
+        pixmap = (QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'qtquickdetect_icon.png'))
                   .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         self._title_icon.setPixmap(pixmap)
         self._title_icon.setFixedWidth(32)

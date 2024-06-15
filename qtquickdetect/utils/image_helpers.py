@@ -8,8 +8,8 @@ from ..models.preset import Preset
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 
-def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str, class_id: int, confidence: float,
-                      preset: Preset) -> None:
+def draw_bounding_box(img: np.ndarray, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str,
+                      class_id: int, confidence: float, preset: Preset) -> None:
     """
     Draws a rectangle, a label with background and a percentage on a loaded openCV image.
 
@@ -43,7 +43,7 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
                1 if text_size < 1 else 2)
 
 
-def draw_segmentation_mask_from_points(img, mask_points, class_id: int, preset: Preset) -> None:
+def draw_segmentation_mask_from_points(img: np.ndarray, mask_points, class_id: int, preset: Preset) -> None:
     """
     Draws a semi-transparent polygon mask on an image.
 
@@ -74,8 +74,7 @@ def draw_segmentation_mask_from_points(img, mask_points, class_id: int, preset: 
     cv.polylines(img, polygon, True, mask_color, thickness)
 
 
-def draw_classification_label(img, class_name: str, confidence: float, preset: Preset,
-                              index: int) -> None:
+def draw_classification_label(img: np.ndarray, class_name: str, confidence: float, preset: Preset, index: int) -> None:
     """
     Draws classification labels on an image.
 
@@ -91,7 +90,7 @@ def draw_classification_label(img, class_name: str, confidence: float, preset: P
     cv.putText(img, text, (10, 30 + 30 * index), FONT, 1, text_color, 2)
 
 
-def draw_keypoints(img, keypoints: list[tuple[int, int]], preset: Preset) -> None:
+def draw_keypoints(img: np.ndarray, keypoints: list[tuple[int, int]], preset: Preset) -> None:
     """
     Draws keypoints on an image.
     https://pytorch.org/vision/stable/auto_examples/others/plot_visualization_utils.html#keypoint-output

@@ -7,7 +7,7 @@ from pathlib import Path
 def get_base_config_dir() -> Path:
     """
     Returns the folder where the config files should reside
-    @return: The folder path
+    :return: The folder path
     """
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect'
@@ -33,7 +33,7 @@ def create_config_dir() -> None:
 def get_base_data_dir() -> Path:
     """
     Returns the folder where the data files should reside
-    @return: The folder path
+    :return: The folder path
     """
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect' / 'data'
@@ -63,7 +63,7 @@ def create_data_dir() -> None:
 def get_base_cache_dir() -> Path:
     """
     Returns the folder where the cache files should reside
-    @return: The folder path
+    :return: The folder path
     """
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect' / 'cache'
@@ -89,6 +89,6 @@ def create_cache_dir() -> None:
 def get_app_dir() -> Path:
     """
     Returns the folder where the application code is stored
-    @return: The folder path
+    :return: The folder path
     """
     return Path(__file__).parent.parent

@@ -2,18 +2,19 @@ import requests
 
 from typing import Callable
 
+
 def get_content_type(url: str) -> str | None:
     """
-    Gets the content type of a URL
-    :param url: URL to check
+    Gets the content type of the URL
+    :param url: URL to get the content type of
     :return: Content type of the URL or None if the request failed or the content type is not found
     """
-
     try:
         response = requests.head(url, allow_redirects=True, timeout=10)
         return response.headers.get('Content-Type', '').split(';')[0].strip()
     except requests.RequestException:
         return None
+
 
 def is_image(url: str) -> bool:
     """
@@ -28,6 +29,7 @@ def is_image(url: str) -> bool:
     image_types = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/tiff"]
     return content_type in image_types
 
+
 def is_video(url: str) -> bool:
     """ 
     Convenience function to check if a URL is a video
@@ -39,8 +41,9 @@ def is_video(url: str) -> bool:
     if not content_type:
         return False
     video_types = ["video/mp4", "video/avi", "video/mkv", "video/mpeg", "video/quicktime", "video/x-msvideo",
-                    "video/webm"]
+                   "video/webm"]
     return content_type in video_types
+
 
 def is_live_video(url: str) -> bool:
     """
@@ -58,6 +61,7 @@ def is_live_video(url: str) -> bool:
         return True
     return False
 
+
 def is_url(url: str) -> bool:
     """
     Convenience function to check if a string is a valid URL
@@ -66,14 +70,15 @@ def is_url(url: str) -> bool:
     """
 
     if not url.startswith('http'):
-        return False 
+        return False
 
     try:
         requests.head(url, allow_redirects=True, timeout=10)
         return True
     except requests.RequestException:
         return False
-    
+
+
 def download_file(url: str, dst: str, cb: Callable[[int, int], None] | None = None) -> None:
     """
     Downloads a file from a URL

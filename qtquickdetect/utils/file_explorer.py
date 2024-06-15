@@ -6,6 +6,12 @@ from pathlib import Path
 
 
 def open_file_explorer(path: Path) -> None:
+    """
+    Opens the file explorer at the specified path.
+
+    :param path: The path to open in the file explorer.
+    :raises Exception: If the path does not exist or the platform is not supported.
+    """
     if not path.exists():
         raise Exception(f"Path '{path}' does not exist")
 

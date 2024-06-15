@@ -37,7 +37,7 @@ class TaskSelectionWidget(QWidget):
         self._task_icon_layout.addStretch()
         self._task_icon = QLabel()
         self._task_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'ressources' / 'images' / 'task_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'task_icon.png'))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._task_icon_layout.addWidget(self._task_icon)

@@ -4,9 +4,15 @@ import numpy as np
 
 
 class MediaFetcher:
-    """Class to fetch frames from a video stream, not on a separate thread, has a method to fetch the frame."""
+    """
+    Class to fetch frames from a video stream, not on a separate thread, has a method to fetch the frame.
+    """
     def __init__(self, url):
-        """Initializes the MediaFetcher."""
+        """
+        Initializes the MediaFetcher object.
+
+        :param url: The URL of the video stream.
+        """
         self.url = url
         self.cap = cv.VideoCapture(self.url)
         self.fps = self.cap.get(cv.CAP_PROP_FPS)
@@ -15,7 +21,11 @@ class MediaFetcher:
             raise IOError(f"Failed to open stream: {url}")
 
     def fetch_frame(self) -> tuple[np.ndarray, bool]:
-        """Fetches the latest frame from the stream."""
+        """
+        Fetches the latest frame from the stream.
+
+        :return: The frame and a boolean indicating if the frame is available.
+        """
         if self.cap is None or not self.cap.isOpened():
             raise ValueError("VideoCapture is not initialized or already released.")
 
@@ -35,7 +45,9 @@ class MediaFetcher:
         self.last_fetch_time = time.time()
         return frame, frame_available
 
-    def release(self):
-        """Releases the VideoCapture object."""
+    def release(self) -> None:
+        """
+        Releases the VideoCapture object.
+        """
         if self.cap:
             self.cap.release()
