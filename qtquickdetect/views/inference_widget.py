@@ -19,13 +19,22 @@ from ..views.preset_selection_widget import PresetSelectionWidget
 
 
 class InferenceWidget(QWidget):
+    """
+    InferenceWidget is a QWidget that allows the user to run the pipeline on a collection of images or videos.
+    """
     def __init__(self, media_type: str, open_last_inference: callable):
+        """
+        Initializes the InferenceWidget.
+
+        :param media_type: The type of media for the inference. (image, video)
+        :param open_last_inference: A callable that opens the last inference result.
+        """
         super().__init__()
-        self.media_type = media_type
-        self.open_last_inference = open_last_inference
-        self.app_state = AppState.get_instance()
+        self.media_type: str = media_type
+        self.open_last_inference: callable = open_last_inference
+        self.app_state: AppState = AppState.get_instance()
         self.pipeline_manager: Optional[PipelineManager] = None
-        self.file_count = None
+        self.file_count: int = 0
 
         # PyQT6 Components
         self._main_layout: Optional[QHBoxLayout] = None
@@ -49,7 +58,10 @@ class InferenceWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         self._main_layout = QVBoxLayout()
         self._h_layout = QHBoxLayout()
         self._h_layout.addStretch()
@@ -68,7 +80,9 @@ class InferenceWidget(QWidget):
 
     def collection_ui(self) -> CollectionSelectionWidget:
         """
-        Collection UI, contains only for now a combobox to select the collection.
+        Collection UI, allows the user to select a collection.
+
+        :return: CollectionSelectionWidget
         """
         self._collection = CollectionSelectionWidget(self.media_type)
         self._collection.collection_changed_signal.connect(self.check_run)
@@ -76,7 +90,9 @@ class InferenceWidget(QWidget):
 
     def preset_ui(self) -> PresetSelectionWidget:
         """
-        Preset UI
+        Preset UI, allows the user to select a preset.
+
+        :return: PresetSelectionWidget
         """
         self._preset = PresetSelectionWidget()
         self._preset.preset_changed_signal.connect(self.check_run)
@@ -84,7 +100,9 @@ class InferenceWidget(QWidget):
 
     def task_ui(self) -> TaskSelectionWidget:
         """
-        Task UI, contains only for now a radio button to select the task. (Detection, Segmentation, Classification, Pose, Tracking)
+        Task UI, allows the user to select a task.
+
+        :return: TaskSelectionWidget
         """
         self._task = TaskSelectionWidget()
         self._task.task_changed_signal.connect(self.update_models_task)
@@ -92,13 +110,20 @@ class InferenceWidget(QWidget):
 
     def models_ui(self) -> ModelsSelectionWidget:
         """
-        Models UI
+        Models UI, allows the user to select models.
+
+        :return: ModelsSelectionWidget
         """
         self._models = ModelsSelectionWidget()
         self._models.models_changed_signal.connect(self.check_run)
         return self._models
 
     def run_ui(self) -> QWidget:
+        """
+        Run UI, allows the user to run the pipeline.
+
+        :return: QWidget
+        """
         # Run icon
         self._run_icon_layout = QHBoxLayout()
         self._run_icon_layout.addStretch()
@@ -144,17 +169,26 @@ class InferenceWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def update_models_task(self):
+    def update_models_task(self) -> None:
+        """
+        Updates the models task.
+        """
         self._models.set_task(self._task.task)
         self.check_run()
 
-    def check_run(self):
+    def check_run(self) -> None:
+        """
+        Checks if the pipeline can be run.
+        """
         if self._collection.collection and self._task.task and len(self._models.weights) > 0:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
 
-    def run(self):
+    def run(self) -> None:
+        """
+        Runs the pipeline.
+        """
         self._btn_run.setEnabled(False)
         self._btn_cancel.setEnabled(True)
 
@@ -201,6 +235,13 @@ class InferenceWidget(QWidget):
             json.dump(info, f, indent=4)
 
         def callback_ok(input_path: Path, _: Path, output_json_path: Path) -> None:
+            """
+            Callback for when the pipeline has finished a file.
+
+            :param input_path: The input path
+            :param _: The output path
+            :param output_json_path: The output JSON path
+            """
             logging.info('Detection done for ' + input_path.name + ', output in ' + output_json_path.name)
             self.file_count += 1
             self._progress_bar.update_progress_bar(self.file_count, total_files, 0, input_path.name)
@@ -210,9 +251,20 @@ class InferenceWidget(QWidget):
                 self.open_last_inference()
 
         def callback_err(input_media_path: Path, exception: Exception) -> None:
+            """
+            Callback for when the pipeline has an error on a file.
+
+            :param input_media_path: The input media path
+            :param exception: The exception
+            """
             logging.error('Detection failed for ' + input_media_path.name + ' : ' + str(exception))
 
         def callback_progress(progress: float) -> None:
+            """
+            Callback for the pipeline progress when running a video.
+
+            :param progress: The progress
+            """
             logging.info('Progress: ' + str(progress))
             self._progress_bar.update_progress_bar(self.file_count, total_files, progress, inputs[self.file_count].name)
 
@@ -225,7 +277,10 @@ class InferenceWidget(QWidget):
         elif self.media_type == 'video':
             self.pipeline_manager.run_video(inputs, result_path)
 
-    def cancel_current_pipeline(self):
+    def cancel_current_pipeline(self) -> None:
+        """
+        Cancels the current pipeline.
+        """
         self.pipeline_manager.request_cancel()
         self._btn_cancel.setEnabled(False)
         self._btn_run.setEnabled(True)

@@ -10,7 +10,15 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSlider, QPushButton, QStyle, 
 
 
 class VideoPlayerWidget(QWidget):
+    """
+    VideoPlayerWidget is a QWidget that plays a video file.
+    """
     def __init__(self, video_path: Path):
+        """
+        Initializes the VideoPlayerWidget.
+
+        :param video_path: The path to the video file.
+        """
         super().__init__()
 
         # PyQT6 Components
@@ -21,15 +29,18 @@ class VideoPlayerWidget(QWidget):
         self._position_slider: Optional[QSlider] = None
         self._control_layout: Optional[QHBoxLayout] = None
 
-        self._video_path = video_path
-        self._status = "Playing"
+        self._video_path: Path = video_path
+        self._status: str = "Playing"
         self.init_ui()
 
     ##############################
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         self._main_layout = QVBoxLayout(self)
         self._main_layout.addWidget(self.video_ui())
         self._main_layout.addLayout(self.control_ui())
@@ -37,6 +48,11 @@ class VideoPlayerWidget(QWidget):
         self._player.durationChanged.connect(self.update_duration)
 
     def video_ui(self) -> QVideoWidget:
+        """
+        Initializes the video user interface components.
+
+        :return: The video widget.
+        """
         self._video_widget = QVideoWidget()
 
         self._player = QMediaPlayer()
@@ -48,6 +64,11 @@ class VideoPlayerWidget(QWidget):
         return self._video_widget
 
     def control_ui(self) -> QHBoxLayout:
+        """
+        Initializes the control user interface components.
+
+        :return: The control layout.
+        """
         self._play_button = QPushButton()
         self._play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
         self._play_button.clicked.connect(self.play_pause)
@@ -67,38 +88,72 @@ class VideoPlayerWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def update_duration(self, duration: int):
+    def update_duration(self, duration: int) -> None:
+        """
+        Updates the duration of the video.
+
+        :param duration: The duration of the video.
+        """
         self._position_slider.setRange(0, duration)
 
-    def auto_replay(self, status: QMediaPlayer.MediaStatus):
+    def auto_replay(self, status: QMediaPlayer.MediaStatus) -> None:
+        """
+        Automatically replays the video when it reaches the end.
+
+        :param status: The media status.
+        """
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
             self._player.setPosition(0)
             self._player.play()
 
-    def play_pause(self):
+    def play_pause(self) -> None:
+        """
+        Plays or pauses the video.
+        """
         if self._status == "Playing":
             self.pause()
         else:
             self.play()
 
-    def pause(self):
+    def pause(self) -> None:
+        """
+        Pauses the video.
+        """
         self._player.pause()
         self._status = "Paused"
         self._play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
 
-    def play(self):
+    def play(self) -> None:
+        """
+        Plays the video.
+        """
         self._player.play()
         self._status = "Playing"
         self._play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
 
-    def change_position(self, position: int):
+    def change_position(self, position: int) -> None:
+        """
+        Changes the position of the video.
+
+        :param position: The position to change to.
+        """
         self._player.setPosition(position)
         self.pause()
 
-    def update_position_slider(self, position: int):
+    def update_position_slider(self, position: int) -> None:
+        """
+        Updates the position of the slider.
+
+        :param position: The position of the slider.
+        """
         self._position_slider.setValue(position)
 
     def get_current_frame(self) -> np.ndarray | None:
+        """
+        Gets the current frame of the video.
+
+        :return: The current frame of the video.
+        """
         cap = cv2.VideoCapture(str(self._video_path))
 
         if not cap.isOpened():

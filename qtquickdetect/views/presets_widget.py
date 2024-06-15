@@ -10,6 +10,9 @@ from ..models.preset import Preset
 
 
 class PresetsWidget(QWidget):
+    """
+    PresetWidget is a QWidget that allows the user to configure and manage presets.
+    """
     def __init__(self):
         """
         Initializes the PresetWidget
@@ -290,7 +293,7 @@ class PresetsWidget(QWidget):
             self._preset_list.currentItem().setData(0, new_name)
         self.current_preset = self.app_state.presets.get_preset(new_name)
 
-    def delete_preset(self):
+    def delete_preset(self) -> None:
         """
         Deletes the selected preset
         """
@@ -316,7 +319,12 @@ class PresetsWidget(QWidget):
             device_id = torch.cuda.current_device()
             return f"GPU-{device_id} ({torch.cuda.get_device_name(device_id)})"
 
-    def set_device(self, value):
+    def set_device(self, value: str) -> None:
+        """
+        Sets the device for the current preset
+
+        :param value: The device value
+        """
         if value == 'CPU':
             self.current_preset.device = 'cpu'
         else:
@@ -324,23 +332,48 @@ class PresetsWidget(QWidget):
             self.current_preset.device = f"cuda:{device_id}"
         self.current_preset.save()
 
-    def set_half_precision(self, enabled):
+    def set_half_precision(self, enabled: bool) -> None:
+        """
+        Sets the half precision flag for the current preset
+
+        :param enabled: The half precision flag
+        """
         self.current_preset.half_precision = enabled
         self.current_preset.save()
 
-    def set_iou_threshold(self, value):
+    def set_iou_threshold(self, value: int) -> None:
+        """
+        Sets the IOU threshold for the current preset
+
+        :param value: The IOU threshold value
+        """
         self.current_preset.iou_threshold = value / 100.0
         self.current_preset.save()
 
-    def set_image_format(self, image_format):
+    def set_image_format(self, image_format: str) -> None:
+        """
+        Sets the image format for the current preset
+
+        :param image_format: The image format
+        """
         self.current_preset.image_format = image_format
         self.current_preset.save()
 
-    def set_video_format(self, video_format):
+    def set_video_format(self, video_format: str) -> None:
+        """
+        Sets the video format for the current preset
+
+        :param video_format: The video format
+        """
         self.current_preset.video_format = video_format
         self.current_preset.save()
 
-    def set_color(self, color_attribute):
+    def set_color(self, color_attribute: str) -> None:
+        """
+        Sets the color for the current preset
+
+        :param color_attribute: The color attribute to set
+        """
         color = getattr(self.current_preset, color_attribute)
         color_picker = QColorDialog()
         color_picker.setOption(QColorDialog.ColorDialogOption.ShowAlphaChannel)
@@ -351,39 +384,83 @@ class PresetsWidget(QWidget):
             setattr(self.current_preset, color_attribute, new_color_tuple)
             self.current_preset.save()
 
-    def set_box_color(self):
+    def set_box_color(self) -> None:
+        """
+        Sets the box color for the current preset
+        """
         self.set_color('box_color')
 
-    def set_segment_color(self):
+    def set_segment_color(self) -> None:
+        """
+        Sets the segment color for the current preset
+        """
         self.set_color('segment_color')
 
-    def set_text_color(self):
+    def set_text_color(self) -> None:
+        """
+        Sets the text color for the current preset
+        """
         self.set_color('text_color')
 
-    def set_box_color_by_class(self, value):
+    def set_box_color_by_class(self, value: bool) -> None:
+        """
+        Sets the box color by class flag for the current preset
+
+        :param value: The box color by class flag
+        """
         self.current_preset.box_color_per_class = value
         self.current_preset.save()
 
-    def set_segment_color_by_class(self, value):
+    def set_segment_color_by_class(self, value: bool) -> None:
+        """
+        Sets the segment color by class flag for the current preset
+
+        :param value: The segment color by class flag
+        """
         self.current_preset.segment_color_per_class = value
         self.current_preset.save()
 
-    def set_box_thickness(self, value):
+    def set_box_thickness(self, value: int) -> None:
+        """
+        Sets the box thickness for the current preset
+
+        :param value: The box thickness value
+        """
         self.current_preset.box_thickness = value
         self.current_preset.save()
 
-    def set_segment_thickness(self, value):
+    def set_segment_thickness(self, value: int) -> None:
+        """
+        Sets the segment thickness for the current preset
+
+        :param value: The segment thickness value
+        """
         self.current_preset.segment_thickness = value
         self.current_preset.save()
 
-    def set_text_size(self, value):
+    def set_text_size(self, value: int) -> None:
+        """
+        Sets the text size for the current preset
+
+        :param value: The text size value
+        """
         self.current_preset.text_size = value / 10.0
         self.current_preset.save()
 
-    def set_pose_point_size(self, value):
+    def set_pose_point_size(self, value: int) -> None:
+        """
+        Sets the pose point size for the current preset
+
+        :param value: The pose point size value
+        """
         self.current_preset.pose_point_size = value
         self.current_preset.save()
 
-    def set_pose_line_thickness(self, value):
+    def set_pose_line_thickness(self, value: int) -> None:
+        """
+        Sets the pose line thickness for the current preset
+
+        :param value: The pose line thickness value
+        """
         self.current_preset.pose_line_thickness = value
         self.current_preset.save()

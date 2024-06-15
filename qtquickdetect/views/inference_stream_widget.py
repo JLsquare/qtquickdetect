@@ -14,9 +14,15 @@ from ..views.preset_selection_widget import PresetSelectionWidget
 
 
 class InferenceStreamWidget(QWidget):
+    """
+    InferenceStreamWidget is a QWidget that allows the user to run the pipeline on a stream.
+    """
     def __init__(self):
+        """
+        Initializes the InferenceStreamWidget.
+        """
         super().__init__()
-        self.app_state = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
         self.pipeline_manager: Optional[PipelineManager] = None
 
         # PyQT6 Components
@@ -47,12 +53,20 @@ class InferenceStreamWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         self._main_layout = QVBoxLayout()
         self._main_layout.addWidget(self.inference_ui())
         self.setLayout(self._main_layout)
 
     def inference_ui(self) -> QWidget:
+        """
+        Initializes the inference user interface components.
+
+        :return: QWidget containing the inference user interface components.
+        """
         self._inference_layout = QVBoxLayout()
         self._h_inference_layout = QHBoxLayout()
         self._h_inference_layout.addStretch()
@@ -71,7 +85,9 @@ class InferenceStreamWidget(QWidget):
 
     def url_ui(self) -> QWidget:
         """
-        URL UI
+        Initializes the URL user interface components.
+
+        :return: QWidget containing the URL user interface components.
         """
         self._url_icon_layout = QHBoxLayout()
         self._url_icon_layout.addStretch()
@@ -100,7 +116,9 @@ class InferenceStreamWidget(QWidget):
 
     def preset_ui(self) -> PresetSelectionWidget:
         """
-        Preset UI
+        Initializes the preset user interface components.
+
+        :return: PresetSelectionWidget containing the preset user interface components.
         """
         self._preset = PresetSelectionWidget()
         self._preset.preset_changed_signal.connect(self.check_run)
@@ -108,7 +126,10 @@ class InferenceStreamWidget(QWidget):
 
     def task_ui(self) -> TaskSelectionWidget:
         """
-        Task UI, contains only for now a radio button to select the task. (Detection, Segmentation, Classification, Pose, Tracking)
+        Task UI, contains only for now a radio button to select the task.
+        (Detection, Segmentation, Classification, Pose)
+
+        :return: TaskSelectionWidget containing the task user interface components.
         """
         self._task = TaskSelectionWidget()
         self._task.task_changed_signal.connect(self.update_models_task)
@@ -116,13 +137,20 @@ class InferenceStreamWidget(QWidget):
 
     def models_ui(self) -> ModelsSelectionWidget:
         """
-        Models UI
+        Initializes the models user interface components.
+
+        :return: ModelsSelectionWidget containing the models user interface components.
         """
         self._models = ModelsSelectionWidget()
         self._models.models_changed_signal.connect(self.check_run)
         return self._models
 
     def run_ui(self) -> QWidget:
+        """
+        Initializes the run user interface components.
+
+        :return: QWidget containing the run user interface components.
+        """
         # Run icon
         self._run_icon_layout = QHBoxLayout()
         self._run_icon_layout.addStretch()
@@ -162,24 +190,37 @@ class InferenceStreamWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def update_models_task(self):
+    def update_models_task(self) -> None:
+        """
+        Updates the models task.
+        """
         self._models.set_task(self._task.task)
         self.check_run()
 
-    def check_run(self):
+    def check_run(self) -> None:
+        """
+        Checks if the run button should be enabled.
+        """
         if self._url.text() and self._preset.preset and self._task.task and len(self._models.weights) == 1:
             self._btn_run.setEnabled(True)
         else:
             self._btn_run.setEnabled(False)
 
-    def run(self):
+    def run(self) -> None:
+        """
+        Runs the pipeline.
+        """
         preset = Preset(self._preset.preset)
-        self._stream_widget = StreamWidget(self._url.text(), self._task.task, preset, self._models.weights, self.return_to_main_view)
+        self._stream_widget = StreamWidget(self._url.text(), self._task.task, preset, self._models.weights,
+                                           self.return_to_main_view)
         self._inference_widget.hide()
         self._main_layout.removeWidget(self._inference_widget)
         self._main_layout.addWidget(self._stream_widget)
 
-    def return_to_main_view(self):
+    def return_to_main_view(self) -> None:
+        """
+        Returns to the main view.
+        """
         self._stream_widget.hide()
         self._main_layout.removeWidget(self._stream_widget)
         self._inference_widget.show()

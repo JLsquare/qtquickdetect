@@ -1,4 +1,3 @@
-import os
 import json
 import cv2 as cv
 
@@ -12,9 +11,17 @@ from ..views.video_player_widget import VideoPlayerWidget
 
 
 class VideoResultWidget(QWidget):
+    """
+    VideoResultWidget is a QWidget that displays the results of a video inference.
+    """
     return_signal = pyqtSignal()
 
     def __init__(self, result_path: Path):
+        """
+        Initializes the VideoResultWidget.
+
+        :param result_path: The path to the result folder.
+        """
         super().__init__()
 
         # PyQT6 Components
@@ -36,10 +43,10 @@ class VideoResultWidget(QWidget):
         self._save_video_button: Optional[QPushButton] = None
         self._save_frame_button: Optional[QPushButton] = None
 
-        self._result_path = result_path
-        self._input_videos = []
-        self._result_videos = {}
-        self._result_jsons = {}
+        self._result_path: Path = result_path
+        self._input_videos: list[Path] = []
+        self._result_videos: dict[Path, list[Path]] = {}
+        self._result_jsons: dict[Path, list[Path]] = {}
 
         self.init_ui()
 
@@ -47,11 +54,14 @@ class VideoResultWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         # Middle layout
         self._middle_layout = QSplitter(Qt.Orientation.Horizontal)
         self._middle_layout.addWidget(self.left_ui())
-        self._middle_layout.addWidget(self.video_ui(''))
+        self._middle_layout.addWidget(self.video_ui(Path()))
         self._middle_layout.setSizes([self.width() // 2, self.width() // 2])
 
         # Bottom layout
@@ -70,6 +80,11 @@ class VideoResultWidget(QWidget):
         self.setLayout(self._main_layout)
 
     def left_ui(self) -> QWidget:
+        """
+        Initializes the left user interface components.
+
+        :return: The left widget.
+        """
         self._file_select_label = QLabel(self.tr('Select file:'))
         self._file_select_combo = QComboBox()
         self._file_select_combo.currentIndexChanged.connect(self.change_current_file)
@@ -90,6 +105,12 @@ class VideoResultWidget(QWidget):
         return self._left_widget
 
     def video_ui(self, video_path: Path) -> QWidget:
+        """
+        Initializes the video user interface components.
+
+        :param video_path: The path to the video file.
+        :return: The video container.
+        """
         self._video_player = VideoPlayerWidget(video_path)
 
         self._video_layout = QVBoxLayout()
@@ -102,26 +123,51 @@ class VideoResultWidget(QWidget):
         return self._video_container
 
     def return_button_ui(self) -> QPushButton:
+        """
+        Initializes the return button user interface components.
+
+        :return: The return button.
+        """
         self._return_button = QPushButton(self.tr('Return'))
         self._return_button.clicked.connect(self.return_signal.emit)
         return self._return_button
 
     def open_result_folder_button_ui(self) -> QPushButton:
+        """
+        Initializes the open result folder button user interface components.
+
+        :return: The open result folder button.
+        """
         self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
         self._open_result_folder_button.clicked.connect(self.open_result_folder)
         return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
+        """
+        Initializes the save JSON button user interface components.
+
+        :return: The save JSON button.
+        """
         self._save_json_button = QPushButton(self.tr('Save JSON'))
         self._save_json_button.clicked.connect(self.save_json)
         return self._save_json_button
 
     def save_video_button_ui(self) -> QPushButton:
+        """
+        Initializes the save video button user interface components.
+
+        :return: The save video button.
+        """
         self._save_video_button = QPushButton(self.tr('Save Video'))
         self._save_video_button.clicked.connect(self.save_video)
         return self._save_video_button
 
     def save_frame_button_ui(self) -> QPushButton:
+        """
+        Initializes the save frame button user interface components.
+
+        :return: The save frame button.
+        """
         self._save_frame_button = QPushButton(self.tr('Save Frame'))
         self._save_frame_button.clicked.connect(self.save_frame)
         return self._save_frame_button
@@ -130,13 +176,19 @@ class VideoResultWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def open_result_folder(self):
+    def open_result_folder(self) -> None:
+        """
+        Opens the result folder in the file explorer.
+        """
         try:
             open_file_explorer(self._result_path)
         except Exception as e:
             QMessageBox.critical(self, self.tr('Error'), str(e))
 
-    def save_json(self):
+    def save_json(self) -> None:
+        """
+        Saves the selected JSON file.
+        """
         result_json = self._model_select_combo.currentData()
 
         if result_json is None:
@@ -153,7 +205,10 @@ class VideoResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the JSON.'))
 
-    def save_video(self):
+    def save_video(self) -> None:
+        """
+        Saves the selected video.
+        """
         input_video = self._input_videos[self._file_select_combo.currentIndex()]
         result_video = self._result_videos[input_video][self._model_select_combo.currentIndex() - 1]
 
@@ -174,7 +229,10 @@ class VideoResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the video.'))
 
-    def save_frame(self):
+    def save_frame(self) -> None:
+        """
+        Saves the selected frame.
+        """
         if self._video_player is None:
             QMessageBox.critical(self, self.tr('Error'), self.tr('No video selected.'))
             return
@@ -198,7 +256,10 @@ class VideoResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the frame.'))
 
-    def change_current_file(self):
+    def change_current_file(self) -> None:
+        """
+        Changes the current file.
+        """
         index = self._file_select_combo.currentIndex()
 
         # Update the video
@@ -213,7 +274,10 @@ class VideoResultWidget(QWidget):
                 data = json.load(f)
             self._model_select_combo.addItem(data['weight'], self._result_jsons[input_video][index])
 
-    def change_current_model(self):
+    def change_current_model(self) -> None:
+        """
+        Changes the current model.
+        """
         index = self._model_select_combo.currentIndex()
 
         if index < 0:
@@ -229,12 +293,24 @@ class VideoResultWidget(QWidget):
         result_video = self._result_videos[input_video][index - 1]
         self.change_current_video(result_video)
 
-    def change_current_video(self, video_path: Path):
+    def change_current_video(self, video_path: Path) -> None:
+        """
+        Changes the current video.
+
+        :param video_path: The path to the video file.
+        """
         # Update the video
         video_widget = self.video_ui(video_path)
         self._middle_layout.replaceWidget(1, video_widget)
 
-    def add_input_and_result(self, input_video: Path, result_video: Path, result_json: Path):
+    def add_input_and_result(self, input_video: Path, result_video: Path, result_json: Path) -> None:
+        """
+        Adds the input and result to the list of inputs and results.
+
+        :param input_video: The path to the input video.
+        :param result_video: The path to the result video.
+        :param result_json: The path to the result JSON.
+        """
         # Add the input if it's not already here
         if input_video not in self._input_videos:
             self._input_videos.append(input_video)

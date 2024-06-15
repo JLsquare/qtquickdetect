@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 from pathlib import Path
 from typing import Optional
@@ -12,10 +11,17 @@ from ..views.video_result_widget import VideoResultWidget
 
 
 class InferenceHistoryWidget(QWidget):
+    """
+    InferenceHistoryWidget is a QWidget that displays the history of the inference results.
+    The user can select a result to view the input and output of the inference.
+    """
     def __init__(self):
+        """
+        Initializes the InferenceHistoryWidget.
+        """
         super().__init__()
-        self._appstate = AppState.get_instance()
-        self._row_folder = []
+        self._appstate: AppState = AppState.get_instance()
+        self._row_folder: list[str] = []
 
         # PyQT6 Components
         self._main_layout: Optional[QVBoxLayout] = None
@@ -28,7 +34,10 @@ class InferenceHistoryWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         self._main_layout = QVBoxLayout(self)
         self._table = QTableWidget()
         self._table.setColumnCount(6)
@@ -45,7 +54,10 @@ class InferenceHistoryWidget(QWidget):
         self.setLayout(self._main_layout)
         self._table.itemDoubleClicked.connect(self.open_result)
 
-    def populate_table(self):
+    def populate_table(self) -> None:
+        """
+        Populate the table with the history of the inference results
+        """
         self._table.setRowCount(0)
         history = self.get_history()
         self._table.setRowCount(len(history))
@@ -70,7 +82,7 @@ class InferenceHistoryWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def open_last_inference(self):
+    def open_last_inference(self) -> None:
         """
         Open the last inference result
         """
@@ -107,7 +119,7 @@ class InferenceHistoryWidget(QWidget):
 
         return list(sorted_history)
 
-    def open_result(self, item: QTableWidgetItem):
+    def open_result(self, item: QTableWidgetItem) -> None:
         """
         Open the result of the inference
 
@@ -137,7 +149,7 @@ class InferenceHistoryWidget(QWidget):
         self._main_layout.addWidget(widget)
         self._current_widget = widget
 
-    def _process_image_results(self, widget: ImageResultWidget, result_path: str, collection_name: str):
+    def _process_image_results(self, widget: ImageResultWidget, result_path: Path, collection_name: str) -> None:
         """
         Process the image results
 
@@ -172,7 +184,7 @@ class InferenceHistoryWidget(QWidget):
                     else:
                         logging.warning(f'Expected JSON result file {result_json} does not exist')
 
-    def _process_video_results(self, widget: VideoResultWidget, result_path: str, collection_name: str):
+    def _process_video_results(self, widget: VideoResultWidget, result_path: Path, collection_name: str) -> None:
         """
         Process the video results
 
@@ -211,7 +223,7 @@ class InferenceHistoryWidget(QWidget):
                     else:
                         logging.warning(f'Expected JSON result file {result_json} does not exist')
 
-    def return_to_main_view(self):
+    def return_to_main_view(self) -> None:
         """
         Return to the main view
         """

@@ -8,19 +8,26 @@ from ..models.app_state import AppState
 
 
 class ModelsSelectionWidget(QWidget):
+    """
+    ModelsSelectionWidget is a QWidget that allows the user to select models and weights for the specified task.
+    """
     models_changed_signal = pyqtSignal()
 
     def __init__(self):
+        """
+        Initializes the ModelsSelectionWidget.
+        """
         super().__init__()
-        self.appstate = AppState.get_instance()
-        self.weights = {}
-        self.task = 'detect'
+        self.appstate: AppState = AppState.get_instance()
+        self.weights: dict[str, list[str]] = {}
+        self.task: str = 'detect'
 
         # PyQT6 Components
         self._model_icon_layout: Optional[QHBoxLayout] = None
         self._model_icon: Optional[QLabel] = None
         self._model_tree: Optional[QListWidget] = None
         self._model_layout: Optional[QVBoxLayout] = None
+        self._model_description: Optional[QLabel] = None
 
         self.init_ui()
 
@@ -28,7 +35,10 @@ class ModelsSelectionWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         # Model icon
         self._model_icon_layout = QHBoxLayout()
         self._model_icon_layout.addStretch()
@@ -48,22 +58,24 @@ class ModelsSelectionWidget(QWidget):
         self._model_tree.itemChanged.connect(self.check_model_selected)
 
         # Description
-        self._description = QLabel('Select the models weights')
-        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._description.setProperty('class', 'description')
+        self._model_description = QLabel('Select the models weights')
+        self._model_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._model_description.setProperty('class', 'description')
 
         # Model Layout
         self._model_layout = QVBoxLayout()
         self._model_layout.addLayout(self._model_icon_layout)
         self._model_layout.addWidget(self._model_tree)
-        self._model_layout.addWidget(self._description)
+        self._model_layout.addWidget(self._model_description)
 
         self.setLayout(self._model_layout)
         self.setFixedSize(240, 360)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
-    def populate_model_tree(self):
-        """Dynamically load models and weights from appstate.config"""
+    def populate_model_tree(self) -> None:
+        """
+        Dynamically load models and weights from appstate.config
+        """
         for model_key, model_info in self.appstate.app_config.models.items():
             if self.task != self.appstate.app_config.models[model_key]["task"]:
                 continue
@@ -87,7 +99,10 @@ class ModelsSelectionWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def check_model_selected(self):
+    def check_model_selected(self) -> None:
+        """
+        Checks if a model or weight is selected.
+        """
         selected_models = {}
         root = self._model_tree.invisibleRootItem()
         model_count = root.childCount()
@@ -110,9 +125,11 @@ class ModelsSelectionWidget(QWidget):
         self.weights = selected_models
         self.models_changed_signal.emit()
 
-    def set_task(self, task: str):
+    def set_task(self, task: str) -> None:
+        """
+        Sets the task for the models selection widget.
+        """
         self.task = task
         self._model_tree.clear()
         self.populate_model_tree()
         self.models_changed_signal.emit()
-

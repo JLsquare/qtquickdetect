@@ -7,12 +7,18 @@ from ..utils import filepaths
 
 
 class PresetSelectionWidget(QWidget):
+    """
+    PresetSelectionWidget is a QWidget that allows the user to select a preset from a list of presets.
+    """
     preset_changed_signal = pyqtSignal()
 
     def __init__(self):
+        """
+        Initializes the PresetSelectionWidget.
+        """
         super().__init__()
-        self.appstate = AppState.get_instance()
-        self.preset = ''
+        self.appstate: AppState = AppState.get_instance()
+        self.preset: str = ''
 
         # PyQT6 Components
         self._preset_icon_layout: Optional[QHBoxLayout] = None
@@ -22,6 +28,7 @@ class PresetSelectionWidget(QWidget):
         self._preset_radio_widget: Optional[QWidget] = None
         self._scroll_area: Optional[QScrollArea] = None
         self._preset_layout: Optional[QVBoxLayout] = None
+        self._preset_description: Optional[QLabel] = None
 
         self.init_ui()
 
@@ -29,7 +36,10 @@ class PresetSelectionWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         # Preset icon
         self._preset_icon_layout = QHBoxLayout()
         self._preset_icon_layout.addStretch()
@@ -61,15 +71,15 @@ class PresetSelectionWidget(QWidget):
         self._scroll_area.setWidget(self._preset_radio_widget)
         self._scroll_area.setProperty('class', 'border')
 
-        self._description = QLabel(self.tr('Select a preset'))
-        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._description.setProperty('class', 'description')
+        self._preset_description = QLabel(self.tr('Select a preset'))
+        self._preset_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._preset_description.setProperty('class', 'description')
 
         # Preset Layout
         self._preset_layout = QVBoxLayout()
         self._preset_layout.addLayout(self._preset_icon_layout)
         self._preset_layout.addWidget(self._scroll_area)
-        self._preset_layout.addWidget(self._description)
+        self._preset_layout.addWidget(self._preset_description)
 
         self.setLayout(self._preset_layout)
         self.setFixedSize(240, 360)
@@ -78,7 +88,10 @@ class PresetSelectionWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def _check_preset_selected(self):
+    def _check_preset_selected(self) -> None:
+        """
+        Checks if a preset is selected and emits the preset changed signal.
+        """
         for radio_button in self._preset_radio_buttons:
             if radio_button.isChecked():
                 self.preset = radio_button.objectName()

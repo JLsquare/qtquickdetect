@@ -8,11 +8,17 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QRadioButton, QLa
 
 
 class TaskSelectionWidget(QWidget):
+    """
+    TaskSelectionWidget is a QWidget that allows the user to select a task from a list of tasks.
+    """
     task_changed_signal = pyqtSignal()
 
     def __init__(self):
+        """
+        Initializes the TaskSelectionWidget.
+        """
         super().__init__()
-        self.task = 'detect'
+        self.task: str = 'detect'
 
         # PyQT6 Components
         self._task_icon_layout: Optional[QHBoxLayout] = None
@@ -24,6 +30,7 @@ class TaskSelectionWidget(QWidget):
         self._task_radio_posing: Optional[QRadioButton] = None
         self._task_radio_widget: Optional[QWidget] = None
         self._task_layout: Optional[QVBoxLayout] = None
+        self._task_description: Optional[QLabel] = None
 
         self.init_ui()
 
@@ -31,7 +38,10 @@ class TaskSelectionWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
         # Task icon
         self._task_icon_layout = QHBoxLayout()
         self._task_icon_layout.addStretch()
@@ -81,16 +91,16 @@ class TaskSelectionWidget(QWidget):
         self._task_radio_widget.setProperty('class', 'border')
 
         # Description
-        self._description = QLabel(self.tr('Select a task, <a href="https://docs.ultralytics.com/tasks/">more</a>'))
-        self._description.setOpenExternalLinks(True)
-        self._description.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._description.setProperty('class', 'description')
+        self._task_description = QLabel(self.tr('Select a task, <a href="https://docs.ultralytics.com/tasks/">more</a>'))
+        self._task_description.setOpenExternalLinks(True)
+        self._task_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._task_description.setProperty('class', 'description')
 
         # Task Layout
         self._task_layout = QVBoxLayout()
         self._task_layout.addLayout(self._task_icon_layout)
         self._task_layout.addWidget(self._task_radio_widget)
-        self._task_layout.addWidget(self._description)
+        self._task_layout.addWidget(self._task_description)
 
         self.setLayout(self._task_layout)
         self.setFixedSize(240, 360)
@@ -99,7 +109,10 @@ class TaskSelectionWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def _check_task_selected(self):
+    def _check_task_selected(self) -> None:
+        """
+        Checks the selected task.
+        """
         if self._task_radio_detection.isChecked():
             self.task = 'detect'
         elif self._task_radio_segmentation.isChecked():

@@ -9,21 +9,32 @@ from PyQt6.QtGui import QPixmap, QImage, QPainter
 from PyQt6.QtCore import Qt, QFile, pyqtSignal
 from ..models.preset import Preset
 from ..utils.file_explorer import open_file_explorer
-from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, generate_color, \
-    draw_classification_label, draw_keypoints
+from ..utils.image_helpers import draw_bounding_box, draw_segmentation_mask_from_points, draw_classification_label, \
+                                   draw_keypoints
 from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
 class ImageResultWidget(QWidget):
+    """
+    ImageResultWidget is a QWidget that displays the results of a model on an image.
+    This widget allows the user to select an image and a model from a list of images and models.
+    The user can then select which layers to display on top of the image.
+    """
     return_signal = pyqtSignal()
 
     def __init__(self, preset: Preset, result_path: Path):
+        """
+        Initializes the ImageResultWidget.
+
+        :param preset: The preset to use for drawing the layers.
+        :param result_path: The path to the result folder.
+        """
         super().__init__()
-        self._preset = preset
-        self._result_path = result_path
-        self._input_images = []
-        self._result_jsons = {}
-        self._layer_visibility = {}
+        self._preset: Preset = preset
+        self._result_path: Path = result_path
+        self._input_images: list[Path] = []
+        self._result_jsons: dict[Path, list[Path]] = {}
+        self._layer_visibility: dict[str, dict] = {}
 
         # PyQT6 Components
         self._middle_layout: Optional[QSplitter] = None
@@ -52,8 +63,10 @@ class ImageResultWidget(QWidget):
     #            VIEW            #
     ##############################
 
-    def init_ui(self):
-        # Initialize user interface layout and widgets
+    def init_ui(self) -> None:
+        """
+        Initializes the user interface components.
+        """
 
         # Middle layout
         self._middle_layout = QSplitter(Qt.Orientation.Horizontal)
@@ -76,7 +89,11 @@ class ImageResultWidget(QWidget):
         self.setLayout(self._main_layout)
 
     def left_ui(self) -> QWidget:
-        # UI elements for file selection and layer visibility
+        """
+        Creates and returns the left side of the widget.
+
+        :return: QWidget for the left side of the widget.
+        """
 
         self._file_select_label = QLabel(self.tr('Select file:'))
         self._file_select_combo = QComboBox()
@@ -105,7 +122,12 @@ class ImageResultWidget(QWidget):
         return self._left_widget
 
     def image_ui(self, input_image: Path) -> QWidget:
-        # Create UI for displaying input images
+        """
+        Creates and returns the image display widget.
+
+        :param input_image: The path to the input image.
+        :return: QWidget for the image display.
+        """
         self._container_widget = QWidget(self)
         self._container_layout = QVBoxLayout(self._container_widget)
 
@@ -125,21 +147,41 @@ class ImageResultWidget(QWidget):
         return self._container_widget
 
     def return_button_ui(self) -> QPushButton:
+        """
+        Creates and returns the return button.
+
+        :return: QPushButton for returning to the previous view.
+        """
         self._return_button = QPushButton(self.tr('Return'))
         self._return_button.clicked.connect(self.return_signal.emit)
         return self._return_button
 
     def open_result_folder_button_ui(self) -> QPushButton:
+        """
+        Creates and returns the open result folder button.
+
+        :return: QPushButton for opening the result folder.
+        """
         self._open_result_folder_button = QPushButton(self.tr('Open Result Folder'))
         self._open_result_folder_button.clicked.connect(self.open_result_folder)
         return self._open_result_folder_button
 
     def save_json_button_ui(self) -> QPushButton:
+        """
+        Creates and returns the save JSON button.
+
+        :return: QPushButton for saving the JSON.
+        """
         self._save_json_button = QPushButton(self.tr('Save JSON'))
         self._save_json_button.clicked.connect(self.save_json)
         return self._save_json_button
 
     def save_image_button_ui(self) -> QPushButton:
+        """
+        Creates and returns the save image button.
+
+        :return: QPushButton for saving the image.
+        """
         self._save_image_button = QPushButton(self.tr('Save Image'))
         self._save_image_button.clicked.connect(self.save_image)
         return self._save_image_button
@@ -148,13 +190,19 @@ class ImageResultWidget(QWidget):
     #         CONTROLLER         #
     ##############################
 
-    def open_result_folder(self):
+    def open_result_folder(self) -> None:
+        """
+        Opens the folder containing the results in the file explorer.
+        """
         try:
             open_file_explorer(self._result_path)
         except Exception as e:
             QMessageBox.critical(self, self.tr('Error'), str(e))
 
-    def save_image(self):
+    def save_image(self) -> None:
+        """
+        Saves the image with the selected layers to a file.
+        """
         input_image = self._file_select_combo.currentData()
         result_json = self._model_select_combo.currentData()
 
@@ -190,7 +238,10 @@ class ImageResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the image.'))
 
-    def save_json(self):
+    def save_json(self) -> None:
+        """
+        Saves the JSON with the selected model to a file.
+        """
         result_json = self._model_select_combo.currentData()
 
         if result_json is None:
@@ -207,7 +258,10 @@ class ImageResultWidget(QWidget):
             else:
                 QMessageBox.critical(self, self.tr('Error'), self.tr('An error occurred while saving the JSON.'))
 
-    def change_current_file(self):
+    def change_current_file(self) -> None:
+        """
+        Changes the current file and updates the image and model selection.
+        """
         index = self._file_select_combo.currentIndex()
 
         # Update the image
@@ -223,7 +277,10 @@ class ImageResultWidget(QWidget):
                 data = json.load(file)
             self._model_select_combo.addItem(data['weight'], result_json)
 
-    def change_current_model(self):
+    def change_current_model(self) -> None:
+        """
+        Changes the current model and updates the layers.
+        """
         index = self._model_select_combo.currentIndex()
 
         # Reset everything and re-add the input image
@@ -287,7 +344,13 @@ class ImageResultWidget(QWidget):
                 'initial_pixmap': layer_pixmap
             }
 
-    def add_input_and_result(self, input_image: Path, result_json: Path):
+    def add_input_and_result(self, input_image: Path, result_json: Path) -> None:
+        """
+        Adds an input image and its result to the widget.
+
+        :param input_image: The path to the input image.
+        :param result_json: The path to the result JSON.
+        """
         # Add the input if it's not already there
         if input_image not in self._input_images:
             self._input_images.append(input_image)
@@ -301,7 +364,12 @@ class ImageResultWidget(QWidget):
         if self._file_select_combo.currentIndex() == self._file_select_combo.count() - 1:
             self.change_current_file()
 
-    def toggle_layer(self, item: QListWidgetItem):
+    def toggle_layer(self, item: QListWidgetItem) -> None:
+        """
+        Toggles the visibility of a layer.
+
+        :param item: The item that was toggled.
+        """
         # Toggle the visibility of the layer
         layer_info = self._layer_visibility.get(item.text())
         if layer_info:

@@ -11,6 +11,10 @@ from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
 class CollectionsWidget(QWidget):
+    """
+    CollectionsWidget is a QWidget that displays a list of collections and their files
+    for a specified media type.
+    """
     def __init__(self, media_type: str):
         """
         Initializes the CollectionsWidget
@@ -217,7 +221,8 @@ class CollectionsWidget(QWidget):
             return
         collection = self._collection_list.currentItem().data(0)
         new_name = self._collection_name_field.text()
-        if new_name != collection and len(new_name) > 0 and new_name not in self.app_state.collections.get_collections(self.media_type):
+        collections = self.app_state.collections.get_collections(self.media_type)
+        if new_name != collection and len(new_name) > 0 and new_name not in collections:
             self.app_state.collections.change_collection_name(collection, new_name, self.media_type)
             self._collection_list.currentItem().setText(new_name)
             self._collection_list.currentItem().setData(0, new_name)
@@ -234,7 +239,7 @@ class CollectionsWidget(QWidget):
             file_paths = [Path(file) for file in dialog.selectedFiles() if file != '']
             self.process_files(file_paths)
 
-    def add_folder(self):
+    def add_folder(self) -> None:
         """
         Opens a file dialog to add a folder to the collection
         """
@@ -247,7 +252,7 @@ class CollectionsWidget(QWidget):
             file_paths = [file for file in Path(folder_path).rglob('*') if file.suffix in file_extensions]
             self.process_files(file_paths)
 
-    def process_files(self, file_paths: list[Path]):
+    def process_files(self, file_paths: list[Path]) -> None:
         """
         Adds the files to the collection
 
@@ -263,7 +268,7 @@ class CollectionsWidget(QWidget):
             list_item.setData(1, new_file_path)
             self._collection_file_list.addItem(list_item)
 
-    def delete_files(self):
+    def delete_files(self) -> None:
         """
         Deletes the selected files from the collection
         """
@@ -273,7 +278,7 @@ class CollectionsWidget(QWidget):
             self._collection_file_list.takeItem(self._collection_file_list.row(item))
         self._file_preview_scene.clear()
 
-    def delete_collection(self):
+    def delete_collection(self) -> None:
         """
         Deletes the selected collection
         """
