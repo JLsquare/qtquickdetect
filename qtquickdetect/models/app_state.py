@@ -79,8 +79,7 @@ class AppState:
         """
         if self.app_config.localization == 'fr':
             self._translator = QTranslator()
-
-            if self._translator.load('qtbase_fr.qm', filepaths.get_app_dir() / 'resources' / 'locale'):
+            if self._translator.load('fr.qm', str(filepaths.get_app_dir() / 'resources' / 'locales')):
                 logging.info('Loaded translator')
                 self.app.installTranslator(self._translator)
             else:
