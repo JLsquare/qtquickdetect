@@ -3,7 +3,16 @@ from .preset import Preset
 
 
 class Presets:
+    """
+    Presets is responsible for managing configuration presets for the application.
+    It provides methods to create, retrieve, rename, and delete presets.
+    """
+
     def __init__(self):
+        """
+        Initializes the Presets instance by ensuring the necessary directory
+        structure exists for storing presets and creating a default preset if it doesn't exist.
+        """
         presets_dir = filepaths.get_base_data_dir() / 'presets'
         presets_dir.mkdir(exist_ok=True)
         default_preset = presets_dir / 'default.json'
@@ -23,7 +32,7 @@ class Presets:
     @staticmethod
     def get_preset(preset_name: str) -> Preset:
         """
-        Get the path of the preset.
+        Get the specified preset.
 
         :param preset_name: Name of the preset.
         :return: Preset instance.
@@ -36,6 +45,7 @@ class Presets:
         Create a new preset.
 
         :param preset_name: Name of the preset.
+        :raises FileExistsError: If the preset already exists.
         """
         preset_path = filepaths.get_base_data_dir() / 'presets' / preset_name
         if preset_path.exists():

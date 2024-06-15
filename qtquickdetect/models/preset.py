@@ -1,64 +1,77 @@
 import logging
 import json
 import re
-
+from pathlib import Path
 from ..utils import filepaths
 
+# Regular expression to validate device strings
 DEVICE_VALIDATION_REGEX = re.compile(r'^(cpu|cuda)(:\d+)?$')
 
 
 class Preset:
+    """
+    Preset is responsible for managing configuration presets for the application.
+    It handles reading from and writing to a JSON config file, ensuring the config values
+    are valid, and providing default values if needed.
+    """
+
     def __init__(self, preset_name: str):
-        self.device = 'cpu'
-        self.half_precision = False
-        self.iou_threshold = 0.7
+        """
+        Initializes the Preset instance, setting default values and loading
+        configuration from the config file if it exists. Creates a config file
+        with default values if it doesn't exist.
 
-        self.image_format = 'png'
-        self.video_format = 'mp4'
+        :param preset_name: The name of the preset.
+        """
+        self.device: str = 'cpu'
+        self.half_precision: bool = False
+        self.iou_threshold: float = 0.7
 
-        self.box_color = (0, 255, 0, 255)
-        self.box_color_per_class = False
-        self.box_thickness = 2
+        self.image_format: str = 'png'
+        self.video_format: str = 'mp4'
 
-        self.segment_color = (0, 255, 0, 255)
-        self.segment_color_per_class = False
-        self.segment_thickness = 2
+        self.box_color: tuple = (0, 255, 0, 255)
+        self.box_color_per_class: bool = False
+        self.box_thickness: int = 2
 
-        self.pose_head_color = (0, 255, 0, 255)
-        self.pose_chest_color = (0, 255, 0, 255)
-        self.pose_leg_color = (0, 255, 0, 255)
-        self.pose_arm_color = (0, 255, 0, 255)
-        self.pose_point_size = 3
-        self.pose_line_thickness = 2
+        self.segment_color: tuple = (0, 255, 0, 255)
+        self.segment_color_per_class: bool = False
+        self.segment_thickness: int = 2
 
-        self.text_color = (0, 0, 0, 255)
-        self.text_size = 1.5
+        self.pose_head_color: tuple = (0, 255, 0, 255)
+        self.pose_chest_color: tuple = (0, 255, 0, 255)
+        self.pose_leg_color: tuple = (0, 255, 0, 255)
+        self.pose_arm_color: tuple = (0, 255, 0, 255)
+        self.pose_point_size: int = 3
+        self.pose_line_thickness: int = 2
 
-        self.path = filepaths.get_base_data_dir() / 'presets' / preset_name
+        self.text_color: tuple = (0, 0, 0, 255)
+        self.text_size: float = 1.5
+
+        self.path: Path = filepaths.get_base_data_dir() / 'presets' / preset_name
 
         if self.path.exists():
             self._read_config()
         else:
             self.save()
 
-    def _read_config(self):
+    def _read_config(self) -> None:
         """
-        Attempts to read the config file
-        Resets any invalid values to default
+        Attempts to read the config file and sets instance variables.
+        Resets any invalid values to default if necessary.
         """
         save = False
 
         with open(self.path, 'r') as f:
             config = json.load(f)
-            
+
             for key in self.__dict__:
                 if key in config:
                     try:
-                        tmp = config[key]
-                        self.__dict__[key] = tmp
-                    except:
+                        self.__dict__[key] = config[key]
+                    except Exception as e:
                         save = True
-                        logging.warning(f'Could not read config key {key}')
+                        logging.warning(f'Could not read config key {key}: {e}')
 
         if self._revert_invalid():
             save = True
@@ -68,8 +81,9 @@ class Preset:
 
     def _revert_invalid(self) -> bool:
         """
-        Reverts invalid values to default
-        :return: True if the config file was changed, False otherwise
+        Reverts invalid values to default values.
+
+        :return: True if any values were changed, False otherwise.
         """
         changed = False
 
@@ -105,10 +119,10 @@ class Preset:
 
         if not isinstance(self.box_color_per_class, bool):
             logging.warning(f'Invalid box color per class in config: {self.box_color_per_class}')
-            self.color_per_class = False
+            self.box_color_per_class = False
             changed = True
 
-        if not isinstance(self.box_thickness, int) and self.box_thickness < 0:
+        if not isinstance(self.box_thickness, int) or self.box_thickness < 0:
             logging.warning(f'Invalid box thickness in config: {self.box_thickness}')
             self.box_thickness = 2
             changed = True
@@ -123,7 +137,7 @@ class Preset:
             self.segment_color_per_class = False
             changed = True
 
-        if not isinstance(self.segment_thickness, int) and self.segment_thickness < 0:
+        if not isinstance(self.segment_thickness, int) or self.segment_thickness < 0:
             logging.warning(f'Invalid segment thickness in config: {self.segment_thickness}')
             self.segment_thickness = 2
             changed = True
@@ -148,12 +162,12 @@ class Preset:
             self.pose_arm_color = (0, 255, 0, 255)
             changed = True
 
-        if not isinstance(self.pose_point_size, int) and self.pose_point_size < 0:
+        if not isinstance(self.pose_point_size, int) or self.pose_point_size < 0:
             logging.warning(f'Invalid pose point size in config: {self.pose_point_size}')
             self.pose_point_size = 3
             changed = True
 
-        if not isinstance(self.pose_line_thickness, int) and self.pose_line_thickness < 0:
+        if not isinstance(self.pose_line_thickness, int) or self.pose_line_thickness < 0:
             logging.warning(f'Invalid pose line thickness in config: {self.pose_line_thickness}')
             self.pose_line_thickness = 2
             changed = True
@@ -163,7 +177,7 @@ class Preset:
             self.text_color = (0, 0, 0, 255)
             changed = True
 
-        if not isinstance(self.text_size, float) and self.text_size < 0:
+        if not isinstance(self.text_size, float) or self.text_size < 0:
             logging.warning(f'Invalid text size in config: {self.text_size}')
             self.text_size = 1.5
             changed = True
@@ -171,7 +185,13 @@ class Preset:
         return changed
 
     @staticmethod
-    def _check_color(color) -> bool:
+    def _check_color(color: tuple) -> bool:
+        """
+        Validates a color tuple to ensure it has four integer elements between 0 and 255.
+
+        :param color: The color tuple to check.
+        :return: True if the color is valid, False otherwise.
+        """
         if len(color) != 4:
             return False
 
@@ -181,13 +201,13 @@ class Preset:
 
         return True
 
-    def save(self):
+    def save(self) -> None:
         """
-        Writes the config file
+        Writes the current preset configuration to the config file.
         """
         self._revert_invalid()
 
         with open(self.path, 'w') as f:
             data = self.__dict__.copy()
-            del data['path']
+            del data['path']  # Remove path from data as it should not be saved in the config
             json.dump(data, f, indent=4)

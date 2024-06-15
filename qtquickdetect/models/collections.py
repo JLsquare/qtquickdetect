@@ -1,11 +1,19 @@
 import shutil
-
 from pathlib import Path
 from ..utils import filepaths
 
 
 class Collections:
+    """
+    Collections is responsible for managing media collections within the application's
+    data directory. It provides methods to create, retrieve, rename, and delete collections.
+    """
+
     def __init__(self):
+        """
+        Initializes the Collections instance by ensuring the necessary directory
+        structure exists for storing collections.
+        """
         (filepaths.get_base_data_dir() / 'collections').mkdir(exist_ok=True)
         (filepaths.get_base_data_dir() / 'collections' / 'image').mkdir(exist_ok=True)
         (filepaths.get_base_data_dir() / 'collections' / 'video').mkdir(exist_ok=True)
@@ -27,14 +35,17 @@ class Collections:
 
         :param collection_name: Name of the collection.
         :param media_type: Type of the collection (video or image).
+        :raises ValueError: If media_type is not 'video' or 'image'.
+        :raises FileExistsError: If the collection already exists.
         """
-
         if media_type not in ['video', 'image']:
             raise ValueError('Collection type must be either video or image!')
-        if (filepaths.get_base_data_dir() / 'collections' / media_type / collection_name).exists():
-            raise FileExistsError(f'Collection {collection_name} already exists!')
-        (filepaths.get_base_data_dir() / 'collections' / media_type / collection_name).mkdir(exist_ok=True)
 
+        collection_path = filepaths.get_base_data_dir() / 'collections' / media_type / collection_name
+        if collection_path.exists():
+            raise FileExistsError(f'Collection {collection_name} already exists!')
+
+        collection_path.mkdir(exist_ok=True)
 
     @staticmethod
     def get_collection_file_paths(collection_name: str, media_type: str) -> list[Path]:
@@ -45,7 +56,8 @@ class Collections:
         :param media_type: Type of the collection (video or image).
         :return: List of file paths.
         """
-        return list((filepaths.get_base_data_dir() / 'collections' / media_type / collection_name).iterdir())
+        collection_path = filepaths.get_base_data_dir() / 'collections' / media_type / collection_name
+        return list(collection_path.iterdir())
 
     @staticmethod
     def get_collection_path(collection_name: str, media_type: str) -> Path:
@@ -79,4 +91,5 @@ class Collections:
         :param collection_name: Name of the collection.
         :param media_type: Type of the collection (video or image).
         """
-        shutil.rmtree(filepaths.get_base_data_dir() / 'collections' / media_type / collection_name)
+        collection_path = filepaths.get_base_data_dir() / 'collections' / media_type / collection_name
+        shutil.rmtree(collection_path)

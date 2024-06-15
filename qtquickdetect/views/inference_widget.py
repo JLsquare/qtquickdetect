@@ -25,9 +25,12 @@ class InferenceWidget(QWidget):
         self.open_last_inference = open_last_inference
         self.app_state = AppState.get_instance()
         self.pipeline_manager: Optional[PipelineManager] = None
+        self.file_count = None
 
         # PyQT6 Components
         self._main_layout: Optional[QHBoxLayout] = None
+        self._h_layout: Optional[QHBoxLayout] = None
+        self._progress_bar: Optional[ProgressBarWidget] = None
         self._collection: Optional[CollectionSelectionWidget] = None
         self._preset: Optional[PresetSelectionWidget] = None
         self._task: Optional[TaskSelectionWidget] = None
@@ -197,7 +200,7 @@ class InferenceWidget(QWidget):
         with open(result_path / 'info.json', 'w') as f:
             json.dump(info, f, indent=4)
 
-        def callback_ok(input_path: Path, output_path: Path, output_json_path: Path) -> None:
+        def callback_ok(input_path: Path, _: Path, output_json_path: Path) -> None:
             logging.info('Detection done for ' + input_path.name + ', output in ' + output_json_path.name)
             self.file_count += 1
             self._progress_bar.update_progress_bar(self.file_count, total_files, 0, input_path.name)
