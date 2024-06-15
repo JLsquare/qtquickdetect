@@ -1,4 +1,3 @@
-import logging
 import time
 import cv2 as cv
 import numpy as np
@@ -29,7 +28,6 @@ class MediaFetcher:
             frames_to_skip = int(elapsed_time / frame_interval)
             for _ in range(frames_to_skip):
                 self.cap.read()
-            logging.debug(f"Skipped {frames_to_skip} frames")
 
         # Fetch the frame
         frame_available, frame = self.cap.read()

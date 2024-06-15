@@ -168,7 +168,7 @@ class InferenceHistoryWidget(QWidget):
                 if image_stem in dir_images:
                     result_json = weight_dir / f'{image_stem}.json'
                     if result_json.exists():
-                        widget.add_input_and_result(image, str(result_json))
+                        widget.add_input_and_result(image, result_json)
                     else:
                         logging.warning(f'Expected JSON result file {result_json} does not exist')
 
@@ -207,7 +207,7 @@ class InferenceHistoryWidget(QWidget):
                 if result_video:
                     result_json = weight_dir / f'{video_stem}.json'
                     if result_json.exists():
-                        widget.add_input_and_result(video, str(result_video), str(result_json))
+                        widget.add_input_and_result(video, result_video, result_json)
                     else:
                         logging.warning(f'Expected JSON result file {result_json} does not exist')
 

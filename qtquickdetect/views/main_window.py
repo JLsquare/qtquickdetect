@@ -6,6 +6,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QListWidget, \
     QStackedWidget, QListWidgetItem, QSizePolicy
 
+from .inference_stream_widget import InferenceStreamWidget
 from ..utils import filepaths
 from ..models.app_state import AppState
 from ..views.about_widget import AboutWidget
@@ -73,7 +74,7 @@ class MainWindow(QWidget):
         self._side_menu.addItem('Video Inference')
         self._content_stack.addWidget(InferenceWidget('video', self.open_last_inference))
         self._side_menu.addItem('Stream Inference')
-        self._content_stack.addWidget(QWidget())
+        self._content_stack.addWidget(InferenceStreamWidget())
         self._side_menu.addItem('Inference History')
         self._content_stack.addWidget(InferenceHistoryWidget())
         self._side_menu.addItem('Training')

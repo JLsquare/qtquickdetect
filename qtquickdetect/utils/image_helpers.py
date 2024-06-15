@@ -86,6 +86,7 @@ def draw_classification_label(img, class_name: str, confidence: float, text_colo
 def draw_keypoints(img, keypoints: list[tuple[int, int]], preset: Preset) -> None:
     """
     Draws keypoints on an image.
+    https://pytorch.org/vision/stable/auto_examples/others/plot_visualization_utils.html#keypoint-output
 
     :param img: The input image (numpy array).
     :param keypoints: The list of keypoints.

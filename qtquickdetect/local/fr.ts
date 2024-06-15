@@ -281,27 +281,27 @@
   <context>
     <name>LiveResultWidget</name>
     <message>
-      <location filename="../views/live_result_widget.py" line="60" />
+      <location filename="../views/stream_widget.py" line="60" />
       <source>Live stats: </source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/live_result_widget.py" line="62" />
+      <location filename="../views/stream_widget.py" line="62" />
       <source>Fetcher FPS: 0</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/live_result_widget.py" line="63" />
+      <location filename="../views/stream_widget.py" line="63" />
       <source>Buffer Size: 0</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/live_result_widget.py" line="64" />
+      <location filename="../views/stream_widget.py" line="64" />
       <source>Buffer Max Size</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="../views/live_result_widget.py" line="65" />
+      <location filename="../views/stream_widget.py" line="65" />
       <source>Buffer Rate</source>
       <translation type="unfinished" />
     </message>
