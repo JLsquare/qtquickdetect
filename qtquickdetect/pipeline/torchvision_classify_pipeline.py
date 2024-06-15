@@ -12,7 +12,9 @@ CLASS_NAMES = models.DenseNet121_Weights.DEFAULT.meta['categories']
 
 
 class TorchVisionClassifyPipeline(Pipeline):
-    """Pipeline for classifying objects in images using TorchVision models with pre-trained weights."""
+    """
+    Pipeline for classifying objects in images using TorchVision models with pre-trained weights.
+    """
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):

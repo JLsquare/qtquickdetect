@@ -27,7 +27,9 @@ CLASS_NAMES = [
 
 
 class TorchVisionDetectPipeline(Pipeline):
-    """Pipeline for detecting objects in images and videos using TorchVision models with pre-trained weights."""
+    """
+    Pipeline for detecting objects in images and videos using TorchVision models with pre-trained weights.
+    """
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):

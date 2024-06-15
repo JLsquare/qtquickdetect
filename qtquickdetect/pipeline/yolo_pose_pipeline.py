@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 import torch
 
@@ -11,7 +9,9 @@ from ..utils.image_helpers import draw_keypoints
 
 
 class YoloPosePipeline(Pipeline):
-    """Pipeline for posing persons in images and videos using YoloV8."""
+    """
+    Pipeline for posing persons in images and videos using YoloV8.
+    """
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):

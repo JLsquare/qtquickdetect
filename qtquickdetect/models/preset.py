@@ -30,22 +30,22 @@ class Preset:
         self.image_format: str = 'png'
         self.video_format: str = 'mp4'
 
-        self.box_color: tuple = (0, 255, 0, 255)
+        self.box_color: tuple[int, int, int, int] = (0, 255, 0, 255)
         self.box_color_per_class: bool = False
         self.box_thickness: int = 2
 
-        self.segment_color: tuple = (0, 255, 0, 255)
+        self.segment_color: tuple[int, int, int, int] = (0, 255, 0, 255)
         self.segment_color_per_class: bool = False
         self.segment_thickness: int = 2
 
-        self.pose_head_color: tuple = (0, 255, 0, 255)
-        self.pose_chest_color: tuple = (0, 255, 0, 255)
-        self.pose_leg_color: tuple = (0, 255, 0, 255)
-        self.pose_arm_color: tuple = (0, 255, 0, 255)
+        self.pose_head_color: tuple[int, int, int, int] = (0, 255, 0, 255)
+        self.pose_chest_color: tuple[int, int, int, int] = (0, 255, 0, 255)
+        self.pose_leg_color: tuple[int, int, int, int] = (0, 255, 0, 255)
+        self.pose_arm_color: tuple[int, int, int, int] = (0, 255, 0, 255)
         self.pose_point_size: int = 3
         self.pose_line_thickness: int = 2
 
-        self.text_color: tuple = (0, 0, 0, 255)
+        self.text_color: tuple[int, int, int, int] = (0, 0, 0, 255)
         self.text_size: float = 1.5
 
         self.path: Path = filepaths.get_base_data_dir() / 'presets' / preset_name

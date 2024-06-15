@@ -9,7 +9,9 @@ from ..models.preset import Preset
 
 
 class PipelineManager(QObject):
-    """Pipeline Manager class to manage the pipeline execution."""
+    """
+    Pipeline Manager class to manage the pipeline execution.
+    """
     progress_signal = pyqtSignal(float)  # Progress percentage on the current file
     finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
@@ -35,7 +37,7 @@ class PipelineManager(QObject):
         if not self._check_models_tasks():
             raise ValueError('Invalid models or tasks')
 
-    def _check_models_tasks(self):
+    def _check_models_tasks(self) -> bool:
         """
         Checks if the models and tasks are valid.
 
@@ -46,12 +48,14 @@ class PipelineManager(QObject):
                 return False
         return True
 
-    def request_cancel(self):
-        """Public method to request cancellation of the process."""
+    def request_cancel(self) -> None:
+        """
+        Public method to request cancellation of the process.
+        """
         if self.current_pipeline:
             self.current_pipeline.request_cancel()
 
-    def run_image(self, images_paths: list[Path], results_path: Path):
+    def run_image(self, images_paths: list[Path], results_path: Path) -> None:
         """
         Runs the pipeline, one pipeline per weight.
 
@@ -65,7 +69,7 @@ class PipelineManager(QObject):
                 self._appstate.pipelines.append(self.current_pipeline)
                 self.current_pipeline.start()
 
-    def run_video(self, videos_paths: list[Path], results_path: Path):
+    def run_video(self, videos_paths: list[Path], results_path: Path) -> None:
         """
         Runs the pipeline, one pipeline per weight.
 
@@ -78,7 +82,7 @@ class PipelineManager(QObject):
                 self._appstate.pipelines.append(self.current_pipeline)
                 self.current_pipeline.start()
 
-    def run_stream(self, url: str):
+    def run_stream(self, url: str) -> None:
         """
         Runs the pipeline, only the first weight.
 
@@ -91,7 +95,7 @@ class PipelineManager(QObject):
         self.current_pipeline.start()
 
     def _setup_pipeline(self, model: str, weight: str, images_path: list[Path] | None, videos_path: list[Path] | None,
-                        stream_url: str | None, results_path: Path | None):
+                        stream_url: str | None, results_path: Path | None) -> None:
         """
         Sets up the pipeline for the given model and weight.
 

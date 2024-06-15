@@ -10,7 +10,9 @@ from ..utils.media_fetcher import MediaFetcher
 
 
 class Pipeline(QThread):
-    """Generic pipeline class for handling pipeline execution."""
+    """
+    Generic pipeline class for handling pipeline execution.
+    """
     progress_signal = pyqtSignal(float)  # Progress percentage on the current file
     finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
@@ -44,12 +46,16 @@ class Pipeline(QThread):
         if self.results_path:
             self.results_path.mkdir(parents=True, exist_ok=True)
 
-    def request_cancel(self):
-        """Requests cancellation of the ongoing process."""
+    def request_cancel(self) -> None:
+        """
+        Requests cancellation of the ongoing process.
+        """
         self.cancel_requested = True
 
-    def run(self):
-        """Runs the pipeline from another thread."""
+    def run(self) -> None:
+        """
+        Runs the pipeline from another thread.
+        """
         if self.mode == 'images':
             self._run_images(self.images_paths)
         elif self.mode == 'videos':
@@ -125,7 +131,7 @@ class Pipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(input_path, e)
 
-    def _run_stream(self, url: str):
+    def _run_stream(self, url: str) -> None:
         """
         Processes a video stream.
 
@@ -214,9 +220,9 @@ class Pipeline(QThread):
 
     def _make_results(self, results_array: list) -> dict:
         """
-        Creates the results dictionary.
+        Creates the result's dictionary.
 
         :param results_array: The list of results.
-        :return: The results dictionary.
+        :return: The result's dictionary.
         """
         raise NotImplementedError

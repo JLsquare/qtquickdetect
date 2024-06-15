@@ -10,7 +10,9 @@ from ..utils.image_helpers import draw_keypoints
 
 
 class TorchVisionPosePipeline(Pipeline):
-    """Pipeline for posing persons in images using TorchVision models with pre-trained weights."""
+    """
+    Pipeline for posing persons in images using TorchVision models with pre-trained weights.
+    """
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):

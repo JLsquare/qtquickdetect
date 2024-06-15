@@ -5,11 +5,13 @@ from pathlib import Path
 from ultralytics import YOLO
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
-from ..utils.image_helpers import draw_bounding_box, generate_color
+from ..utils.image_helpers import draw_bounding_box
 
 
 class YoloDetectPipeline(Pipeline):
-    """Pipeline for detecting objects in images and videos using YoloV8."""
+    """
+    Pipeline for detecting objects in images and videos using YoloV8.
+    """
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
