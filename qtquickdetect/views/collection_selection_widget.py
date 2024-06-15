@@ -78,7 +78,7 @@ class CollectionSelectionWidget(QWidget):
         self._scroll_area.setWidget(self._collection_radio_widget)
         self._scroll_area.setProperty('class', 'border')
 
-        self._collection_description = QLabel('Select a collection')
+        self._collection_description = QLabel(self.tr('Select a collection'))
         self._collection_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._collection_description.setProperty('class', 'description')
 

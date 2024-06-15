@@ -29,7 +29,7 @@ class ModelsWidget(QWidget):
         layout = QVBoxLayout(self)
         self._tree_widget = QTreeWidget()
         self._tree_widget.setColumnCount(2)
-        self._tree_widget.setHeaderLabels(['Model / Weights', 'Status / Info'])
+        self._tree_widget.setHeaderLabels([self.tr('Model / Weights'), self.tr('Status / Info')])
         self.populate_tree()
         layout.addWidget(self._tree_widget)
         self.setLayout(layout)
@@ -49,9 +49,9 @@ class ModelsWidget(QWidget):
                 child_item.setText(0, weight)
                 file_path = project_root / weight
                 if file_path.exists():
-                    child_item.setText(1, 'Downloaded')
+                    child_item.setText(1, self.tr('Downloaded'))
                 else:
-                    child_item.setText(1, 'Not downloaded')
+                    child_item.setText(1, self.tr('Not downloaded'))
 
     ##############################
     #         CONTROLLER         #

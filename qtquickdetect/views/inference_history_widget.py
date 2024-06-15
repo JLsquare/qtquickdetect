@@ -41,7 +41,8 @@ class InferenceHistoryWidget(QWidget):
         self._main_layout = QVBoxLayout(self)
         self._table = QTableWidget()
         self._table.setColumnCount(6)
-        self._table.setHorizontalHeaderLabels(['Media', 'Collection', 'Preset', 'Task', 'Date', 'Weights'])
+        self._table.setHorizontalHeaderLabels([self.tr('Media'), self.tr('Collection'), self.tr('Preset'),
+                                               self.tr('Task'), self.tr('Date'), self.tr('Weights')])
         self._table.horizontalHeader().setStretchLastSection(True)
         self._table.verticalHeader().setVisible(False)
         self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)

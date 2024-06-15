@@ -67,19 +67,19 @@ class PresetsWidget(QWidget):
         # Preset name configuration
         self._preset_name_field = QLineEdit()
         self._preset_name_field.textChanged.connect(self.rename_preset)
-        self._preset_layout.addWidget(QLabel("Preset Name:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Preset Name:')))
         self._preset_layout.addWidget(self._preset_name_field)
 
         # Device selection
         self._device_combo = QComboBox()
-        self._device_combo.addItem("CPU")
+        self._device_combo.addItem('CPU')
         self._device_combo.addItems(self.get_gpu_devices())
         self._device_combo.currentTextChanged.connect(self.set_device)
-        self._preset_layout.addWidget(QLabel("Device:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Device:')))
         self._preset_layout.addWidget(self._device_combo)
 
         # Half precision toggle
-        self._half_precision_checkbox = QCheckBox("Enable Half Precision (FP16)")
+        self._half_precision_checkbox = QCheckBox(self.tr('Enable Half Precision (FP16)'))
         self._half_precision_checkbox.toggled.connect(self.set_half_precision)
         self._preset_layout.addWidget(QLabel("Half Precision:"))
         self._preset_layout.addWidget(self._half_precision_checkbox)
@@ -88,47 +88,47 @@ class PresetsWidget(QWidget):
         self._iou_slider = QSlider(Qt.Orientation.Horizontal)
         self._iou_slider.setRange(0, 100)
         self._iou_slider.valueChanged.connect(self.set_iou_threshold)
-        self._preset_layout.addWidget(QLabel("IOU Threshold:"))
+        self._preset_layout.addWidget(QLabel(self.tr('IOU Threshold:')))
         self._preset_layout.addWidget(self._iou_slider)
 
         # Image format selection
         self._image_format_combo = QComboBox()
         self._image_format_combo.addItems(["png", "jpg"])
         self._image_format_combo.currentTextChanged.connect(self.set_image_format)
-        self._preset_layout.addWidget(QLabel("Image Format:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Image Format:')))
         self._preset_layout.addWidget(self._image_format_combo)
 
         # Video format selection
         self._video_format_combo = QComboBox()
         self._video_format_combo.addItems(["mp4", "avi"])
         self._video_format_combo.currentTextChanged.connect(self.set_video_format)
-        self._preset_layout.addWidget(QLabel("Video Format:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Video Format:')))
         self._preset_layout.addWidget(self._video_format_combo)
 
         # Box color picker
-        self._box_color_button = QPushButton("Set Box Color")
+        self._box_color_button = QPushButton(self.tr('Set Box Color'))
         self._box_color_button.clicked.connect(self.set_box_color)
-        self._preset_layout.addWidget(QLabel("Box Color:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Box Color:')))
         self._preset_layout.addWidget(self._box_color_button)
 
         # Box color by class
-        self._box_color_by_class_checkbox = QCheckBox("Random Box Color by Class")
+        self._box_color_by_class_checkbox = QCheckBox(self.tr('Random Box Color by Class'))
         self._box_color_by_class_checkbox.toggled.connect(self.set_box_color_by_class)
         self._preset_layout.addWidget(self._box_color_by_class_checkbox)
 
         # Segment color picker
-        self._segment_color_button = QPushButton("Set Segment Color")
+        self._segment_color_button = QPushButton(self.tr('Set Segment Color'))
         self._segment_color_button.clicked.connect(self.set_segment_color)
         self._preset_layout.addWidget(QLabel("Segment Color:"))
         self._preset_layout.addWidget(self._segment_color_button)
 
         # Segment color by class
-        self._segment_color_by_class_checkbox = QCheckBox("Random Segment Color by Class")
+        self._segment_color_by_class_checkbox = QCheckBox(self.tr('Random Segment Color by Class'))
         self._segment_color_by_class_checkbox.toggled.connect(self.set_segment_color_by_class)
         self._preset_layout.addWidget(self._segment_color_by_class_checkbox)
 
         # Text color picker
-        self._text_color_button = QPushButton("Set Text Color")
+        self._text_color_button = QPushButton(self.tr('Set Text Color'))
         self._text_color_button.clicked.connect(self.set_text_color)
         self._preset_layout.addWidget(QLabel("Text Color:"))
         self._preset_layout.addWidget(self._text_color_button)
@@ -137,59 +137,59 @@ class PresetsWidget(QWidget):
         self._box_thickness_slider = QSlider(Qt.Orientation.Horizontal)
         self._box_thickness_slider.setRange(1, 10)
         self._box_thickness_slider.valueChanged.connect(self.set_box_thickness)
-        self._preset_layout.addWidget(QLabel("Box Thickness:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Box Thickness:')))
         self._preset_layout.addWidget(self._box_thickness_slider)
 
         # Segment thickness
         self._segment_thickness_slider = QSlider(Qt.Orientation.Horizontal)
         self._segment_thickness_slider.setRange(1, 10)
         self._segment_thickness_slider.valueChanged.connect(self.set_segment_thickness)
-        self._preset_layout.addWidget(QLabel("Segment Thickness:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Segment Thickness:')))
         self._preset_layout.addWidget(self._segment_thickness_slider)
 
         # Text size
         self._text_size_slider = QSlider(Qt.Orientation.Horizontal)
         self._text_size_slider.setRange(1, 30)
         self._text_size_slider.valueChanged.connect(self.set_text_size)
-        self._preset_layout.addWidget(QLabel("Text Size:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Text Size:')))
         self._preset_layout.addWidget(self._text_size_slider)
 
         # Pose head color picker
-        self._pose_head_color_button = QPushButton("Set Pose Head Color")
+        self._pose_head_color_button = QPushButton(self.tr('Set Pose Head Color'))
         self._pose_head_color_button.clicked.connect(lambda: self.set_color('pose_head_color'))
-        self._preset_layout.addWidget(QLabel("Pose Head Color:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Head Color:')))
         self._preset_layout.addWidget(self._pose_head_color_button)
 
         # Pose chest color picker
-        self._pose_chest_color_button = QPushButton("Set Pose Chest Color")
+        self._pose_chest_color_button = QPushButton(self.tr('Set Pose Chest Color'))
         self._pose_chest_color_button.clicked.connect(lambda: self.set_color('pose_chest_color'))
-        self._preset_layout.addWidget(QLabel("Pose Chest Color:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Chest Color:')))
         self._preset_layout.addWidget(self._pose_chest_color_button)
 
         # Pose leg color picker
-        self._pose_leg_color_button = QPushButton("Set Pose Leg Color")
+        self._pose_leg_color_button = QPushButton(self.tr('Set Pose Leg Color'))
         self._pose_leg_color_button.clicked.connect(lambda: self.set_color('pose_leg_color'))
-        self._preset_layout.addWidget(QLabel("Pose Leg Color:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Leg Color:')))
         self._preset_layout.addWidget(self._pose_leg_color_button)
 
         # Pose arm color picker
-        self._pose_arm_color_button = QPushButton("Set Pose Arm Color")
+        self._pose_arm_color_button = QPushButton(self.tr('Set Pose Arm Color'))
         self._pose_arm_color_button.clicked.connect(lambda: self.set_color('pose_arm_color'))
-        self._preset_layout.addWidget(QLabel("Pose Arm Color:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Arm Color:')))
         self._preset_layout.addWidget(self._pose_arm_color_button)
 
         # Pose point size
         self._pose_point_size_slider = QSlider(Qt.Orientation.Horizontal)
         self._pose_point_size_slider.setRange(1, 10)
         self._pose_point_size_slider.valueChanged.connect(self.set_pose_point_size)
-        self._preset_layout.addWidget(QLabel("Pose Point Size:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Point Size:')))
         self._preset_layout.addWidget(self._pose_point_size_slider)
 
         # Pose line thickness
         self._pose_line_thickness_slider = QSlider(Qt.Orientation.Horizontal)
         self._pose_line_thickness_slider.setRange(1, 10)
         self._pose_line_thickness_slider.valueChanged.connect(self.set_pose_line_thickness)
-        self._preset_layout.addWidget(QLabel("Pose Line Thickness:"))
+        self._preset_layout.addWidget(QLabel(self.tr('Pose Line Thickness:')))
         self._preset_layout.addWidget(self._pose_line_thickness_slider)
 
         self._preset_widget = QWidget()
@@ -219,7 +219,7 @@ class PresetsWidget(QWidget):
             item.setData(0, preset)
             self._preset_list.addItem(item)
         self._preset_list.itemClicked.connect(self.preset_selected)
-        self._add_preset_button = QPushButton('Add Preset')
+        self._add_preset_button = QPushButton(self.tr('Add Preset'))
         self._add_preset_button.clicked.connect(self.add_preset)
         self._preset_list_layout.addWidget(self._preset_list)
         self._preset_list_layout.addWidget(self._add_preset_button)

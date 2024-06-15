@@ -78,10 +78,10 @@ class StreamWidget(QWidget):
 
         self._stats_label = QLabel(self.tr('Live stats: '))
         self._real_fps_label = QLabel('FPS: 0')
-        self._fetcher_fps_label = QLabel(self.tr('Fetcher FPS: 0'))
-        self._buffer_size_label = QLabel(self.tr('Buffer Size: 0'))
-        self._buffer_max_size_label = QLabel(f"{self.tr('Buffer Max Size')}: {self._frame_buffer.maxlen}")
-        self._buffer_rate_label = QLabel(f"{self.tr('Buffer Rate')}: {self._buffer_rate}")
+        self._fetcher_fps_label = QLabel('Fetcher FPS: 0')
+        self._buffer_size_label = QLabel('Buffer Size: 0')
+        self._buffer_max_size_label = QLabel(f"Buffer Max Size: {self._frame_buffer.maxlen}")
+        self._buffer_rate_label = QLabel(f"Buffer Rate: {self._buffer_rate}")
         self._return_button = QPushButton(self.tr('Return'))
         self._return_button.clicked.connect(self.return_to_main_view)
 

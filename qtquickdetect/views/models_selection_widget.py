@@ -58,7 +58,7 @@ class ModelsSelectionWidget(QWidget):
         self._model_tree.itemChanged.connect(self.check_model_selected)
 
         # Description
-        self._model_description = QLabel('Select the models weights')
+        self._model_description = QLabel(self.tr('Select the models weights'))
         self._model_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._model_description.setProperty('class', 'description')
 

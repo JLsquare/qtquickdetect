@@ -77,7 +77,7 @@ class AppConfigWidget(QWidget):
 
         :return: QVBoxLayout for localization settings.
         """
-        self._local_label = QLabel(self.tr('Localization:'))
+        self._local_label = QLabel(self.tr('Language:'))
         self._local_combo = QComboBox()
         self._local_combo.addItem('English', 'en')
         self._local_combo.addItem('Français', 'fr')
