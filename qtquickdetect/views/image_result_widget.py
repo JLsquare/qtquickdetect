@@ -257,15 +257,10 @@ class ImageResultWidget(QWidget):
             if data['task'] == 'detection':
                 top_left = (int(result['x1']), int(result['y1']))
                 bottom_right = (int(result['x2']), int(result['y2']))
-
-                if self._preset.box_color_per_class:
-                    box_color = generate_color(result['classid'])
-                else:
-                    box_color = self._preset.box_color
+              
                 draw_bounding_box(
-                    layer, top_left, bottom_right, class_name, confidence,
-                    box_color, self._preset.text_color,
-                    self._preset.box_thickness, self._preset.text_size
+                    layer, top_left, bottom_right, class_name, result['classid'], confidence,
+                    self._preset
                 )
 
             if data['task'] == 'segmentation':

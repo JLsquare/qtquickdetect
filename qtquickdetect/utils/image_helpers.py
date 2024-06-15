@@ -8,9 +8,8 @@ from ..models.preset import Preset
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 
-def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str, confidence: float,
-                      box_color: tuple[int, int, int, int], text_color: tuple[int, int, int, int], thickness: int,
-                      text_size: float) -> None:
+def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, int], classname: str, class_id: int, confidence: float,
+                      preset: Preset) -> None:
     """
     Draws a rectangle, a label with background and a percentage on a loaded openCV image.
 
@@ -24,6 +23,14 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
     :param thickness: The thickness of the rectangle lines.
     :param text_size: The size of the text.
     """
+    text_color = preset.text_color
+    thickness = preset.box_thickness
+    text_size = preset.text_size
+
+    if preset.box_color_per_class:
+        box_color = generate_color(class_id)
+    else:
+        box_color = preset.box_color
 
     cv.rectangle(img, top_left, bottom_right, box_color, thickness)
 
@@ -41,7 +48,6 @@ def draw_bounding_box(img, top_left: tuple[int, int], bottom_right: tuple[int, i
 def draw_segmentation_mask_from_points(img, mask_points, mask_color: tuple[int, int, int, int], thickness: int) -> None:
     """
     Draws a semi-transparent polygon mask on an image.
-    https://pytorch.org/vision/stable/auto_examples/others/plot_visualization_utils.html#keypoint-output
 
     :param img: The input image (numpy array).
     :param mask_points: The points of the mask (numpy array).

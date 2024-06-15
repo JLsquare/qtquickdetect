@@ -71,15 +71,9 @@ class TorchVisionDetectPipeline(Pipeline):
             if score < 0.3:
                 continue
 
-            # Draw bounding box
-            if self.preset.box_color_per_class:
-                box_color = generate_color(label)
-            else:
-                box_color = self.preset.box_color
             draw_bounding_box(
-                image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), CLASS_NAMES[label], score,
-                box_color, self.preset.text_color,
-                self.preset.box_thickness, self.preset.text_size
+                image, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), CLASS_NAMES[label], label, score,
+                self.preset
             )
 
             # Append the box to the results array

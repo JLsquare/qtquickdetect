@@ -47,15 +47,9 @@ class YoloDetectPipeline(Pipeline):
             class_id, class_name = int(box.cls), self.model.names[int(box.cls)]
             conf = float(box.conf[0])
 
-            # Draw bounding box
-            if self.preset.box_color_per_class:
-                box_color = generate_color(class_id)
-            else:
-                box_color = self.preset.box_color
             draw_bounding_box(
-                image, top_left, bottom_right, class_name, conf,
-                box_color, self.preset.text_color,
-                self.preset.box_thickness, self.preset.text_size
+                image, top_left, bottom_right, class_name, class_id, conf,
+                self.preset
             )
 
             # Append the box to the results array
