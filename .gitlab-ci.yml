@@ -40,8 +40,10 @@ test:
     - source venv/bin/activate
     - pip install -r requirements.txt
     - pip install pytest==8.2.2 pytest-qt==4.4.0
+    - pip install -e .
   script:
     - source venv/bin/activate
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
     - pytest
   only:
     - dev
