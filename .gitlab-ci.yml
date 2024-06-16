@@ -26,3 +26,19 @@ update_website:
     - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no ./website/index.html $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/index.html
   only:
     - main
+
+test:
+  stage: test
+  tags:
+    - feur-linux
+  image: python:3.11.8
+  before_script:
+    - apt-get update && apt-get install -y zip sshpass
+    - python -m pip install --upgrade pip
+    - pip install hatch
+    - hatch run pip install -r requirements.txt
+    - hatch run pip install pytest==8.2.2 pytest-qt==4.4.0
+  script:
+    - pytest
+  only:
+    - dev
