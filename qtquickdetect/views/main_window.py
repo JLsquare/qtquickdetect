@@ -100,7 +100,7 @@ class MainWindow(QWidget):
         self._main_layout.addWidget(self._side_menu)
         self._main_layout.addWidget(self._content_stack)
 
-        self.change_row(5)  # Image Inference
+        self.change_row(10)  # About
         self.setLayout(self._main_layout)
 
     def title_ui(self) -> QWidget:
@@ -145,6 +145,10 @@ class MainWindow(QWidget):
             self._content_stack.removeWidget(self._content_stack.widget(row + 1))
         elif row == 6:  # Video Inference
             new_widget = InferenceWidget('video', self.open_last_inference)
+            self._content_stack.insertWidget(row, new_widget)
+            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
+        elif row == 7:  # Stream Inference
+            new_widget = InferenceStreamWidget()
             self._content_stack.insertWidget(row, new_widget)
             self._content_stack.removeWidget(self._content_stack.widget(row + 1))
 
