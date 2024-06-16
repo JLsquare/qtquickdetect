@@ -1,5 +1,32 @@
 stages:
+  - test
   - build
+
+test:
+  stage: test
+  tags:
+    - feur-linux
+  image: python:3.11.8
+  before_script:
+    - apt-get update && apt-get install -y zip sshpass libgl1-mesa-dev libegl1-mesa libgles2-mesa libxkbcommon-dev libxkbcommon-x11-dev libdbus-1-3 libpulse-dev xvfb qt6-base-dev libqt6widgets6 libqt6gui6 libqt6core6 libxcb-cursor0
+    - python -m pip install --upgrade pip
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install pytest==8.2.2 pytest-qt==4.4.0
+    - pip install -e .
+  script:
+    - source venv/bin/activate
+    - export PYTHONPATH=$PYTHONPATH:$(pwd)
+    - Xvfb :99 -screen 0 1920x1080x16 &
+    - sleep 10
+    - export DISPLAY=:99
+    - echo "DISPLAY is set to $DISPLAY"
+    - python -c "from PyQt6.QtWidgets import QApplication; app = QApplication([]); print('QApplication created successfully')"
+    - pytest -v
+  only:
+    - dev
+    - main
 
 release:
   stage: build
@@ -9,7 +36,7 @@ release:
   before_script:
     - apt-get update && apt-get install -y zip sshpass
   script:
-    - zip -r qtquickdetect.zip . -x "*.git*" -x "*.gitignore" -x "*.gitlab-ci.yml" -x "*tests*" -x "*website*" -x "*gestion_projet*" "*notebooks*"
+    - zip -r qtquickdetect.zip . -x "*.git*" -x "*.gitignore" -x "*.gitlab-ci.yml" -x "*tests*" -x "*website*" -x "*gestion_projet*" "*notebooks*" -x "*media*"
     - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect.zip"
     - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no qtquickdetect.zip $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
   only:

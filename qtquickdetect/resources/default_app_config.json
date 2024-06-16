@@ -1,0 +1,334 @@
+{
+    "localization": "en",
+    "qss": "app",
+    "pipelines": {
+        "Yolo Detect": "qtquickdetect.pipeline.yolo_detect_pipeline.YoloDetectPipeline",
+        "Yolo Segment": "qtquickdetect.pipeline.yolo_segment_pipeline.YoloSegmentPipeline",
+        "Yolo Classify": "qtquickdetect.pipeline.yolo_classify_pipeline.YoloClassifyPipeline",
+        "Yolo Pose": "qtquickdetect.pipeline.yolo_pose_pipeline.YoloPosePipeline",
+        "TorchVision Detect": "qtquickdetect.pipeline.torchvision_detect_pipeline.TorchVisionDetectPipeline",
+        "TorchVision Segment": "qtquickdetect.pipeline.torchvision_segment_pipeline.TorchVisionSegmentPipeline",
+        "TorchVision Classify": "qtquickdetect.pipeline.torchvision_classify_pipeline.TorchVisionClassifyPipeline",
+        "TorchVision Pose": "qtquickdetect.pipeline.torchvision_pose_pipeline.TorchVisionPosePipeline"
+    },
+    "models": {
+        "YoloV9 Detect": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                "yolov9c.pt",
+                "yolov9e.pt"
+            ]
+        },
+        "YoloV9 Segment": {
+            "task": "segment",
+            "pipeline": "Yolo Segment",
+            "weights": [
+                "yolov9e-seg.pt",
+                "yolov9c-seg.pt"
+            ]
+        },
+        "YoloV8 Detect": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                "yolov8n.pt",
+                "yolov8s.pt",
+                "yolov8m.pt",
+                "yolov8l.pt",
+                "yolov8x.pt"
+            ]
+        },
+        "YoloV8 Segment": {
+            "task": "segment",
+            "pipeline": "Yolo Segment",
+            "weights": [
+                "yolov8n-seg.pt",
+                "yolov8s-seg.pt",
+                "yolov8m-seg.pt",
+                "yolov8l-seg.pt",
+                "yolov8x-seg.pt"
+            ]
+        },
+        "YoloV8 Classify": {
+            "task": "classify",
+            "pipeline": "Yolo Classify",
+            "weights": [
+                "yolov8n-cls.pt",
+                "yolov8s-cls.pt",
+                "yolov8m-cls.pt",
+                "yolov8l-cls.pt",
+                "yolov8x-cls.pt"
+            ]
+        },
+        "Yolov8 Pose": {
+            "task": "pose",
+            "pipeline": "Yolo Pose",
+            "weights": [
+                "yolov8n-pose.pt",
+                "yolov8s-pose.pt",
+                "yolov8m-pose.pt",
+                "yolov8l-pose.pt",
+                "yolov8x-pose.pt"
+            ]
+        },
+        "Yolov5": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                "yolov5nu.pt",
+                "yolov5su.pt",
+                "yolov5mu.pt",
+                "yolov5lu.pt",
+                "yolov5xu.pt",
+                "yolov5n6u.pt",
+                "yolov5s6u.pt",
+                "yolov5m6u.pt",
+                "yolov5l6u.pt",
+                "yolov5x6u.pt"
+            ]
+        },
+        "YoloV3": {
+            "task": "detect",
+            "pipeline": "Yolo Detect",
+            "weights": [
+                "yolov3-sppu.pt",
+                "yolov3-tinyu.pt",
+                "yolov3u.pt"
+            ]
+        },
+        "Faster-RCNN ResNet": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                "fasterrcnn_resnet50_fpn",
+                "fasterrcnn_resnet50_fpn_v2"
+            ]
+        },
+        "Faster-RCNN MobileNet": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                "fasterrcnn_mobilenet_v3_large_fpn",
+                "fasterrcnn_mobilenet_v3_large_320_fpn"
+            ]
+        },
+        "Mask-RCNN Detect": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                "maskrcnn_resnet50_fpn"
+            ]
+        },
+        "Mask-RCNN Segment": {
+            "task": "segment",
+            "pipeline": "TorchVision Segment",
+            "weights": [
+                "maskrcnn_resnet50_fpn",
+                "maskrcnn_resnet50_fpn_v2"
+            ]
+        },
+        "RetinaNet": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                "retinanet_resnet50_fpn",
+                "retinanet_resnet50_fpn_v2"
+            ]
+        },
+        "SSD": {
+            "task": "detect",
+            "pipeline": "TorchVision Detect",
+            "weights": [
+                "ssd300_vgg16",
+                "ssdlite320_mobilenet_v3_large"
+            ]
+        },
+        "AlexNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "alexnet"
+            ]
+        },
+        "ConvNeXt": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "convnext_tiny",
+                "convnext_small",
+                "convnext_large",
+                "convnext_base"
+            ]
+        },
+        "DenseNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "densenet121",
+                "densenet161",
+                "densenet169",
+                "densenet201"
+            ]
+        },
+        "EfficientNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "efficientnet_b0",
+                "efficientnet_b1",
+                "efficientnet_b2",
+                "efficientnet_b3",
+                "efficientnet_b4",
+                "efficientnet_b5",
+                "efficientnet_b6",
+                "efficientnet_b7"
+            ]
+        },
+        "EfficientNetV2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "efficientnet_v2_s",
+                "efficientnet_v2_m",
+                "efficientnet_v2_l"
+            ]
+        },
+        "GoogLeNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "googlenet"
+            ]
+        },
+        "Inception V3": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "inception_v3"
+            ]
+        },
+        "MNASNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "mnasnet0_5",
+                "mnasnet0_75",
+                "mnasnet1_0",
+                "mnasnet1_3"
+            ]
+        },
+        "MobileNet V2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "mobilenet_v2"
+            ]
+        },
+        "MobileNet V3": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "mobilenet_v3_small",
+                "mobilenet_v3_large"
+            ]
+        },
+        "RegNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "regnet_y_400mf",
+                "regnet_y_800mf",
+                "regnet_y_1_6gf",
+                "regnet_y_3_2gf",
+                "regnet_y_8gf",
+                "regnet_y_16gf",
+                "regnet_x_400mf",
+                "regnet_x_800mf",
+                "regnet_x_1_6gf",
+                "regnet_x_3_2gf",
+                "regnet_x_8gf",
+                "regnet_x_16gf"
+            ]
+        },
+        "ResNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "resnet18",
+                "resnet34",
+                "resnet50",
+                "resnet101",
+                "resnet152"
+            ]
+        },
+        "ResNeXt": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "resnext50_32x4d",
+                "resnext101_32x8d",
+                "resnext101_64x4d"
+            ]
+        },
+        "ShuffleNet V2": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "shufflenet_v2_x1_0",
+                "shufflenet_v2_x1_5",
+                "shufflenet_v2_x0_5",
+                "shufflenet_v2_x2_0"
+            ]
+        },
+        "SqueezeNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "squeezenet1_0",
+                "squeezenet1_1"
+            ]
+        },
+        "SwinTransformer": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "swin_t",
+                "swin_s",
+                "swin_b",
+                "swin_v2_t",
+                "swin_v2_s",
+                "swin_v2_b"
+            ]
+        },
+        "VGG": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "vgg11",
+                "vgg11_bn",
+                "vgg13",
+                "vgg13_bn",
+                "vgg16",
+                "vgg16_bn",
+                "vgg19",
+                "vgg19_bn"
+            ]
+        },
+        "Wide ResNet": {
+            "task": "classify",
+            "pipeline": "TorchVision Classify",
+            "weights": [
+                "wide_resnet50_2",
+                "wide_resnet101_2"
+            ]
+        },
+        "Keypoint RCNN": {
+            "task": "pose",
+            "pipeline": "TorchVision Pose",
+            "weights": [
+                "keypointrcnn_resnet50_fpn"
+            ]
+        }
+    }
+}

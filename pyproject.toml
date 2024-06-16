@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling", "hatch-requirements-txt"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qtquickdetect"
+version = "0.9.6"
+dynamic = ["dependencies"]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[project.scripts]
+qtquickdetect = "qtquickdetect.qtquickdetect:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["qtquickdetect"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[project.optional-dependencies]
+test = ["pytest==8.2.2", "pytest-qt==4.4.0"]

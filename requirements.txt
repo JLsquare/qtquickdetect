@@ -1,5 +1,7 @@
 pyqt6>=6.6.1
-ultralytics==8.0.*
-opencv-python>=4.8.0
+ultralytics==8.2.*
+opencv-python>=4.10.0
 requests>=2.31.0
 numpy>=1.26.2
+torch~=2.3.0
+torchvision~=0.18.0
