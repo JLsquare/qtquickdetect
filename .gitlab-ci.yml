@@ -39,11 +39,14 @@ test:
     - python -m venv venv
     - source venv/bin/activate
     - pip install -r requirements.txt
-    - pip install pytest==8.2.2 pytest-qt==4.4.0 pytest-xvfb
+    - pip install pytest==8.2.2 pytest-qt==4.4.0
     - pip install -e .
   script:
     - source venv/bin/activate
     - export PYTHONPATH=$PYTHONPATH:$(pwd)
-    - pytest --xvfb
+    - Xvfb :99 -screen 0 1024x768x16 &
+    - sleep 
+    - export DISPLAY=:99
+    - pytest
   only:
     - dev
