@@ -1,8 +1,7 @@
 import pytest
+from PyQt6 import QtCore
 from qtquickdetect.views.about_widget import AboutWidget
 from qtquickdetect.views.main_window import MainWindow
-from PyQt6 import QtCore
-
 from qtquickdetect.views.models_widget import ModelsWidget
 from qtquickdetect.views.presets_widget import PresetsWidget
 from qtquickdetect.views.collections_widget import CollectionsWidget
@@ -11,15 +10,11 @@ from qtquickdetect.views.inference_widget import InferenceWidget
 from qtquickdetect.views.inference_stream_widget import InferenceStreamWidget
 from qtquickdetect.views.inference_history_widget import InferenceHistoryWidget
 
-
-
-
 @pytest.fixture
 def app(qtbot):
     main_window = MainWindow()
     qtbot.addWidget(main_window)
     return main_window
-
 
 def test_window_title(app):
     assert app.windowTitle() == "QTQuickDetect"
@@ -55,16 +50,11 @@ def test_switch_tabs(app, qtbot):
         if isinstance(widget, tuple):
             expected = widget[0]
             media_type = widget[1]
-
             assert isinstance(app._content_stack.currentWidget(), expected), f"Expected {expected}, got {app._content_stack.currentWidget()}"
             assert app._content_stack.currentWidget().media_type == media_type
         else:
             assert isinstance(app._content_stack.currentWidget(), widget), f"Expected {widget}, got {app._content_stack.currentWidget()}"
 
-
-    for tab_index, widget in WIDGET_LIST.items():
+    for tab_index in WIDGET_LIST.keys():
         click_on_tab(tab_index)
- 
         is_right_widget_shown(tab_index)
-
-  

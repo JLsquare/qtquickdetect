@@ -93,22 +93,25 @@ def test_save_settings(mock_get_instance, qtbot, monkeypatch):
         nonlocal quit_called
         quit_called = True
 
-    monkeypatch.setattr('PyQt6.QtWidgets.QApplication.quit', mock_quit)
+    monkeypatch.setattr(QApplication, 'quit', mock_quit)
 
-    # Trigger save settings
-    qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
+    # Mock the QMessageBox.exec method
+    with patch.object(QMessageBox, 'exec', return_value=QMessageBox.StandardButton.No):
+        # Trigger save settings
+        qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
 
-    # Check that the save method of app_state was called
-    mock_app_state.save.assert_called_once()
+        # Check that the save method of app_state was called
+        mock_app_state.save.assert_called_once()
 
-    # Simulate QMessageBox response for "No"
-    QMessageBox.exec = lambda s: QMessageBox.StandardButton.No
-    assert not quit_called
+        # Ensure quit was not called
+        assert not quit_called
 
-    # Simulate QMessageBox response for "Yes"
-    QMessageBox.exec = lambda s: QMessageBox.StandardButton.Yes
-    qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
-    assert quit_called
+    with patch.object(QMessageBox, 'exec', return_value=QMessageBox.StandardButton.Yes):
+        # Trigger save settings again
+        qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
+
+        # Ensure quit was called
+        assert quit_called
 
 
 @patch('qtquickdetect.models.app_state.AppState.get_instance')
