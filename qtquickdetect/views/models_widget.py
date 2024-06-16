@@ -42,7 +42,7 @@ class ModelsWidget(QWidget):
         Populate the tree with the models and weights available.
         """
         models_config = self.app_state.app_config.models
-        project_root = filepaths.get_app_dir()
+        project_root = filepaths.get_base_data_dir()
         for model_name, model_details in models_config.items():
             parent_item = QTreeWidgetItem(self._tree_widget)
             parent_item.setText(0, model_name)
