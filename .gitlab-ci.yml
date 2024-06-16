@@ -34,7 +34,7 @@ test:
     - feur-linux
   image: python:3.11.8
   before_script:
-    - apt-get update && apt-get install -y zip sshpass
+    - apt-get update && apt-get install -y zip sshpass libgl1-mesa-dev libegl1-mesa libgles2-mesa
     - python -m pip install --upgrade pip
     - python -m venv venv
     - source venv/bin/activate
