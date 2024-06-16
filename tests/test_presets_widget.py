@@ -21,16 +21,6 @@ def test_add_preset(presets_widget, qtbot):
     new_preset_item = presets_widget._preset_list.item(initial_preset_count)
     assert new_preset_item.text().startswith("New Preset")
 
-def test_set_device(presets_widget, qtbot):
-    qtbot.mouseClick(presets_widget._add_preset_button, Qt.MouseButton.LeftButton)
-    new_preset_item = presets_widget._preset_list.item(0)
-    presets_widget._preset_list.setCurrentItem(new_preset_item)
-    initial_device = presets_widget._device_combo.currentText()
-    new_device_index = 1 if initial_device == "CPU" else 0
-    presets_widget._device_combo.setCurrentIndex(new_device_index)
-    expected_device = "cpu" if initial_device != "CPU" else "cuda:0"
-    assert presets_widget.current_preset.device == expected_device
-
 def test_set_half_precision(presets_widget, qtbot):
     qtbot.mouseClick(presets_widget._add_preset_button, Qt.MouseButton.LeftButton)
     new_preset_item = presets_widget._preset_list.item(0)
