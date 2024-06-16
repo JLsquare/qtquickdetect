@@ -3,12 +3,22 @@ import sys
 
 from pathlib import Path
 
+TMP_DIR = None
+
+if "pytest" in sys.modules:
+    import tempfile
+
+    TMP_DIR = tempfile.TemporaryDirectory()
+
 
 def get_base_config_dir() -> Path:
     """
     Returns the folder where the config files should reside
     :return: The folder path
     """
+    if TMP_DIR:
+        return Path(TMP_DIR.name) / 'config'
+
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect'
     elif sys.platform == 'darwin':
@@ -35,6 +45,9 @@ def get_base_data_dir() -> Path:
     Returns the folder where the data files should reside
     :return: The folder path
     """
+    if TMP_DIR:
+        return Path(TMP_DIR.name) / 'data'
+
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect' / 'data'
     elif sys.platform == 'darwin':
@@ -65,6 +78,9 @@ def get_base_cache_dir() -> Path:
     Returns the folder where the cache files should reside
     :return: The folder path
     """
+    if TMP_DIR:
+        return Path(TMP_DIR.name) / 'cache'
+
     if sys.platform == 'win32':
         return Path(os.getenv('APPDATA')) / 'QtQuickDetect' / 'cache'
     elif sys.platform == 'darwin':
@@ -92,3 +108,12 @@ def get_app_dir() -> Path:
     :return: The folder path
     """
     return Path(__file__).parent.parent
+
+
+if "pytest" in sys.modules:
+    import tempfile
+
+    # run the folder creation functions, as most tests don't go through the main function
+    create_config_dir()
+    create_data_dir()
+    create_cache_dir()
