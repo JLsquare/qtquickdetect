@@ -45,7 +45,7 @@ def get_base_data_dir() -> Path:
         if homedir is None:
             raise Exception('Could not find home directory')
 
-        return Path(homedir) / '.locales' / 'share' / 'qtquickdetect'
+        return Path(homedir) / '.local' / 'share' / 'qtquickdetect'
 
 
 def create_data_dir() -> None:
