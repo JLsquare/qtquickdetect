@@ -45,7 +45,7 @@ test:
     - source venv/bin/activate
     - export PYTHONPATH=$PYTHONPATH:$(pwd)
     - Xvfb :99 -screen 0 1024x768x16 &
-    - sleep 
+    - sleep 3
     - export DISPLAY=:99
     - pytest
   only:
