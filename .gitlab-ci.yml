@@ -45,8 +45,10 @@ test:
     - source venv/bin/activate
     - export PYTHONPATH=$PYTHONPATH:$(pwd)
     - Xvfb :99 -screen 0 1920x1080x16 &
-    - sleep 3
+    - sleep 10
     - export DISPLAY=:99
+    - echo "DISPLAY is set to $DISPLAY"
+    - xdpyinfo -display :99
     - pytest -v
   only:
     - dev
