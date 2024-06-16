@@ -78,7 +78,7 @@ def test_collection_changed_signal_emitted(mock_get_instance, qtbot):
 
     widget._collection_radio_buttons[1].setChecked(True)
     assert widget._collection_radio_buttons[0].isChecked() is False
-    assert len(signal_spy) == 3 # 1 for the first selection, 2 for the second selection and 3 for the deselection of the first selection
+    assert len(signal_spy) == 3  # 1 for the selection, 1 for the deselection of the previous selection
 
 @patch('qtquickdetect.models.app_state.AppState.get_instance')
 def test_widget_layout_and_properties(mock_get_instance, qtbot):
