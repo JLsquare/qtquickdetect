@@ -1,12 +1,10 @@
 import logging
-import os
-import subprocess
-import sys
 
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox, QSpacerItem, QSizePolicy, \
-    QMessageBox, QApplication
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox, QSpacerItem, \
+    QSizePolicy, QMessageBox, QApplication
+from PyQt6.QtCore import Qt
+from ..models.app_config import AppConfig
 from ..models.app_state import AppState
 
 
@@ -151,10 +149,12 @@ class AppConfigWidget(QWidget):
 
     def cancel_settings(self) -> None:
         """
-        Cancels the settings changes and closes the widget.
+        Cancels the settings changes by reverting to the previous settings.
         """
         logging.debug('Canceled settings')
-        self.close()
+        self.app_state.app_config = AppConfig()
+        self._qss_combo.setCurrentText(self.get_qss())
+        self._local_combo.setCurrentText(self.get_local())
 
     def get_qss(self) -> str:
         """
