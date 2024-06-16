@@ -23,6 +23,10 @@ class VideoResultWidget(QWidget):
         :param result_path: The path to the result folder.
         """
         super().__init__()
+        self._result_path: Path = result_path
+        self._input_videos: list[Path] = []
+        self._result_videos: dict[Path, list[Path]] = {}
+        self._result_jsons: dict[Path, list[Path]] = {}
 
         # PyQT6 Components
         self._middle_layout: Optional[QSplitter] = None
@@ -42,11 +46,6 @@ class VideoResultWidget(QWidget):
         self._save_json_button: Optional[QPushButton] = None
         self._save_video_button: Optional[QPushButton] = None
         self._save_frame_button: Optional[QPushButton] = None
-
-        self._result_path: Path = result_path
-        self._input_videos: list[Path] = []
-        self._result_videos: dict[Path, list[Path]] = {}
-        self._result_jsons: dict[Path, list[Path]] = {}
 
         self.init_ui()
 

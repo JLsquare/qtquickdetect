@@ -25,6 +25,17 @@ class StreamWidget(QWidget):
         :param return_to_main: The function to call to return to the main view.
         """
         super().__init__()
+        self._timer: Optional[QTimer] = None
+        self._live_url: str = live_url
+        self._pipeline_manager: PipelineManager = PipelineManager(task, preset, models)
+        self._frame_buffer: deque[np.ndarray] = deque(maxlen=30)
+        self._buffer_rate: float = 1.0
+        self._frame_update_count: int = 0
+        self._real_fps: int = 0
+        self._fps_timer: QTimer = QTimer(self)
+        self._fps_timer.timeout.connect(self.calculate_real_fps)
+        self._fps_timer.start(1000)
+        self._return_to_main: callable = return_to_main
 
         # PyQT6 Components
         self._container_widget: Optional[QWidget] = None
@@ -40,18 +51,6 @@ class StreamWidget(QWidget):
         self._return_button: Optional[QPushButton] = None
         self._stats_layout: Optional[QVBoxLayout] = None
         self._main_layout: Optional[QHBoxLayout] = None
-
-        self._timer: Optional[QTimer] = None
-        self._live_url: str = live_url
-        self._pipeline_manager: PipelineManager = PipelineManager(task, preset, models)
-        self._frame_buffer: deque[np.ndarray] = deque(maxlen=30)
-        self._buffer_rate: float = 1.0
-        self._frame_update_count: int = 0
-        self._real_fps: int = 0
-        self._fps_timer: QTimer = QTimer(self)
-        self._fps_timer.timeout.connect(self.calculate_real_fps)
-        self._fps_timer.start(1000)
-        self._return_to_main: callable = return_to_main
 
         self.init_ui()
         self.start()

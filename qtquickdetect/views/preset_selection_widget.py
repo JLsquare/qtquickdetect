@@ -17,7 +17,7 @@ class PresetSelectionWidget(QWidget):
         Initializes the PresetSelectionWidget.
         """
         super().__init__()
-        self.appstate: AppState = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
         self.preset: str = ''
 
         # PyQT6 Components
@@ -44,8 +44,9 @@ class PresetSelectionWidget(QWidget):
         self._preset_icon_layout = QHBoxLayout()
         self._preset_icon_layout.addStretch()
         self._preset_icon = QLabel()
+        image_name = f"{self.app_state.get_theme_file_prefix()}settings.png"
         self._preset_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'settings_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._preset_icon_layout.addWidget(self._preset_icon)
@@ -54,7 +55,7 @@ class PresetSelectionWidget(QWidget):
         self._preset_radio_layout = QVBoxLayout()
         self._preset_radio_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._preset_radio_buttons = []
-        for preset in self.appstate.presets.get_presets():
+        for preset in self.app_state.presets.get_presets():
             radio_button = QRadioButton(preset)
             radio_button.setObjectName(preset)
             radio_button.toggled.connect(self._check_preset_selected)

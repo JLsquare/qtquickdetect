@@ -20,8 +20,8 @@ class InferenceHistoryWidget(QWidget):
         Initializes the InferenceHistoryWidget.
         """
         super().__init__()
-        self._appstate: AppState = AppState.get_instance()
-        self._row_folder: list[str] = []
+        self.app_state: AppState = AppState.get_instance()
+        self.row_folder: list[str] = []
 
         # PyQT6 Components
         self._main_layout: Optional[QVBoxLayout] = None
@@ -116,7 +116,7 @@ class InferenceHistoryWidget(QWidget):
         # Sort the history by date and the row folder list accordingly
         paired = list(zip(history, row_folder))
         paired.sort(key=lambda x: x[0]['date'], reverse=True)
-        sorted_history, self._row_folder = zip(*paired)
+        sorted_history, self.row_folder = zip(*paired)
 
         return list(sorted_history)
 
@@ -130,7 +130,7 @@ class InferenceHistoryWidget(QWidget):
         media_type = self._table.item(row, 0).text()
         collection_name = self._table.item(row, 1).text()
         preset_name = self._table.item(row, 2).text()
-        result_folder = self._row_folder[row]
+        result_folder = self.row_folder[row]
         result_path = Path('./history') / result_folder
         preset = Preset(preset_name)
         logging.debug(f'Opening result {media_type} {collection_name} {preset_name} {result_folder}')
@@ -164,7 +164,7 @@ class InferenceHistoryWidget(QWidget):
             return
 
         # Get the image names from the collection
-        collection_images = self._appstate.collections.get_collection_file_paths(collection_name, 'image')
+        collection_images = self.app_state.collections.get_collection_file_paths(collection_name, 'image')
         collection_images_stem = {Path(image).stem: image for image in collection_images}
 
         # For each weight directory in the result path
@@ -199,7 +199,7 @@ class InferenceHistoryWidget(QWidget):
             return
 
         # Get the video names from the collection
-        collection_videos = self._appstate.collections.get_collection_file_paths(collection_name, 'video')
+        collection_videos = self.app_state.collections.get_collection_file_paths(collection_name, 'video')
         collection_videos_stem = {Path(video).stem: video for video in collection_videos}
 
         # For each weight directory in the result path

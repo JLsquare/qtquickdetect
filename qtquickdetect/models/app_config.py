@@ -21,7 +21,7 @@ class AppConfig:
         with default values if it doesn't exist.
         """
         self.localization: str = 'en'
-        self.qss: str = 'app'
+        self.qss: str = 'dark'
         self.pipelines: Dict[str, Any] = {}
         self.models: Dict[str, Any] = {}
 
@@ -75,9 +75,9 @@ class AppConfig:
             self.localization = 'en'
             changed = True
 
-        if self.qss not in ['app', 'sys']:
+        if self.qss not in ['dark', 'light', 'sys']:
             logging.warning(f'Invalid qss in config: {self.qss}')
-            self.qss = 'app'
+            self.qss = 'dark'
             changed = True
 
         return changed

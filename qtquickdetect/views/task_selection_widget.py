@@ -5,6 +5,7 @@ from typing import Optional
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QRadioButton, QLabel
+from ..models.app_state import AppState
 
 
 class TaskSelectionWidget(QWidget):
@@ -18,6 +19,7 @@ class TaskSelectionWidget(QWidget):
         Initializes the TaskSelectionWidget.
         """
         super().__init__()
+        self.app_state: AppState = AppState.get_instance()
         self.task: str = 'detect'
 
         # PyQT6 Components
@@ -46,8 +48,9 @@ class TaskSelectionWidget(QWidget):
         self._task_icon_layout = QHBoxLayout()
         self._task_icon_layout.addStretch()
         self._task_icon = QLabel()
+        image_name = f"{self.app_state.get_theme_file_prefix()}task.png"
         self._task_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'task_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._task_icon_layout.addWidget(self._task_icon)

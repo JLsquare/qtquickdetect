@@ -128,8 +128,9 @@ class InferenceWidget(QWidget):
         self._run_icon_layout = QHBoxLayout()
         self._run_icon_layout.addStretch()
         self._run_icon = QLabel()
+        image_name = f"{self.app_state.get_theme_file_prefix()}run.png"
         self._run_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'run_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._run_icon_layout.addWidget(self._run_icon)

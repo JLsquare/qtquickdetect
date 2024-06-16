@@ -14,8 +14,11 @@ class ModelsWidget(QWidget):
         Initializes the ModelsWidget.
         """
         super().__init__()
+        self.app_state: AppState = AppState.get_instance()
+
+        # PyQT6 Components
         self._tree_widget: Optional[QTreeWidget] = None
-        self._appstate: AppState = AppState.get_instance()
+
         self.init_ui()
 
     ##############################
@@ -38,7 +41,7 @@ class ModelsWidget(QWidget):
         """
         Populate the tree with the models and weights available.
         """
-        models_config = self._appstate.app_config.models
+        models_config = self.app_state.app_config.models
         project_root = filepaths.get_app_dir()
         for model_name, model_details in models_config.items():
             parent_item = QTreeWidgetItem(self._tree_widget)

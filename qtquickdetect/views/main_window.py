@@ -27,7 +27,7 @@ class MainWindow(QWidget):
         Initializes the MainWindow.
         """
         super().__init__()
-        self._appstate: AppState = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
 
         # PyQT6 Components
         self._title_widget: Optional[QWidget] = None
@@ -54,7 +54,7 @@ class MainWindow(QWidget):
         self.setWindowTitle('QTQuickDetect')
         self.setGeometry(100, 100, 1524, 720)
         self.setMinimumSize(QSize(1524, 600))
-        self.setStyleSheet(self._appstate.qss)
+        self.setStyleSheet(self.app_state.qss)
         self.setProperty('class', 'dark-bg')
 
     def init_ui(self) -> None:
@@ -110,7 +110,8 @@ class MainWindow(QWidget):
         :return: QWidget containing the title user interface components.
         """
         self._title_icon = QLabel()
-        pixmap = (QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'qtquickdetect_icon.png'))
+        image_name = f"{self.app_state.get_theme_file_prefix()}model.png"
+        pixmap = (QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
                   .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         self._title_icon.setPixmap(pixmap)
         self._title_icon.setFixedWidth(32)

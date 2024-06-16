@@ -20,6 +20,8 @@ class VideoPlayerWidget(QWidget):
         :param video_path: The path to the video file.
         """
         super().__init__()
+        self._video_path: Path = video_path
+        self._status: str = "Playing"
 
         # PyQT6 Components
         self._main_layout: Optional[QVBoxLayout] = None
@@ -29,8 +31,6 @@ class VideoPlayerWidget(QWidget):
         self._position_slider: Optional[QSlider] = None
         self._control_layout: Optional[QHBoxLayout] = None
 
-        self._video_path: Path = video_path
-        self._status: str = "Playing"
         self.init_ui()
 
     ##############################

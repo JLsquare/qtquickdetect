@@ -1,8 +1,12 @@
 import logging
+import os
+import subprocess
+import sys
 
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox, QSpacerItem, QSizePolicy
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QGridLayout, QPushButton, QVBoxLayout, QLabel, QComboBox, QSpacerItem, QSizePolicy, \
+    QMessageBox, QApplication
+from PyQt6.QtCore import Qt, QTimer
 from ..models.app_state import AppState
 
 
@@ -15,7 +19,7 @@ class AppConfigWidget(QWidget):
         Initializes the AppConfigWidget.
         """
         super().__init__()
-        self._appstate: AppState = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
 
         # PyQT6 Components
         self._spacer: Optional[QSpacerItem] = None
@@ -41,7 +45,7 @@ class AppConfigWidget(QWidget):
         """
         self.setWindowTitle(self.tr('QTQuickDetect Settings'))
         self.setGeometry(100, 100, 480, 480)
-        self.setStyleSheet(self._appstate.qss)
+        self.setStyleSheet(self.app_state.qss)
         self.setProperty('class', 'dark-bg')
 
         self._main_layout = QGridLayout(self)
@@ -61,7 +65,8 @@ class AppConfigWidget(QWidget):
         """
         self._qss_label = QLabel(self.tr('QSS (need restart):'))
         self._qss_combo = QComboBox()
-        self._qss_combo.addItem(self.tr('App Default'), 'app')
+        self._qss_combo.addItem(self.tr('Dark (default)'), 'dark')
+        self._qss_combo.addItem(self.tr('Light'), 'light')
         self._qss_combo.addItem(self.tr('System'), 'sys')
         self._qss_combo.setCurrentText(self.get_qss())
         self._qss_combo.currentIndexChanged.connect(self.set_qss)
@@ -77,7 +82,7 @@ class AppConfigWidget(QWidget):
 
         :return: QVBoxLayout for localization settings.
         """
-        self._local_label = QLabel(self.tr('Language:'))
+        self._local_label = QLabel(self.tr('Language (need restart):'))
         self._local_combo = QComboBox()
         self._local_combo.addItem('English', 'en')
         self._local_combo.addItem('Français', 'fr')
@@ -126,8 +131,23 @@ class AppConfigWidget(QWidget):
         """
         Saves the current settings and closes the widget.
         """
-        self._appstate.save()
+        self.app_state.save()
         logging.debug('Saved settings')
+
+        # QMessageBox to ask for restart with choice to not restart for now
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Icon.Question)
+        msg_box.setWindowTitle('Restart Required')
+        msg_box.setText('Settings have been saved. Would you like to restart the application now?')
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
+
+        reply = msg_box.exec()
+
+        if reply == QMessageBox.StandardButton.Yes:
+            QApplication.quit()
+        else:
+            logging.debug('User chose not to restart the application.')
 
     def cancel_settings(self) -> None:
         """
@@ -142,9 +162,11 @@ class AppConfigWidget(QWidget):
 
         :return: The current QSS setting as a string.
         """
-        qss = self._appstate.app_config.qss
-        if qss == 'app':
-            return self.tr('App Default')
+        qss = self.app_state.app_config.qss
+        if qss == 'dark':
+            return self.tr('Dark (default)')
+        elif qss == 'light':
+            return self.tr('Light')
         else:
             return self.tr('System')
 
@@ -153,7 +175,7 @@ class AppConfigWidget(QWidget):
         Sets the QSS setting based on the combo box selection.
         """
         logging.debug(f"{self.tr('Setting QSS to')} {self._qss_combo.currentData()}")
-        self._appstate.app_config.qss = self._qss_combo.currentData()
+        self.app_state.app_config.qss = self._qss_combo.currentData()
 
     def get_local(self) -> str:
         """
@@ -161,7 +183,7 @@ class AppConfigWidget(QWidget):
 
         :return: The current localization setting as a string.
         """
-        local = self._appstate.app_config.localization
+        local = self.app_state.app_config.localization
         if local == 'fr':
             return 'Français'
         else:
@@ -172,4 +194,4 @@ class AppConfigWidget(QWidget):
         Sets the localization setting based on the combo box selection.
         """
         logging.debug(f'Setting localization to {self._local_combo.currentData()}')
-        self._appstate.app_config.localization = self._local_combo.currentData()
+        self.app_state.app_config.localization = self._local_combo.currentData()

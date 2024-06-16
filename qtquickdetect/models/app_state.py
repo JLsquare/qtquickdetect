@@ -3,7 +3,7 @@ from typing import Optional
 
 from PyQt6.QtCore import QTranslator
 from PyQt6.QtWidgets import QApplication
-from .app_config import AppConfig
+from ..models.app_config import AppConfig
 from .collections import Collections
 from .presets import Presets
 from ..utils import filepaths
@@ -67,11 +67,27 @@ class AppState:
         """
         Updates the QSS (stylesheet) based on the application configuration.
         """
-        if self.app_config.qss == 'app':
-            with open(filepaths.get_app_dir() / 'resources' / 'qss' / 'stylesheet.qss', 'r') as file:
+        if self.app_config.qss == 'dark':
+            with open(filepaths.get_app_dir() / 'resources' / 'qss' / 'dark.qss', 'r') as file:
+                self.qss = file.read()
+        elif self.app_config.qss == 'light':
+            with open(filepaths.get_app_dir() / 'resources' / 'qss' / 'light.qss', 'r') as file:
                 self.qss = file.read()
         else:
             self.qss = None
+
+    def get_theme_file_prefix(self) -> str:
+        """
+        Returns the theme file prefix based on the application configuration.
+
+        :return: The theme file prefix.
+        """
+        if self.app_config.qss == 'dark':
+            return 'default_'
+        elif self.app_config.qss == 'light':
+            return 'light_'
+        else:
+            return 'default_'
 
     def update_localization(self) -> None:
         """

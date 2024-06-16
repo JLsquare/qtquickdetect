@@ -18,7 +18,7 @@ class ModelsSelectionWidget(QWidget):
         Initializes the ModelsSelectionWidget.
         """
         super().__init__()
-        self.appstate: AppState = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
         self.weights: dict[str, list[str]] = {}
         self.task: str = 'detect'
 
@@ -43,8 +43,9 @@ class ModelsSelectionWidget(QWidget):
         self._model_icon_layout = QHBoxLayout()
         self._model_icon_layout.addStretch()
         self._model_icon = QLabel()
+        image_name = f"{self.app_state.get_theme_file_prefix()}model.png"
         self._model_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'model_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._model_icon_layout.addWidget(self._model_icon)
@@ -76,8 +77,8 @@ class ModelsSelectionWidget(QWidget):
         """
         Dynamically load models and weights from appstate.config
         """
-        for model_key, model_info in self.appstate.app_config.models.items():
-            if self.task != self.appstate.app_config.models[model_key]["task"]:
+        for model_key, model_info in self.app_state.app_config.models.items():
+            if self.task != self.app_state.app_config.models[model_key]["task"]:
                 continue
 
             parent_item = QTreeWidgetItem(self._model_tree, [model_key])

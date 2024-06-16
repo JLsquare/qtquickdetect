@@ -110,7 +110,7 @@ QComboBox::drop-down {
 }
 
 QComboBox::down-arrow {
-    image: url('qtquickdetect/resources/images/dropdown_icon.png');
+    image: url('qtquickdetect/resources/images/default_dropdown.png');
     width: 16px;
 }
 
@@ -156,14 +156,6 @@ QTabWidget::pane {
     border: 1px solid #797979;
     margin: 0px;
     border-radius: 16px;
-}
-QTabBar::close-button {
-    image: url('qtquickdetect/ressources/images/close_icon.png');
-    padding: 4px;
-    margin: 0px 8px 4px -4px;
-}
-QTabBar::close-button:hover {
-    image: url('qtquickdetect/resources/images/close_hover_icon.png');
 }
 
 /* ==== QSlider ==== */
@@ -331,7 +323,7 @@ QRadioButton::indicator {
     border: 1px solid #797979;
 }
 QRadioButton::indicator:checked {
-    image: url('qtquickdetect/resources/images/radio_icon.png');
+    image: url('qtquickdetect/resources/images/default_radio.png');
 }
 
 /** ==== QTableWidget ==== */
@@ -366,5 +358,5 @@ QCheckBox::indicator {
     border: 1px solid #797979;
 }
 QCheckBox::indicator:checked {
-    image: url('qtquickdetect/resources/images/check_icon.png');
+    image: url('qtquickdetect/resources/images/default_check.png');
 }

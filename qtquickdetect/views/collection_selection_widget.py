@@ -20,7 +20,7 @@ class CollectionSelectionWidget(QWidget):
         :param media_type: The type of media for the collections.
         """
         super().__init__()
-        self.appstate: AppState = AppState.get_instance()
+        self.app_state: AppState = AppState.get_instance()
         self.media_type: str = media_type
         self.task: str = 'detect'
         self.collection: str = ''
@@ -49,15 +49,16 @@ class CollectionSelectionWidget(QWidget):
         self._collection_icon_layout = QHBoxLayout()
         self._collection_icon_layout.addStretch()
         self._collection_icon = QLabel()
+        image_name = f"{self.app_state.get_theme_file_prefix()}input.png"
         self._collection_icon.setPixmap(
-            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / 'input_icon.png'))
+            QPixmap(str(filepaths.get_app_dir() / 'resources' / 'images' / image_name))
             .scaled(32, 32, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         )
         self._collection_icon_layout.addWidget(self._collection_icon)
         self._collection_icon_layout.addStretch()
 
         # Collection radio buttons
-        collections = self.appstate.collections.get_collections(self.media_type)
+        collections = self.app_state.collections.get_collections(self.media_type)
         self._collection_radio_layout = QVBoxLayout()
         self._collection_radio_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self._collection_radio_buttons = []
