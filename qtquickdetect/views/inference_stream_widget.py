@@ -157,7 +157,7 @@ class InferenceStreamWidget(QWidget):
 
         :return: ModelsSelectionWidget containing the models user interface components.
         """
-        self._models = ModelsSelectionWidget()
+        self._models = ModelsSelectionWidget(single_weight=True)
         self._models.models_changed_signal.connect(self.check_run)
         return self._models
 
