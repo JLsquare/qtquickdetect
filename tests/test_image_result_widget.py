@@ -1,7 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock, call
+
+from unittest.mock import patch
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QListWidgetItem
 from qtquickdetect.views.image_result_widget import ImageResultWidget
 from qtquickdetect.models.preset import Preset
 from pathlib import Path

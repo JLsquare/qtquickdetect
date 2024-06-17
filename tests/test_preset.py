@@ -1,11 +1,9 @@
 import json
-import logging
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 import pytest
 
-from qtquickdetect.models.preset import Preset  # Adjust the import according to your actual module structure
-from qtquickdetect.utils import filepaths  # Adjust the import according to your actual module structure
+from unittest.mock import MagicMock
+from qtquickdetect.models.preset import Preset
+from qtquickdetect.utils import filepaths
 
 @pytest.fixture
 def mock_filepaths(tmp_path):

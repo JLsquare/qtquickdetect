@@ -1,5 +1,5 @@
 import pytest
-from PyQt6.QtWidgets import QTreeWidgetItem
+
 from qtquickdetect.views.models_widget import ModelsWidget
 from qtquickdetect.models.app_state import AppState
 from unittest.mock import patch, MagicMock

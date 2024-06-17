@@ -1,4 +1,5 @@
 import pytest
+
 from PyQt6 import QtCore
 from qtquickdetect.views.about_widget import AboutWidget
 from qtquickdetect.views.main_window import MainWindow

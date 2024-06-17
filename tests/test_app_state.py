@@ -1,4 +1,5 @@
 import pytest
+
 from unittest.mock import MagicMock, patch, mock_open
 from PyQt6.QtWidgets import QApplication
 from qtquickdetect.models.app_config import AppConfig

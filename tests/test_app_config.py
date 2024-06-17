@@ -1,13 +1,9 @@
 import json
-import shutil
-import logging
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
 import pytest
 
-from qtquickdetect.models.app_config import AppConfig  # Adjust the import according to your actual module structure
-from qtquickdetect.utils import filepaths  # Adjust the import according to your actual module structure
+from unittest.mock import MagicMock
+from qtquickdetect.models.app_config import AppConfig
+from qtquickdetect.utils import filepaths
 
 
 @pytest.fixture

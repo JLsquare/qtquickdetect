@@ -1,9 +1,9 @@
 import pytest
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-from qtquickdetect.models.preset import Preset  # Adjust the import according to your actual module structure
-from qtquickdetect.models.presets import Presets  # Adjust the import according to your actual module structure
-from qtquickdetect.utils import filepaths  # Adjust the import according to your actual module structure
+
+from unittest.mock import MagicMock
+from qtquickdetect.models.preset import Preset
+from qtquickdetect.models.presets import Presets
+from qtquickdetect.utils import filepaths
 
 
 @pytest.fixture

@@ -1,4 +1,5 @@
 import pytest
+
 from PyQt6 import QtCore
 from qtquickdetect.views.collections_widget import CollectionsWidget
 from qtquickdetect.models.app_state import AppState
@@ -7,7 +8,7 @@ from qtquickdetect.models.app_state import AppState
 @pytest.fixture
 def collections_widget(qtbot):
     app_state = AppState.get_instance()
-    widget = CollectionsWidget(media_type="image")
+    widget = CollectionsWidget(media_type="image", edit_callback=None)
     qtbot.addWidget(widget)
     return widget
 

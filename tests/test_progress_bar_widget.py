@@ -1,7 +1,8 @@
 import pytest
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication
-from qtquickdetect.views.progress_bar_widget import ProgressBarWidget  # Adjust the import path as necessary
+from qtquickdetect.views.progress_bar_widget import ProgressBarWidget
 
 
 @pytest.fixture

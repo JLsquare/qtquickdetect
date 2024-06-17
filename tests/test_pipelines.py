@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import cv2 as cv
+
 from pathlib import Path
 from qtquickdetect.models.preset import Preset
 from qtquickdetect.pipeline.torchvision_classify_pipeline import TorchVisionClassifyPipeline

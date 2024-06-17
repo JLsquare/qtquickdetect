@@ -1,4 +1,5 @@
 import pytest
+
 from PyQt6.QtCore import Qt
 from qtquickdetect.views.presets_widget import PresetsWidget
 from qtquickdetect.models.app_state import AppState
@@ -6,7 +7,7 @@ from qtquickdetect.models.app_state import AppState
 @pytest.fixture
 def presets_widget(qtbot):
     app_state = AppState.get_instance()
-    widget = PresetsWidget()
+    widget = PresetsWidget(None)
     qtbot.addWidget(widget)
     return widget
 

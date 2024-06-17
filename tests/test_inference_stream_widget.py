@@ -1,9 +1,7 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from PyQt6.QtCore import Qt
+
 from PyQt6.QtWidgets import QApplication, QLineEdit, QPushButton
 from qtquickdetect.views.inference_stream_widget import InferenceStreamWidget
-from qtquickdetect.views.stream_widget import StreamWidget
 from qtquickdetect.views.models_selection_widget import ModelsSelectionWidget
 from qtquickdetect.views.task_selection_widget import TaskSelectionWidget
 from qtquickdetect.views.preset_selection_widget import PresetSelectionWidget

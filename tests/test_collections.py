@@ -1,10 +1,8 @@
-import shutil
-from pathlib import Path
-from unittest.mock import MagicMock
 import pytest
 
-from qtquickdetect.models.collections import Collections  # Adjust the import according to your actual module structure
-from qtquickdetect.utils import filepaths  # Adjust the import according to your actual module structure
+from unittest.mock import MagicMock
+from qtquickdetect.models.collections import Collections
+from qtquickdetect.utils import filepaths
 
 
 @pytest.fixture

@@ -1,4 +1,5 @@
 import pytest
+
 from unittest.mock import patch, MagicMock
 from PyQt6.QtCore import Qt
 from PyQt6.QtTest import QSignalSpy
