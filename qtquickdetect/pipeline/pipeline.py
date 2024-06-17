@@ -7,6 +7,7 @@ from pathlib import Path
 from PyQt6.QtCore import pyqtSignal, QThread
 from ..models.preset import Preset
 from ..utils.media_fetcher import MediaFetcher
+from ..utils.webcam_fetcher import WebcamFetcher
 
 
 class Pipeline(QThread):
@@ -133,16 +134,21 @@ class Pipeline(QThread):
 
     def _run_stream(self, url: str) -> None:
         """
-        Processes a video stream.
+        Processes a video stream or webcam.
 
-        :param url: The URL of the video stream.
+        :param url: The URL of the video stream or the webcam in the format "webcam:[device_index]".
         """
         if url is None:
             self.error_signal.emit('No URL provided', Exception('No URL provided'))
             return
 
-        # Setup the frame fetcher and the frame interval
-        media_fetcher = MediaFetcher(url)
+        # Determine whether to use MediaFetcher or WebcamFetcher
+        if url.startswith('webcam:'):
+            device_index = int(url.split(':')[1])
+            media_fetcher = WebcamFetcher(device_index)
+        else:
+            media_fetcher = MediaFetcher(url)
+
         self.stream_fps = media_fetcher.fps
         max_fps = 30.0
         frame_interval = 1.0 / min(self.stream_fps, max_fps)
