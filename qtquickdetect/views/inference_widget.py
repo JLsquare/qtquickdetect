@@ -166,6 +166,22 @@ class InferenceWidget(QWidget):
         self._run_widget.setFixedSize(240, 360)
         return self._run_widget
 
+    def refresh_presets(self) -> None:
+        """
+        Refreshes presets list.
+        """
+        old_preset_widget = self._h_layout.itemAt(3).widget()
+        self._h_layout.replaceWidget(old_preset_widget, self.preset_ui())
+        old_preset_widget.deleteLater()
+
+    def refresh_collections(self) -> None:
+        """
+        Refreshes collections list.
+        """
+        old_collection_widget = self._h_layout.itemAt(4).widget()
+        self._h_layout.replaceWidget(old_collection_widget, self.collection_ui())
+        old_collection_widget.deleteLater()
+
     ##############################
     #         CONTROLLER         #
     ##############################

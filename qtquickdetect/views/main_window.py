@@ -74,11 +74,11 @@ class MainWindow(QWidget):
         self._side_menu.addItem(self.tr('Models'))
         self._content_stack.addWidget(ModelsWidget())
         self._side_menu.addItem(self.tr('Presets'))
-        self._content_stack.addWidget(PresetsWidget(self.reinstantiate_inference_widgets))
+        self._content_stack.addWidget(PresetsWidget(self.refresh_presets_lists))
         self._side_menu.addItem(self.tr('Image Collections'))
-        self._content_stack.addWidget(CollectionsWidget('image', self.reinstantiate_inference_widgets))
+        self._content_stack.addWidget(CollectionsWidget('image', self.refresh_collections_lists))
         self._side_menu.addItem(self.tr('Video Collections'))
-        self._content_stack.addWidget(CollectionsWidget('video', self.reinstantiate_inference_widgets))
+        self._content_stack.addWidget(CollectionsWidget('video', self.refresh_collections_lists))
         self._side_menu.addItem(self.tr('Image Inference'))
         self._content_stack.addWidget(InferenceWidget('image', self.open_last_inference))
         self._side_menu.addItem(self.tr('Video Inference'))
@@ -139,20 +139,21 @@ class MainWindow(QWidget):
         self._side_menu.setCurrentRow(row)
         self._content_stack.setCurrentIndex(row)
 
-    def reinstantiate_inference_widgets(self) -> None:
+    def refresh_presets_lists(self) -> None:
         """
-        Re-instantiate the InferenceWidget and InferenceStreamWidget to update the collection / model / preset list.
+        Triggers a refresh of the presets list for inference-related widgets.
+        (SreamInferenceWidget, InferenceWidget)
         """
-        image_inference_widget = InferenceWidget('image', self.open_last_inference)
-        video_inference_widget = InferenceWidget('video', self.open_last_inference)
-        stream_inference_widget = InferenceStreamWidget()
+        for i in range(5, 8):
+            self._content_stack.widget(i).refresh_presets()
 
-        self._content_stack.insertWidget(5, image_inference_widget)
-        self._content_stack.removeWidget(self._content_stack.widget(6))
-        self._content_stack.insertWidget(6, video_inference_widget)
-        self._content_stack.removeWidget(self._content_stack.widget(7))
-        self._content_stack.insertWidget(7, stream_inference_widget)
-        self._content_stack.removeWidget(self._content_stack.widget(8))
+    def refresh_collections_lists(self) -> None:
+        """
+        Triggers a refresh of the collections list for inference-related widgets.
+        (StreamInferenceWidget, InferenceWidget)
+        """
+        for i in range(5, 8):
+            self._content_stack.widget(i).refresh_collections()
 
     def open_last_inference(self) -> None:
         """

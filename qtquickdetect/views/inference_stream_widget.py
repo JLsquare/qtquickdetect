@@ -203,6 +203,20 @@ class InferenceStreamWidget(QWidget):
         self._run_widget.setFixedSize(240, 360)
         return self._run_widget
 
+    def refresh_presets(self) -> None:
+        """
+        Refreshes presets list.
+        """
+        old_preset_widget = self._h_inference_layout.itemAt(3).widget()
+        self._h_inference_layout.replaceWidget(old_preset_widget, self.preset_ui())
+        old_preset_widget.deleteLater()
+
+    def refresh_collections(self) -> None:
+        """
+        Refreshes collections list. (Useless here)
+        """
+        pass
+
     ##############################
     #         CONTROLLER         #
     ##############################
