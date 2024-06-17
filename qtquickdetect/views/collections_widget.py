@@ -20,6 +20,7 @@ class CollectionsWidget(QWidget):
         Initializes the CollectionsWidget
 
         :param media_type: The type of media to display
+        :param edit_callback: The callback to call when a collection is edited
         """
         super().__init__()
         self.media_type: str = media_type

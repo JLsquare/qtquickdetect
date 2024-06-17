@@ -16,6 +16,8 @@ class PresetsWidget(QWidget):
     def __init__(self, edit_callback: callable):
         """
         Initializes the PresetWidget
+
+        :param edit_callback: The callback function to call when a preset is edited
         """
         super().__init__()
         self.app_state: AppState = AppState.get_instance()
