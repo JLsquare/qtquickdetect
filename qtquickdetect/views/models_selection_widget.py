@@ -1,8 +1,8 @@
 from typing import Optional
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QListWidget, QTreeWidget, QTreeWidgetItem, \
-    QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem, QSizePolicy, QRadioButton, \
+    QButtonGroup, QHBoxLayout
 from ..utils import filepaths
 from ..models.app_state import AppState
 
@@ -13,7 +13,7 @@ class ModelsSelectionWidget(QWidget):
     """
     models_changed_signal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, single_weight: bool = False):
         """
         Initializes the ModelsSelectionWidget.
         """
@@ -21,11 +21,12 @@ class ModelsSelectionWidget(QWidget):
         self.app_state: AppState = AppState.get_instance()
         self.weights: dict[str, list[str]] = {}
         self.task: str = 'detect'
+        self.single_weight = single_weight
 
         # PyQT6 Components
         self._model_icon_layout: Optional[QHBoxLayout] = None
         self._model_icon: Optional[QLabel] = None
-        self._model_tree: Optional[QListWidget] = None
+        self._model_tree: Optional[QTreeWidget] = None
         self._model_layout: Optional[QVBoxLayout] = None
         self._model_description: Optional[QLabel] = None
 
@@ -77,6 +78,9 @@ class ModelsSelectionWidget(QWidget):
         """
         Dynamically load models and weights from appstate.config
         """
+        radio_button_group = QButtonGroup(self)
+        radio_button_group.setExclusive(True)
+
         for model_key, model_info in self.app_state.app_config.models.items():
             if self.task != self.app_state.app_config.models[model_key]["task"]:
                 continue
@@ -86,11 +90,25 @@ class ModelsSelectionWidget(QWidget):
 
             for weight in model_info["weights"]:
                 child_item = QTreeWidgetItem(parent_item, [weight])
-                child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-                if model_key in self.weights and weight in self.weights[model_key]:
-                    child_item.setCheckState(0, Qt.CheckState.Checked)
-                    has_children_checked = True
+
+                if self.single_weight:
+                    radio_button = QRadioButton(weight)
+                    # to fix the text cropping at the bottom (temp fix?)
+                    radio_button.setMinimumHeight(30)
+                    radio_button_group.addButton(radio_button)
+
+                    layout = QHBoxLayout()
+                    layout.addWidget(radio_button)
+
+                    widget = QWidget()
+                    widget.setLayout(layout)
+
+                    layout.setContentsMargins(0, 0, 0, 0)
+                    self._model_tree.setItemWidget(child_item, 0, widget)
+
+                    radio_button.toggled.connect(lambda checked, k=model_key, w=weight: self.radio_toggled(checked, k, w))
                 else:
+                    child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                     child_item.setCheckState(0, Qt.CheckState.Unchecked)
 
             if has_children_checked:
@@ -125,6 +143,14 @@ class ModelsSelectionWidget(QWidget):
 
         self.weights = selected_models
         self.models_changed_signal.emit()
+
+    def radio_toggled(self, checked: bool, model_key: str, weight: str) -> None:
+        """
+        Handle radio button toggled event.
+        """
+        if checked:
+            self.weights = {model_key: [weight]}  # Only one weight can be selected at a time
+            self.models_changed_signal.emit()
 
     def set_task(self, task: str) -> None:
         """

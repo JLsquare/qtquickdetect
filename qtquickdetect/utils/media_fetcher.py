@@ -7,18 +7,17 @@ class MediaFetcher:
     """
     Class to fetch frames from a video stream, not on a separate thread, has a method to fetch the frame.
     """
-    def __init__(self, url):
+    def __init__(self, url_or_device: str | int):
         """
         Initializes the MediaFetcher object.
 
-        :param url: The URL of the video stream.
+        :param url_or_device: The URL of the video stream or the index of the webcam device.
         """
-        self.url = url
-        self.cap = cv.VideoCapture(self.url)
+        self.cap = cv.VideoCapture(url_or_device)
         self.fps = self.cap.get(cv.CAP_PROP_FPS)
         self.last_fetch_time = None
         if not self.cap.isOpened():
-            raise IOError(f"Failed to open stream: {url}")
+            raise IOError(f"Failed to open stream: {url_or_device}")
 
     def fetch_frame(self) -> tuple[np.ndarray, bool]:
         """

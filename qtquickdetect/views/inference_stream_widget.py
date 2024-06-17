@@ -1,8 +1,9 @@
+import cv2 as cv
+
 from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit
-
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QComboBox
 from ..views.stream_widget import StreamWidget
 from ..utils import filepaths
 from ..models.app_state import AppState
@@ -46,6 +47,8 @@ class InferenceStreamWidget(QWidget):
         self._h_inference_layout: Optional[QHBoxLayout] = None
         self._inference_widget: Optional[QWidget] = None
         self._stream_widget: Optional[StreamWidget] = None
+        self._webcam_combo: Optional[QComboBox] = None
+        self._url_description: Optional[QLabel] = None
 
         self.init_ui()
 
@@ -86,8 +89,6 @@ class InferenceStreamWidget(QWidget):
     def url_ui(self) -> QWidget:
         """
         Initializes the URL user interface components.
-
-        :return: QWidget containing the URL user interface components.
         """
         self._url_icon_layout = QHBoxLayout()
         self._url_icon_layout.addStretch()
@@ -106,9 +107,23 @@ class InferenceStreamWidget(QWidget):
         self._url.setFixedWidth(240)
         self._url.textChanged.connect(self.check_run)
 
+        self._webcam_combo = QComboBox()
+        self._webcam_combo.setFixedWidth(240)
+        self._webcam_combo.addItem(self.tr('Select Webcam'))
+        self._webcam_combo.addItems(self.get_available_webcams())
+        if self._webcam_combo.count() > 0:
+            self._webcam_combo.setCurrentIndex(0)
+        self._webcam_combo.currentTextChanged.connect(self.on_webcam_selected)
+
+        self._url_description = QLabel(self.tr('URL or Webcam'))
+        self._url_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._url_description.setProperty('class', 'description')
+
         self._url_layout = QVBoxLayout()
         self._url_layout.addLayout(self._url_icon_layout)
         self._url_layout.addWidget(self._url)
+        self._url_layout.addWidget(self._webcam_combo)
+        self._url_layout.addWidget(self._url_description)
         self._url_layout.addStretch()
 
         self._url_widget = QWidget()
@@ -142,7 +157,7 @@ class InferenceStreamWidget(QWidget):
 
         :return: ModelsSelectionWidget containing the models user interface components.
         """
-        self._models = ModelsSelectionWidget()
+        self._models = ModelsSelectionWidget(single_weight=True)
         self._models.models_changed_signal.connect(self.check_run)
         return self._models
 
@@ -191,6 +206,34 @@ class InferenceStreamWidget(QWidget):
     ##############################
     #         CONTROLLER         #
     ##############################
+
+    @staticmethod
+    def get_available_webcams() -> list[str]:
+        """
+        Returns a list of available webcam devices in the format 'webcam:[device_index]'.
+        """
+        available_webcams = []
+        index = -1
+        max_index = 20
+        while index < max_index:
+            index += 1
+            cap = cv.VideoCapture(index)
+            if not cap.isOpened():
+                continue
+            cap.release()
+            available_webcams.append(f'webcam:{index}')
+
+        return available_webcams
+
+    def on_webcam_selected(self, text: str) -> None:
+        """
+        Slot that updates the URL QLineEdit when a webcam is selected from the ComboBox.
+        """
+        if text == self.tr('Select Webcam'):
+            self._url.setText('')
+        else:
+            self._url.setText(text)
+        self.check_run()
 
     def update_models_task(self) -> None:
         """
