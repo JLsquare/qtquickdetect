@@ -15,7 +15,7 @@ class CollectionsWidget(QWidget):
     CollectionsWidget is a QWidget that displays a list of collections and their files
     for a specified media type.
     """
-    def __init__(self, media_type: str):
+    def __init__(self, media_type: str, edit_callback: callable):
         """
         Initializes the CollectionsWidget
 
@@ -23,6 +23,7 @@ class CollectionsWidget(QWidget):
         """
         super().__init__()
         self.media_type: str = media_type
+        self.edit_callback: callable = edit_callback
         self.app_state: AppState = AppState.get_instance()
 
         # PyQT6 Components
@@ -213,6 +214,8 @@ class CollectionsWidget(QWidget):
         self._delete_file_button.setEnabled(True)
         self._delete_collection_button.setEnabled(True)
 
+        self.edit_callback()
+
     def rename_collection(self) -> None:
         """
         Renames the selected collection
@@ -226,6 +229,8 @@ class CollectionsWidget(QWidget):
             self.app_state.collections.change_collection_name(collection, new_name, self.media_type)
             self._collection_list.currentItem().setText(new_name)
             self._collection_list.currentItem().setData(0, new_name)
+
+        self.edit_callback()
 
     def add_files(self):
         """
@@ -290,3 +295,5 @@ class CollectionsWidget(QWidget):
         self._add_folder_button.setEnabled(False)
         self._delete_file_button.setEnabled(False)
         self._delete_collection_button.setEnabled(False)
+
+        self.edit_callback()

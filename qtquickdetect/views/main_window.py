@@ -74,11 +74,11 @@ class MainWindow(QWidget):
         self._side_menu.addItem(self.tr('Models'))
         self._content_stack.addWidget(ModelsWidget())
         self._side_menu.addItem(self.tr('Presets'))
-        self._content_stack.addWidget(PresetsWidget())
+        self._content_stack.addWidget(PresetsWidget(self.reinstantiate_inference_widgets))
         self._side_menu.addItem(self.tr('Image Collections'))
-        self._content_stack.addWidget(CollectionsWidget('image'))
+        self._content_stack.addWidget(CollectionsWidget('image', self.reinstantiate_inference_widgets))
         self._side_menu.addItem(self.tr('Video Collections'))
-        self._content_stack.addWidget(CollectionsWidget('video'))
+        self._content_stack.addWidget(CollectionsWidget('video', self.reinstantiate_inference_widgets))
         self._side_menu.addItem(self.tr('Image Inference'))
         self._content_stack.addWidget(InferenceWidget('image', self.open_last_inference))
         self._side_menu.addItem(self.tr('Video Inference'))
@@ -137,22 +137,22 @@ class MainWindow(QWidget):
         """
         logging.info(f'Change row {row}')
         self._side_menu.setCurrentRow(row)
-
-        # Re-instantiate the InferenceWidget to update the collection / model / preset list (temp ?)
-        if row == 5:  # Image Inference
-            new_widget = InferenceWidget('image', self.open_last_inference)
-            self._content_stack.insertWidget(row, new_widget)
-            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
-        elif row == 6:  # Video Inference
-            new_widget = InferenceWidget('video', self.open_last_inference)
-            self._content_stack.insertWidget(row, new_widget)
-            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
-        elif row == 7:  # Stream Inference
-            new_widget = InferenceStreamWidget()
-            self._content_stack.insertWidget(row, new_widget)
-            self._content_stack.removeWidget(self._content_stack.widget(row + 1))
-
         self._content_stack.setCurrentIndex(row)
+
+    def reinstantiate_inference_widgets(self) -> None:
+        """
+        Re-instantiate the InferenceWidget and InferenceStreamWidget to update the collection / model / preset list.
+        """
+        image_inference_widget = InferenceWidget('image', self.open_last_inference)
+        video_inference_widget = InferenceWidget('video', self.open_last_inference)
+        stream_inference_widget = InferenceStreamWidget()
+
+        self._content_stack.insertWidget(5, image_inference_widget)
+        self._content_stack.removeWidget(self._content_stack.widget(6))
+        self._content_stack.insertWidget(6, video_inference_widget)
+        self._content_stack.removeWidget(self._content_stack.widget(7))
+        self._content_stack.insertWidget(7, stream_inference_widget)
+        self._content_stack.removeWidget(self._content_stack.widget(8))
 
     def open_last_inference(self) -> None:
         """

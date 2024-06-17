@@ -13,13 +13,14 @@ class PresetsWidget(QWidget):
     """
     PresetWidget is a QWidget that allows the user to configure and manage presets.
     """
-    def __init__(self):
+    def __init__(self, edit_callback: callable):
         """
         Initializes the PresetWidget
         """
         super().__init__()
         self.app_state: AppState = AppState.get_instance()
         self.current_preset: Optional[Preset] = None
+        self.edit_callback: callable = edit_callback
 
         # PyQT6 Components
         self._preset_list: Optional[QListWidget] = None
@@ -252,6 +253,8 @@ class PresetsWidget(QWidget):
         self._preset_list.setCurrentItem(new_item)
         self.update_preset(new_preset_name)
 
+        self.edit_callback()
+
     def update_preset(self, preset: str) -> None:
         self.current_preset = self.app_state.presets.get_preset(preset)
         self._preset_name_field.setText(preset)
@@ -293,6 +296,8 @@ class PresetsWidget(QWidget):
             self._preset_list.currentItem().setData(0, new_name)
         self.current_preset = self.app_state.presets.get_preset(new_name)
 
+        self.edit_callback()
+
     def delete_preset(self) -> None:
         """
         Deletes the selected preset
@@ -303,6 +308,8 @@ class PresetsWidget(QWidget):
         self._preset_name_field.setText('')
         self.current_preset = None
         self._scroll_area.hide()
+
+        self.edit_callback()
 
     @staticmethod
     def get_gpu_devices() -> list[str]:
