@@ -7,7 +7,7 @@ from qtquickdetect.models.app_state import AppState
 @pytest.fixture
 def presets_widget(qtbot):
     app_state = AppState.get_instance()
-    widget = PresetsWidget(None)
+    widget = PresetsWidget(lambda x: None)
     qtbot.addWidget(widget)
     return widget
 

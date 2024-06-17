@@ -8,7 +8,7 @@ from qtquickdetect.models.app_state import AppState
 @pytest.fixture
 def collections_widget(qtbot):
     app_state = AppState.get_instance()
-    widget = CollectionsWidget(media_type="image", edit_callback=None)
+    widget = CollectionsWidget(media_type="image", edit_callback=lambda x: None)
     qtbot.addWidget(widget)
     return widget
 
