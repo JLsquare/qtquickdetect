@@ -159,25 +159,25 @@ class PresetsWidget(QWidget):
 
         # Pose head color picker
         self._pose_head_color_button = QPushButton(self.tr('Set Pose Head Color'))
-        self._pose_head_color_button.clicked.connect(lambda: self.set_color('pose_head_color'))
+        self._pose_head_color_button.clicked.connect(self.set_pose_head_color)
         self._preset_layout.addWidget(QLabel(self.tr('Pose Head Color:')))
         self._preset_layout.addWidget(self._pose_head_color_button)
 
         # Pose chest color picker
         self._pose_chest_color_button = QPushButton(self.tr('Set Pose Chest Color'))
-        self._pose_chest_color_button.clicked.connect(lambda: self.set_color('pose_chest_color'))
+        self._pose_chest_color_button.clicked.connect(self.set_pose_chest_color)
         self._preset_layout.addWidget(QLabel(self.tr('Pose Chest Color:')))
         self._preset_layout.addWidget(self._pose_chest_color_button)
 
         # Pose leg color picker
         self._pose_leg_color_button = QPushButton(self.tr('Set Pose Leg Color'))
-        self._pose_leg_color_button.clicked.connect(lambda: self.set_color('pose_leg_color'))
+        self._pose_leg_color_button.clicked.connect(self.set_pose_leg_color)
         self._preset_layout.addWidget(QLabel(self.tr('Pose Leg Color:')))
         self._preset_layout.addWidget(self._pose_leg_color_button)
 
         # Pose arm color picker
         self._pose_arm_color_button = QPushButton(self.tr('Set Pose Arm Color'))
-        self._pose_arm_color_button.clicked.connect(lambda: self.set_color('pose_arm_color'))
+        self._pose_arm_color_button.clicked.connect(self.set_pose_arm_color)
         self._preset_layout.addWidget(QLabel(self.tr('Pose Arm Color:')))
         self._preset_layout.addWidget(self._pose_arm_color_button)
 
@@ -276,10 +276,14 @@ class PresetsWidget(QWidget):
         self._text_color_button.setStyleSheet(f'background-color: rgb({text_color[0]}, {text_color[1]}, {text_color[2]});')
         self._box_color_by_class_checkbox.setChecked(self.current_preset.box_color_per_class)
         self._segment_color_by_class_checkbox.setChecked(self.current_preset.segment_color_per_class)
-        self._pose_head_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_head_color[0]}, {self.current_preset.pose_head_color[1]}, {self.current_preset.pose_head_color[2]});')
-        self._pose_chest_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_chest_color[0]}, {self.current_preset.pose_chest_color[1]}, {self.current_preset.pose_chest_color[2]});')
-        self._pose_leg_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_leg_color[0]}, {self.current_preset.pose_leg_color[1]}, {self.current_preset.pose_leg_color[2]});')
-        self._pose_arm_color_button.setStyleSheet(f'background-color: rgb({self.current_preset.pose_arm_color[0]}, {self.current_preset.pose_arm_color[1]}, {self.current_preset.pose_arm_color[2]});')
+        pose_head_color = self.current_preset.pose_head_color
+        pose_chest_color = self.current_preset.pose_chest_color
+        pose_leg_color = self.current_preset.pose_leg_color
+        pose_arm_color = self.current_preset.pose_arm_color
+        self._pose_head_color_button.setStyleSheet(f'background-color: rgb({pose_head_color[0]}, {pose_head_color[1]}, {pose_head_color[2]});')
+        self._pose_chest_color_button.setStyleSheet(f'background-color: rgb({pose_chest_color[0]}, {pose_chest_color[1]}, {pose_chest_color[2]});')
+        self._pose_leg_color_button.setStyleSheet(f'background-color: rgb({pose_leg_color[0]}, {pose_leg_color[1]}, {pose_leg_color[2]});')
+        self._pose_arm_color_button.setStyleSheet(f'background-color: rgb({pose_arm_color[0]}, {pose_arm_color[1]}, {pose_arm_color[2]});')
         self._pose_point_size_slider.setValue(self.current_preset.pose_point_size)
         self._pose_line_thickness_slider.setValue(self.current_preset.pose_line_thickness)
         self._scroll_area.show()
@@ -398,18 +402,56 @@ class PresetsWidget(QWidget):
         Sets the box color for the current preset
         """
         self.set_color('box_color')
+        box_color = self.current_preset.box_color
+        self._box_color_button.setStyleSheet(f'background-color: rgb({box_color[0]}, {box_color[1]}, {box_color[2]});')
 
     def set_segment_color(self) -> None:
         """
         Sets the segment color for the current preset
         """
         self.set_color('segment_color')
+        segment_color = self.current_preset.segment_color
+        self._segment_color_button.setStyleSheet(f'background-color: rgb({segment_color[0]}, {segment_color[1]}, {segment_color[2]});')
+
+    def set_pose_head_color(self) -> None:
+        """
+        Sets the pose head color for the current preset
+        """
+        self.set_color('pose_head_color')
+        pose_head_color = self.current_preset.pose_head_color
+        self._pose_head_color_button.setStyleSheet(f'background-color: rgb({pose_head_color[0]}, {pose_head_color[1]}, {pose_head_color[2]});')
+
+    def set_pose_chest_color(self) -> None:
+        """
+        Sets the pose chest color for the current preset
+        """
+        self.set_color('pose_chest_color')
+        pose_chest_color = self.current_preset.pose_chest_color
+        self._pose_chest_color_button.setStyleSheet(f'background-color: rgb({pose_chest_color[0]}, {pose_chest_color[1]}, {pose_chest_color[2]});')
+
+    def set_pose_leg_color(self) -> None:
+        """
+        Sets the pose leg color for the current preset
+        """
+        self.set_color('pose_leg_color')
+        pose_leg_color = self.current_preset.pose_leg_color
+        self._pose_leg_color_button.setStyleSheet(f'background-color: rgb({pose_leg_color[0]}, {pose_leg_color[1]}, {pose_leg_color[2]});')
+
+    def set_pose_arm_color(self) -> None:
+        """
+        Sets the pose arm color for the current preset
+        """
+        self.set_color('pose_arm_color')
+        pose_arm_color = self.current_preset.pose_arm_color
+        self._pose_arm_color_button.setStyleSheet(f'background-color: rgb({pose_arm_color[0]}, {pose_arm_color[1]}, {pose_arm_color[2]});')
 
     def set_text_color(self) -> None:
         """
         Sets the text color for the current preset
         """
         self.set_color('text_color')
+        text_color = self.current_preset.text_color
+        self._text_color_button.setStyleSheet(f'background-color: rgb({text_color[0]}, {text_color[1]}, {text_color[2]});')
 
     def set_box_color_by_class(self, value: bool) -> None:
         """

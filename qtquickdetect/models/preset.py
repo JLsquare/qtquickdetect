@@ -31,11 +31,11 @@ class Preset:
         self.video_format: str = 'mp4'
 
         self.box_color: tuple[int, int, int, int] = (0, 255, 0, 255)
-        self.box_color_per_class: bool = False
+        self.box_color_per_class: bool = True
         self.box_thickness: int = 2
 
         self.segment_color: tuple[int, int, int, int] = (0, 255, 0, 255)
-        self.segment_color_per_class: bool = False
+        self.segment_color_per_class: bool = True
         self.segment_thickness: int = 2
 
         self.pose_head_color: tuple[int, int, int, int] = (0, 255, 0, 255)
@@ -119,7 +119,7 @@ class Preset:
 
         if not isinstance(self.box_color_per_class, bool):
             logging.warning(f'Invalid box color per class in config: {self.box_color_per_class}')
-            self.box_color_per_class = False
+            self.box_color_per_class = True
             changed = True
 
         if not isinstance(self.box_thickness, int) or self.box_thickness < 0:
@@ -134,7 +134,7 @@ class Preset:
 
         if not isinstance(self.segment_color_per_class, bool):
             logging.warning(f'Invalid segment color per class in config: {self.segment_color_per_class}')
-            self.segment_color_per_class = False
+            self.segment_color_per_class = True
             changed = True
 
         if not isinstance(self.segment_thickness, int) or self.segment_thickness < 0:
