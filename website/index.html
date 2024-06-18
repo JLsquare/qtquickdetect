@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,26 +40,54 @@
 </head>
 <body>
     <h1>QtQuickDetect</h1>
-    <p>Une application pour réaliser des détections d'objets sur différents types de supports : images, vidéos, et livestreams (ex. caméra).</p>
-    <h2>Fonctionnalités</h2>
+    <img src="https://raw.githubusercontent.com/JLsquare/qtquickdetect/main/media/app_screenshot.png" alt="QtQuickDetect Logo" style="max-width: 100%; margin-bottom: 20px;">
+    <p>QtQuickDetect is a powerful application designed to compare and evaluate the performance of different deep learning models for object detection, segmentation, classification, and pose estimation. This user-friendly tool allows you to analyze images, videos, and live streams with ease, providing detailed results and history for each task.</p>
+    <h2>Features</h2>
     <ul>
-        <li><strong>Détection sur image :</strong> Détecter des objets.</li>
-        <li><strong>Détection sur vidéo :</strong> Détecter et tracker des objets.</li>
-        <li><strong>Détection sur livestream :</strong> Détecter des objets en temps réel.</li>
+        <li><strong>Inference on Images, Videos, and Live Streams:</strong> Analyze different media types with ease.</li>
+        <li><strong>Multiple Task Support:</strong> Choose between detection, segmentation, classification, and pose estimation.</li>
+        <li><strong>Customizable Settings:</strong> Configure inference settings including device, precision, and color preferences.</li>
+        <li><strong>Media Management:</strong> Organize and manage your image and video collections efficiently.</li>
+        <li><strong>Detailed Results and History:</strong> View and save inference results in various formats and access previous analyses.</li>
+        <li><strong>Data Export:</strong> Export results in JSON format for further analysis or integration with other tools.</li>
     </ul>
-    <h2>Téléchargement</h2>
+    <h2>Tasks</h2>
+    <ul>
+        <li><strong>Detection:</strong> Identify and locate objects within an image or video with bounding boxes. <a href="https://docs.ultralytics.com/tasks/detect/" target="_blank">(More info)</a></li>
+        <li><strong>Segmentation:</strong> Classify each pixel to determine the exact shape and boundary of objects. <a href="https://docs.ultralytics.com/tasks/segment/" target="_blank">(More info)</a></li>
+        <li><strong>Classification:</strong> Assign labels to an entire image or specific regions with confidence scores. <a href="https://docs.ultralytics.com/tasks/classify/" target="_blank">(More info)</a></li>
+        <li><strong>Pose Estimation:</strong> Detect key points on objects, commonly used for human pose estimation. <a href="https://docs.ultralytics.com/tasks/pose/" target="_blank">(More info)</a></li>
+    </ul>
+    <h2>Inference Output</h2>
+    <p>Each inference task generates comprehensive results, including:</p>
+    <ul>
+        <li>Processed media (images or videos) annotated with bounding boxes, segmentation masks, etc., for visualization.</li>
+        <li>A JSON file with detailed information about each detected object, such as class labels, confidence scores, and coordinates.</li>
+    </ul>
+    <h2>Installation</h2>
+    <p>QtQuickDetect has been tested on both Windows and Linux, with Python 3.10, 3.11, and 3.12. MacOS is currently not supported.</p>
+    <p>To use QtQuickDetect, you can simply <code>pip install</code> the software to your Python environment.</p>
+    <p>Sample usage (if you are using <a href="https://docs.conda.io/en/latest/" target="_blank">conda</a>):</p>
+    <pre><code>conda create -n qtquickdetect python=3.10
+conda activate qtquickdetect
+&lt;acquire a copy of qtquickdetect and navigate to its folder&gt;
+pip install .
+</code></pre>
+    <p>You may also install the test dependencies by activating the <code>test</code> extra.</p>
+    <h3>Important Notes for GPU Acceleration</h3>
+    <p>GPU acceleration is supported for Nvidia users. Please install CUDA-enabled <code>torch 2.3.x</code> and <code>torchvision 0.18.x</code>, as per the instructions on the <a href="https://pytorch.org/get-started/locally/" target="_blank">PyTorch website</a>. You may install the GPU-enabled torch builds before or after installing QtQuickDetect.</p>
+    <p>You will then have access to the device selection dropdown in the presets tab.</p>
+    <h2>Download</h2>
     <div class="download-links">
-        <a href="qtquickdetect.zip" download>Télécharger la dernière version (.zip)</a>
+        <a href="qtquickdetect.zip" download>Download the latest version (.zip)</a>
     </div>
-    <h2>Lancement</h2>
-    <p>Pour pouvoir exécuter l'application, une version de <a href="https://www.python.org/downloads/" target="_blank">Python</a> doit être installée sur votre système.</p>
-    <h3>Linux</h3>
-    <p>Exécutez le fichier run-linux.sh, si c'est la première fois, choisissez si vous voulez installer CUDA ou non (pour les machines avec un GPU NVIDIA)</p>
-    <h3>Windows</h3>
-    <p>Exécutez le fichier run-windows.bat, si c'est la première fois, choisissez si vous voulez installer CUDA ou non (pour les machines avec un GPU NVIDIA)</p>
-    <h2>Code source</h2>
-    <p>Le code source de l'application est disponible sur <a href="https://gitlab.com/sae31/qtquickdetect" target="_blank">GitLab</a>.</p>
-    <h2>Comment utiliser</h2>
-    <p>Pour commencer à utiliser QtQuickDetect, téléchargez la version correspondant à votre système d'exploitation, décompressez l'archive, et exécutez l'application.</p>
+    <h2>How to Use</h2>
+    <p>To start using QtQuickDetect, download the version corresponding to your operating system, extract the archive, and run the application.</p>
+    <p>For Linux: Execute the file <code>run-linux.sh</code>. If it is your first time, choose whether you want to install CUDA (for machines with an NVIDIA GPU).</p>
+    <p>For Windows: Execute the file <code>run-windows.bat</code>. If it is your first time, choose whether you want to install CUDA (for machines with an NVIDIA GPU).</p>
+    <h2>Source Code</h2>
+    <p>The source code of the application is available on <a href="https://gitlab.com/sae31/qtquickdetect" target="_blank">GitLab</a>.</p>
+    <h2>Authors</h2>
+    <p>QtQuickDetect was developed by Jean-Loup Mellion and Gatien Da Rocha, students at the University IUT Vannes, France.</p>
 </body>
 </html>
