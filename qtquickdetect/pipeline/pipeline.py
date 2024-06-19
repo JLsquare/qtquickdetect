@@ -13,9 +13,10 @@ class Pipeline(QThread):
     """
     Generic pipeline class for handling pipeline execution.
     """
-    progress_signal = pyqtSignal(float)  # Progress percentage on the current file
+    progress_signal = pyqtSignal(float, Path)  # Progress percentage on the current file, input file
     finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
+    finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
     def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
@@ -98,6 +99,8 @@ class Pipeline(QThread):
             except Exception as e:
                 self.error_signal.emit(input_path, e)
 
+        self.finished_all_signal.emit()
+
     def _run_videos(self, inputs: list[Path]):
         """
         Process a list of video paths.
@@ -130,6 +133,8 @@ class Pipeline(QThread):
                 self.finished_file_signal.emit(input_path, video_path, json_path)
             except Exception as e:
                 self.error_signal.emit(input_path, e)
+
+        self.finished_all_signal.emit()
 
     def _run_stream(self, url: str) -> None:
         """
@@ -206,7 +211,7 @@ class Pipeline(QThread):
             # Append the results to the results array
             results_array.append(result_json)
             # Emit the progress signal for the progress bar
-            self.progress_signal.emit(cap.get(cv.CAP_PROP_POS_FRAMES) / cap.get(cv.CAP_PROP_FRAME_COUNT))
+            self.progress_signal.emit(cap.get(cv.CAP_PROP_POS_FRAMES) / cap.get(cv.CAP_PROP_FRAME_COUNT), video_path)
 
         # Release the video capture and the video writer
         cap.release()

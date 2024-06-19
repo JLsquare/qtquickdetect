@@ -2,8 +2,10 @@ import logging
 import importlib
 import numpy as np
 
+from typing import Optional
 from pathlib import Path
 from PyQt6.QtCore import pyqtSignal, QObject
+from .pipeline import Pipeline
 from ..models.app_state import AppState
 from ..models.preset import Preset
 
@@ -12,9 +14,10 @@ class PipelineManager(QObject):
     """
     Pipeline Manager class to manage the pipeline execution.
     """
-    progress_signal = pyqtSignal(float)  # Progress percentage on the current file
+    progress_signal = pyqtSignal(float, Path)  # Progress percentage on the current file, input file
     finished_file_signal = pyqtSignal(Path, Path, Path)  # Source file, output file, JSON file
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
+    finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
     def __init__(self, task: str, preset: Preset, models: dict[str, list[str]]):
@@ -30,7 +33,7 @@ class PipelineManager(QObject):
         self._models = models
         self._preset = preset
         self._appstate = AppState.get_instance()
-        self.current_pipeline = None
+        self.current_pipeline: Optional[Pipeline] = None
 
         logging.info(f'Pipeline Manager initialized with task: {task}, models: {models}')
 
@@ -55,32 +58,73 @@ class PipelineManager(QObject):
         if self.current_pipeline:
             self.current_pipeline.request_cancel()
 
-    def run_image(self, images_paths: list[Path], results_path: Path) -> None:
+    def run_image(self, images_paths: list[Path], results_path: Path, current_weight_index: int = 0) -> None:
         """
-        Runs the pipeline, one pipeline per weight.
+        Runs the pipeline, one pipeline per weight. Uses recursion to run the next weight after the current one is done.
 
         :param images_paths: List of image paths.
         :param results_path: Path to save the results.
+        :param current_weight_index: Index of the current weight to run.
         """
+        index = 0
         for model, weights in self._models.items():
             for weight in weights:
-                print(weight)
+                # Skip if not the current weight
+                if index != current_weight_index:
+                    index += 1
+                    continue
+
+                # Setup the pipeline for the current weight
                 self._setup_pipeline(model, weight, images_paths, None, None, results_path)
                 self._appstate.pipelines.append(self.current_pipeline)
+
+                # Connect the end signal to run the next weight not at the same time
+                self.current_pipeline.finished_all_signal.connect(
+                    lambda: self.run_image(images_paths, results_path, current_weight_index + 1)
+                )
+
+                # Start the pipeline
                 self.current_pipeline.start()
 
-    def run_video(self, videos_paths: list[Path], results_path: Path) -> None:
+                # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
+                return
+
+        # If we are here, it means that all weights have been processed
+        self.finished_all_signal.emit()
+
+    def run_video(self, videos_paths: list[Path], results_path: Path, current_weight_index: int = 0) -> None:
         """
-        Runs the pipeline, one pipeline per weight.
+        Runs the pipeline, one pipeline per weight, for videos. Uses recursion to run the next weight after the current one is done.
 
         :param videos_paths: List of video paths.
         :param results_path: Path to save the results.
+        :param current_weight_index: Index of the current weight to run.
         """
+        index = 0
         for model, weights in self._models.items():
             for weight in weights:
+                # Skip if not the current weight
+                if index != current_weight_index:
+                    index += 1
+                    continue
+
+                # Setup the pipeline for the current weight
                 self._setup_pipeline(model, weight, None, videos_paths, None, results_path)
                 self._appstate.pipelines.append(self.current_pipeline)
+
+                # Connect the end signal to run the next weight not at the same time
+                self.current_pipeline.finished_all_signal.connect(
+                    lambda: self.run_video(videos_paths, results_path, current_weight_index + 1)
+                )
+
+                # Start the pipeline
                 self.current_pipeline.start()
+
+                # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
+                return
+
+        # If we are here, it means that all weights have been processed
+        self.finished_all_signal.emit()
 
     def run_stream(self, url: str) -> None:
         """

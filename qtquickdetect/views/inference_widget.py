@@ -237,8 +237,8 @@ class InferenceWidget(QWidget):
         preset = Preset(self._preset.preset)
         self.pipeline_manager = PipelineManager(self._task.task, preset, self._models.weights)
         self.file_count = 0
-        total_files = len(inputs) * len(self._models.weights)
         weights = [weight for weights in self._models.weights.values() for weight in weights]
+        total_files = len(inputs) * len(weights)
 
         info = {
             'media': self.media_type,
@@ -262,32 +262,38 @@ class InferenceWidget(QWidget):
             logging.info('Detection done for ' + input_path.name + ', output in ' + output_json_path.name)
             self.file_count += 1
             self._progress_bar.update_progress_bar(self.file_count, total_files, 0, input_path.name)
-            if self.file_count == total_files:
-                self._btn_run.setEnabled(True)
-                self._btn_cancel.setEnabled(False)
-                self.open_last_inference()
 
-        def callback_err(input_media_path: Path, exception: Exception) -> None:
+        def callback_err(input_path: Path, exception: Exception) -> None:
             """
             Callback for when the pipeline has an error on a file.
 
-            :param input_media_path: The input media path
+            :param input_path: The input media path
             :param exception: The exception
             """
-            logging.error('Detection failed for ' + input_media_path.name + ' : ' + str(exception))
+            logging.error('Detection failed for ' + input_path.name + ' : ' + str(exception))
 
-        def callback_progress(progress: float) -> None:
+        def callback_progress(progress: float, input_path: Path) -> None:
             """
             Callback for the pipeline progress when running a video.
 
             :param progress: The progress
+            :param input_path: The input media path
             """
             logging.info('Progress: ' + str(progress))
-            self._progress_bar.update_progress_bar(self.file_count, total_files, progress, inputs[self.file_count].name)
+            self._progress_bar.update_progress_bar(self.file_count, total_files, progress, input_path.name)
+
+        def callback_all() -> None:
+            """
+            Callback for when the pipeline has finished all files.
+            """
+            self._btn_run.setEnabled(True)
+            self._btn_cancel.setEnabled(False)
+            self.open_last_inference()
 
         self.pipeline_manager.finished_file_signal.connect(callback_ok)
         self.pipeline_manager.error_signal.connect(callback_err)
         self.pipeline_manager.progress_signal.connect(callback_progress)
+        self.pipeline_manager.finished_all_signal.connect(callback_all)
 
         if self.media_type == 'image':
             self.pipeline_manager.run_image(inputs, result_path)
