@@ -3,6 +3,8 @@ import torch
 
 from pathlib import Path
 from ultralytics import YOLO
+
+from ..utils.filepaths import get_base_data_dir
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
 from ..utils.image_helpers import draw_bounding_box
@@ -13,7 +15,7 @@ class YoloDetectPipeline(Pipeline):
     Pipeline for detecting objects in images and videos using YoloV8.
     """
 
-    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
+    def __init__(self, model_name: str, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
                  videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
@@ -25,9 +27,10 @@ class YoloDetectPipeline(Pipeline):
         :param results_path: Path to save the results if processing images or videos.
         :param preset: Project object.
         """
-        super().__init__(model_builder, weight, preset, images_paths, videos_paths, stream_url, results_path)
+        super().__init__(model_name, model_builder, weight, preset, images_paths, videos_paths, stream_url,
+                         results_path)
         self.device = torch.device(self.preset.device)
-        self.model = YOLO(weight).to(self.device)
+        self.model = YOLO(get_base_data_dir() / 'weights' / weight).to(self.device)
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -74,7 +77,9 @@ class YoloDetectPipeline(Pipeline):
         :return: The result's dictionary.
         """
         return {
-            'model_name': 'Yolo',
+            'pipeline': 'YoloDetectPipeline',
+            'model_name': self.model_name,
+            'model_builder': self.model_builder,
             'weight': self.weight,
             'task': 'detection',
             'classes': list(self.model.names.values()),

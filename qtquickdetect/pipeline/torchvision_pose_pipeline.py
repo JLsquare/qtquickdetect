@@ -7,6 +7,7 @@ from pathlib import Path
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
 from ..utils.image_helpers import draw_keypoints
+from ..utils.filepaths import get_base_data_dir
 
 
 class TorchVisionPosePipeline(Pipeline):
@@ -14,7 +15,7 @@ class TorchVisionPosePipeline(Pipeline):
     Pipeline for posing persons in images using TorchVision models with pre-trained weights.
     """
 
-    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
+    def __init__(self, model_name: str, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
                  videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
@@ -26,11 +27,17 @@ class TorchVisionPosePipeline(Pipeline):
         :param results_path: Path to save the results if processing images or videos.
         :param preset: Project object.
         """
-        super().__init__(model_builder, weight, preset, images_paths, videos_paths, stream_url, results_path)
+        super().__init__(model_name, model_builder, weight, preset, images_paths, videos_paths, stream_url,
+                         results_path)
         self.device = torch.device(self.preset.device)
-        self.model = getattr(models, model_builder)(weights=weight).to(self.device)
-        self.model.eval()
         self.transform = T.Compose([T.ToTensor()])
+
+        if weight in ['COCO_V1', 'COCO_LEGACY']:
+            self.model = getattr(models.detection, model_builder)(weights=weight).to(self.device)
+        else:  # Custom weights
+            self.model = getattr(models.detection, model_builder)(weights=None).to(self.device)
+            self.model.load_state_dict(torch.load(get_base_data_dir() / 'weights' / weight))
+        self.model.eval()
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -70,7 +77,9 @@ class TorchVisionPosePipeline(Pipeline):
         :return: The result's dictionary.
         """
         return {
-            'model_name': 'TorchVision',
+            'pipeline': 'TorchVisionPosePipeline',
+            'model_name': self.model_name,
+            'model_builder': self.model_builder,
             'weight': self.weight,
             'task': 'pose',
             'classes': ['person'],

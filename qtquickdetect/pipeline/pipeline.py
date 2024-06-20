@@ -19,8 +19,8 @@ class Pipeline(QThread):
     finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
-    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
-                 stream_url: str | None, results_path: Path | None):
+    def __init__(self, model_name: str, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
+                 videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 
@@ -32,18 +32,18 @@ class Pipeline(QThread):
         :param preset: Preset object.
         """
         super().__init__()
-        self.fetcher = None
-        self.model_builder = model_builder
-        self.weight = weight
-        self.images_paths = images_paths
-        self.videos_paths = videos_paths
-        self.stream_url = stream_url
-        self.mode = 'images' if images_paths else 'videos' if videos_paths else 'stream'
-        self.results_path = results_path / Path(weight).stem if results_path else None
-        self.preset = preset
-        self.cancel_requested = False
-        self.processing_frame = None
-        self.stream_fps = 0.0
+        self.fetcher: MediaFetcher | None = None
+        self.model_name: str = model_name
+        self.model_builder: str = model_builder
+        self.weight: str = weight
+        self.images_paths: list[Path] = images_paths
+        self.videos_paths: list[Path] = videos_paths
+        self.stream_url: str = stream_url
+        self.mode: str = 'images' if images_paths else 'videos' if videos_paths else 'stream'
+        self.results_path: Path = results_path / f"{model_builder}.{weight}" if results_path else None
+        self.preset: Preset = preset
+        self.cancel_requested: bool = False
+        self.stream_fps: float = 0.0
 
         if self.results_path:
             self.results_path.mkdir(parents=True, exist_ok=True)

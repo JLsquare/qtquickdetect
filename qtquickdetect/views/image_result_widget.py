@@ -275,7 +275,7 @@ class ImageResultWidget(QWidget):
         for result_json in self._result_jsons[input_image]:
             with open(result_json, 'r') as file:
                 data = json.load(file)
-            self._model_select_combo.addItem(data['weight'], result_json)
+            self._model_select_combo.addItem(f"{data['model_builder']}.{data['weight']}", result_json)
 
     def change_current_model(self) -> None:
         """

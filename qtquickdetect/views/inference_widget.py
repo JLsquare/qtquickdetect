@@ -237,7 +237,12 @@ class InferenceWidget(QWidget):
         preset = Preset(self._preset.preset)
         self.pipeline_manager = PipelineManager(self._task.task, preset, self._models.weights)
         self.file_count = 0
-        weights = [weight for weights in self._models.weights.values() for weight in weights]
+        weights = []
+        for model_builders in self._models.weights.values():
+            for model_builder in model_builders:
+                for weight in model_builders[model_builder]:
+                    weights.append(f"{model_builder}.{weight}")
+
         total_files = len(inputs) * len(weights)
 
         info = {

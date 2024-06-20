@@ -160,8 +160,8 @@ class PipelineManager(QObject):
         module_name, class_name = model_class_path.rsplit('.', 1)
         module = importlib.import_module(module_name)
         model_class = getattr(module, class_name)
-        self.current_pipeline = model_class(model_builder, weight, self._preset, images_path, videos_path, stream_url,
-                                            results_path)
+        self.current_pipeline = model_class(model, model_builder, weight, self._preset, images_path, videos_path,
+                                            stream_url, results_path)
         self.current_pipeline.progress_signal.connect(self.progress_signal)
         self.current_pipeline.finished_file_signal.connect(self.finished_file_signal)
         self.current_pipeline.finished_stream_frame_signal.connect(self.finished_stream_frame_signal)

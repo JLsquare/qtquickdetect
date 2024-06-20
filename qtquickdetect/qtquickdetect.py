@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 import pathlib
 
 from PyQt6.QtWidgets import QApplication
@@ -18,16 +17,12 @@ def main():
     log_format = '%(asctime)s - %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=log_format)
 
-    # Ensure 'projects' directory exists
-    try:
-        os.makedirs(os.path.join(filepaths.get_base_data_dir(), 'projects'), exist_ok=True)
-    except Exception as e:
-        logging.error(f"Failed to create 'projects' directory: {e}")
-        sys.exit(1)
-
     filepaths.create_cache_dir()
     filepaths.create_config_dir()
     filepaths.create_data_dir()
+
+    # Set the environment variable for the torch home directory
+    os.environ['TORCH_HOME'] = str(filepaths.get_base_data_dir() / 'weights')
 
     print("Starting QtQuickDetect")
 

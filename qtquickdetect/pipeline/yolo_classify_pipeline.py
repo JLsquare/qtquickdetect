@@ -3,6 +3,8 @@ import torch
 
 from pathlib import Path
 from ultralytics import YOLO
+
+from ..utils.filepaths import get_base_data_dir
 from ..utils.image_helpers import draw_classification_label
 from ..models.preset import Preset
 from ..pipeline.pipeline import Pipeline
@@ -13,11 +15,13 @@ class YoloClassifyPipeline(Pipeline):
     Pipeline for classifying objects in images and videos using YoloV8.
     """
 
-    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
+    def __init__(self, model_name: str, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
                  videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 
+        :param model_name: The name of the model.
+        :param model_builder: The model builder to use.
         :param weight: The weight file path to use.
         :param images_paths: List of image paths if processing images.
         :param videos_paths: List of video paths if processing videos.
@@ -25,9 +29,10 @@ class YoloClassifyPipeline(Pipeline):
         :param results_path: Path to save the results if processing images or videos.
         :param preset: Project object.
         """
-        super().__init__(model_builder, weight, preset, images_paths, videos_paths, stream_url, results_path)
+        super().__init__(model_name, model_builder, weight, preset, images_paths, videos_paths, stream_url,
+                         results_path)
         self.device = torch.device(self.preset.device)
-        self.model = YOLO(weight).to(self.device)
+        self.model = YOLO(get_base_data_dir() / 'weights' / weight).to(self.device)
 
     def _process_image(self, image: np.ndarray) -> tuple[np.ndarray, list[dict]]:
         """
@@ -64,7 +69,9 @@ class YoloClassifyPipeline(Pipeline):
         :return: The result's dictionary.
         """
         return {
-            'model_name': 'Yolo',
+            'pipeline': 'YoloClassifyPipeline',
+            'model_name': self.model_name,
+            'model_builder': self.model_builder,
             'weight': self.weight,
             'task': 'classification',
             'classes': list(self.model.names.values()),
