@@ -34,7 +34,7 @@ class TorchVisionClassifyPipeline(Pipeline):
         self.device = torch.device(self.preset.device)
         self.transform = T.Compose([T.ToTensor()])
 
-        if weight in ['IMAGENET1K_V1', 'IMAGENET1K_V2', 'IMAGENET1K_SWAG_E2E_V1', 'IMAGENET1K_SWAG_LINEAR_V1']:
+        if weight in ['IMAGENET1K_V1', 'IMAGENET1K_V2', 'IMAGENET1K_SWAG_E2E_V1', 'IMAGENET1K_SWAG_LINEAR_V1', 'DEFAULT']:
             self.model = getattr(models, model_builder)(weights=weight).to(self.device)
         else:  # Custom weights
             self.model = getattr(models, model_builder)(weights=None).to(self.device)

@@ -32,7 +32,7 @@ class TorchVisionPosePipeline(Pipeline):
         self.device = torch.device(self.preset.device)
         self.transform = T.Compose([T.ToTensor()])
 
-        if weight in ['COCO_V1', 'COCO_LEGACY']:
+        if weight in ['COCO_V1', 'COCO_LEGACY', 'DEFAULT']:
             self.model = getattr(models.detection, model_builder)(weights=weight).to(self.device)
         else:  # Custom weights
             self.model = getattr(models.detection, model_builder)(weights=None).to(self.device)
