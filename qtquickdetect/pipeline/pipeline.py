@@ -19,7 +19,7 @@ class Pipeline(QThread):
     finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
+    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
                  stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
@@ -33,6 +33,7 @@ class Pipeline(QThread):
         """
         super().__init__()
         self.fetcher = None
+        self.model_builder = model_builder
         self.weight = weight
         self.images_paths = images_paths
         self.videos_paths = videos_paths

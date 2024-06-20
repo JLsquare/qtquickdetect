@@ -19,7 +19,7 @@ class ModelsSelectionWidget(QWidget):
         """
         super().__init__()
         self.app_state: AppState = AppState.get_instance()
-        self.weights: dict[str, list[str]] = {}
+        self.weights: dict[str, dict[str, list[str]]] = {}
         self.task: str = 'detect'
         self.single_weight = single_weight
 
@@ -71,8 +71,8 @@ class ModelsSelectionWidget(QWidget):
         self._model_layout.addWidget(self._model_description)
 
         self.setLayout(self._model_layout)
-        self.setFixedSize(240, 360)
-        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.setFixedHeight(360)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
     def populate_model_tree(self) -> None:
         """
@@ -88,11 +88,12 @@ class ModelsSelectionWidget(QWidget):
             parent_item = QTreeWidgetItem(self._model_tree, [model_key])
             has_children_checked = False
 
-            for weight in model_info["weights"]:
-                child_item = QTreeWidgetItem(parent_item, [weight])
+            for model_builders, weights in model_info["model_builders"].items():
+                child_item = QTreeWidgetItem(parent_item, [model_builders])
 
+                """
                 if self.single_weight:
-                    radio_button = QRadioButton(weight)
+                    radio_button = QRadioButton(model_builders)
                     # to fix the text cropping at the bottom (temp fix?)
                     radio_button.setMinimumHeight(30)
                     radio_button_group.addButton(radio_button)
@@ -106,10 +107,33 @@ class ModelsSelectionWidget(QWidget):
                     layout.setContentsMargins(0, 0, 0, 0)
                     self._model_tree.setItemWidget(child_item, 0, widget)
 
-                    radio_button.toggled.connect(lambda checked, k=model_key, w=weight: self.radio_toggled(checked, k, w))
+                    radio_button.toggled.connect(lambda checked, k=model_key, w=model_builders: self.radio_toggled(checked, k, w))
                 else:
                     child_item.setFlags(child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                     child_item.setCheckState(0, Qt.CheckState.Unchecked)
+                """
+                for weight in weights:
+                    sub_child_item = QTreeWidgetItem(child_item, [weight])
+                    if self.single_weight:
+                        radio_button = QRadioButton(weight)
+                        radio_button.setMinimumHeight(30)
+                        radio_button_group.addButton(radio_button)
+
+                        layout = QHBoxLayout()
+                        layout.addWidget(radio_button)
+
+                        widget = QWidget()
+                        widget.setLayout(layout)
+
+                        layout.setContentsMargins(0, 0, 0, 0)
+                        self._model_tree.setItemWidget(sub_child_item, 0, widget)
+
+                        radio_button.toggled.connect(
+                            lambda checked, m=model_key, b=model_builders, w=weight: self.radio_toggled(checked, m, b, w)
+                        )
+                    else:
+                        sub_child_item.setFlags(sub_child_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                        sub_child_item.setCheckState(0, Qt.CheckState.Unchecked)
 
             if has_children_checked:
                 parent_item.setExpanded(True)
@@ -122,7 +146,7 @@ class ModelsSelectionWidget(QWidget):
         """
         Checks if a model or weight is selected.
         """
-        selected_models = {}
+        selected_weights = {}  # type: dict[str, dict[str, list[str]]]
         root = self._model_tree.invisibleRootItem()
         model_count = root.childCount()
 
@@ -130,26 +154,33 @@ class ModelsSelectionWidget(QWidget):
         for i in range(model_count):
             model_item = root.child(i)
             model_name = model_item.text(0)
-            weights_selected = []
 
-            # Iterate over weights
+            # Iterate over model builders
             for j in range(model_item.childCount()):
-                weight_item = model_item.child(j)
-                if weight_item.checkState(0) == Qt.CheckState.Checked:
-                    weights_selected.append(weight_item.text(0))
+                model_builder_item = model_item.child(j)
+                model_builder_name = model_builder_item.text(0)
+                weights_selected = []
 
-            if weights_selected:
-                selected_models[model_name] = weights_selected
+                # Iterate over weights
+                for k in range(model_builder_item.childCount()):
+                    weight_item = model_builder_item.child(k)
+                    if weight_item.checkState(0) == Qt.CheckState.Checked:
+                        weights_selected.append(weight_item.text(0))
 
-        self.weights = selected_models
+                if weights_selected:
+                    if model_name not in selected_weights:
+                        selected_weights[model_name] = {}
+                    selected_weights[model_name][model_builder_name] = weights_selected
+
+        self.weights = selected_weights
         self.models_changed_signal.emit()
 
-    def radio_toggled(self, checked: bool, model_key: str, weight: str) -> None:
+    def radio_toggled(self, checked: bool, model_key: str, model_builder: str, weight: str) -> None:
         """
         Handle radio button toggled event.
         """
         if checked:
-            self.weights = {model_key: [weight]}  # Only one weight can be selected at a time
+            self.weights = {model_key: {model_builder: [weight]}}  # Only one weight can be selected at a time
             self.models_changed_signal.emit()
 
     def set_task(self, task: str) -> None:

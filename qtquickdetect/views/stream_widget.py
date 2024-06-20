@@ -122,14 +122,14 @@ class StreamWidget(QWidget):
         :param frame: The frame received from the pipeline.
         """
         if not self._timer.isActive():
-            self._timer.start(int(1000.0 / (self._pipeline_manager.current_pipeline.stream_fps * self._buffer_rate)))
+            self._timer.start(int(1000.0 / self._pipeline_manager.current_pipeline.stream_fps / self._buffer_rate))
         if len(self._frame_buffer) < 30:
             self._frame_buffer.append(frame)
         else:
             self.update_frame()
             self._frame_buffer.append(frame)
         self._buffer_rate = len(self._frame_buffer) / self._frame_buffer.maxlen
-        self._timer.setInterval(int(1000.0 / (self._pipeline_manager.current_pipeline.stream_fps * self._buffer_rate)))
+        self._timer.setInterval(int(1000.0 / self._pipeline_manager.current_pipeline.stream_fps / self._buffer_rate))
 
     def update_frame(self) -> None:
         """

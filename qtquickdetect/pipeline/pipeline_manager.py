@@ -20,7 +20,7 @@ class PipelineManager(QObject):
     finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
 
-    def __init__(self, task: str, preset: Preset, models: dict[str, list[str]]):
+    def __init__(self, task: str, preset: Preset, models: dict[str, dict[str, list[str]]]):
         """
         Initializes the Pipeline Manager.
 
@@ -29,10 +29,10 @@ class PipelineManager(QObject):
         :param models: List of tuples containing model name and weight
         """
         super().__init__()
-        self._task = task
-        self._models = models
-        self._preset = preset
-        self._appstate = AppState.get_instance()
+        self._task: str = task
+        self._models: dict[str, dict[str, list[str]]] = models
+        self._preset: Preset = preset
+        self._appstate: AppState = AppState.get_instance()
         self.current_pipeline: Optional[Pipeline] = None
 
         logging.info(f'Pipeline Manager initialized with task: {task}, models: {models}')
@@ -46,8 +46,8 @@ class PipelineManager(QObject):
 
         :return: True if models and tasks are valid, False otherwise.
         """
-        for model, weights in self._models.items():
-            if self._task not in self._appstate.app_config.models[model]['task']:
+        for model_name in self._models:
+            if self._task != self._appstate.app_config.models[model_name]['task']:
                 return False
         return True
 
@@ -67,27 +67,30 @@ class PipelineManager(QObject):
         :param current_weight_index: Index of the current weight to run.
         """
         index = 0
-        for model, weights in self._models.items():
-            for weight in weights:
-                # Skip if not the current weight
-                if index != current_weight_index:
-                    index += 1
-                    continue
+        # Iterate over the models
+        for model, model_builders in self._models.items():
+            # Iterate over the model_builders
+            for model_builder, weights in model_builders.items():
+                for weight in weights:
+                    # Skip if not the current weight
+                    if index != current_weight_index:
+                        index += 1
+                        continue
 
-                # Setup the pipeline for the current weight
-                self._setup_pipeline(model, weight, images_paths, None, None, results_path)
-                self._appstate.pipelines.append(self.current_pipeline)
+                    # Setup the pipeline for the current weight
+                    self._setup_pipeline(model, model_builder, weight, images_paths, None, None, results_path)
+                    self._appstate.pipelines.append(self.current_pipeline)
 
-                # Connect the end signal to run the next weight not at the same time
-                self.current_pipeline.finished_all_signal.connect(
-                    lambda: self.run_image(images_paths, results_path, current_weight_index + 1)
-                )
+                    # Connect the end signal to run the next weight not at the same time
+                    self.current_pipeline.finished_all_signal.connect(
+                        lambda: self.run_image(images_paths, results_path, current_weight_index + 1)
+                    )
 
-                # Start the pipeline
-                self.current_pipeline.start()
+                    # Start the pipeline
+                    self.current_pipeline.start()
 
-                # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
-                return
+                    # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
+                    return
 
         # If we are here, it means that all weights have been processed
         self.finished_all_signal.emit()
@@ -101,27 +104,28 @@ class PipelineManager(QObject):
         :param current_weight_index: Index of the current weight to run.
         """
         index = 0
-        for model, weights in self._models.items():
-            for weight in weights:
-                # Skip if not the current weight
-                if index != current_weight_index:
-                    index += 1
-                    continue
+        for model, model_builders in self._models.items():
+            for model_builder, weights in model_builders.items():
+                for weight in weights:
+                    # Skip if not the current weight
+                    if index != current_weight_index:
+                        index += 1
+                        continue
 
-                # Setup the pipeline for the current weight
-                self._setup_pipeline(model, weight, None, videos_paths, None, results_path)
-                self._appstate.pipelines.append(self.current_pipeline)
+                    # Setup the pipeline for the current weight
+                    self._setup_pipeline(model, model_builder, weight, None, videos_paths, None, results_path)
+                    self._appstate.pipelines.append(self.current_pipeline)
 
-                # Connect the end signal to run the next weight not at the same time
-                self.current_pipeline.finished_all_signal.connect(
-                    lambda: self.run_video(videos_paths, results_path, current_weight_index + 1)
-                )
+                    # Connect the end signal to run the next weight not at the same time
+                    self.current_pipeline.finished_all_signal.connect(
+                        lambda: self.run_video(videos_paths, results_path, current_weight_index + 1)
+                    )
 
-                # Start the pipeline
-                self.current_pipeline.start()
+                    # Start the pipeline
+                    self.current_pipeline.start()
 
-                # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
-                return
+                    # Exit the function because the pipeline will run the next weight and we don't want to emit the signal
+                    return
 
         # If we are here, it means that all weights have been processed
         self.finished_all_signal.emit()
@@ -133,13 +137,14 @@ class PipelineManager(QObject):
         :param url: URL of the video stream.
         """
         model = list(self._models.keys())[0]
-        weight = self._models[model][0]
-        self._setup_pipeline(model, weight, None, None, url, None)
+        model_builder = list(self._models[model].keys())[0]
+        weight = self._models[model][model_builder][0]
+        self._setup_pipeline(model, model_builder, weight, None, None, url, None)
         self._appstate.pipelines.append(self.current_pipeline)
         self.current_pipeline.start()
 
-    def _setup_pipeline(self, model: str, weight: str, images_path: list[Path] | None, videos_path: list[Path] | None,
-                        stream_url: str | None, results_path: Path | None) -> None:
+    def _setup_pipeline(self, model: str, model_builder: str, weight: str, images_path: list[Path] | None,
+                        videos_path: list[Path] | None, stream_url: str | None, results_path: Path | None) -> None:
         """
         Sets up the pipeline for the given model and weight.
 
@@ -155,7 +160,8 @@ class PipelineManager(QObject):
         module_name, class_name = model_class_path.rsplit('.', 1)
         module = importlib.import_module(module_name)
         model_class = getattr(module, class_name)
-        self.current_pipeline = model_class(weight, self._preset, images_path, videos_path, stream_url, results_path)
+        self.current_pipeline = model_class(model_builder, weight, self._preset, images_path, videos_path, stream_url,
+                                            results_path)
         self.current_pipeline.progress_signal.connect(self.progress_signal)
         self.current_pipeline.finished_file_signal.connect(self.finished_file_signal)
         self.current_pipeline.finished_stream_frame_signal.connect(self.finished_stream_frame_signal)

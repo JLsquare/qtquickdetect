@@ -22,8 +22,10 @@ class AppConfig:
         """
         self.localization: str = 'en'
         self.qss: str = 'dark'
-        self.pipelines: Dict[str, Any] = {}
-        self.models: Dict[str, Any] = {}
+        # pipeline_name: pipeline class
+        self.pipelines: dict[str, str] = {}
+        # model_name: {pipeline_name, task, model_builders: {model_builder: [weights]}}
+        self.models: dict[str, dict[str, str | dict[str, list[str]]]] = {}
 
         filepaths.create_config_dir()
         self.path: Path = filepaths.get_base_config_dir() / 'app_config.json'

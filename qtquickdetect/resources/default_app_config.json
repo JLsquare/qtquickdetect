@@ -15,320 +15,599 @@
         "YoloV9 Detect": {
             "task": "detect",
             "pipeline": "Yolo Detect",
-            "weights": [
-                "yolov9c.pt",
-                "yolov9e.pt"
-            ]
+            "model_builders": {
+                "yolov9c": [
+                    "yolov9c.pt"
+                ],
+                "yolov9e": [
+                    "yolov9e.pt"
+                ]
+            }
         },
         "YoloV9 Segment": {
             "task": "segment",
             "pipeline": "Yolo Segment",
-            "weights": [
-                "yolov9e-seg.pt",
-                "yolov9c-seg.pt"
-            ]
+            "model_builders": {
+                "yolov9c-seg": [
+                    "yolov9c-seg.pt"
+                ],
+                "yolov9e-seg": [
+                    "yolov9e-seg.pt"
+                ]
+            }
         },
         "YoloV8 Detect": {
             "task": "detect",
             "pipeline": "Yolo Detect",
-            "weights": [
-                "yolov8n.pt",
-                "yolov8s.pt",
-                "yolov8m.pt",
-                "yolov8l.pt",
-                "yolov8x.pt"
-            ]
+            "model_builders": {
+                "yolov8n": [
+                    "yolov8n.pt"
+                ],
+                "yolov8s": [
+                    "yolov8s.pt"
+                ],
+                "yolov8m": [
+                    "yolov8m.pt"
+                ],
+                "yolov8l": [
+                    "yolov8l.pt"
+                ],
+                "yolov8x": [
+                    "yolov8x.pt"
+                ]
+            }
         },
         "YoloV8 Segment": {
             "task": "segment",
             "pipeline": "Yolo Segment",
-            "weights": [
-                "yolov8n-seg.pt",
-                "yolov8s-seg.pt",
-                "yolov8m-seg.pt",
-                "yolov8l-seg.pt",
-                "yolov8x-seg.pt"
-            ]
+            "model_builders": {
+                "yolov8n-seg": [
+                    "yolov8n-seg.pt"
+                ],
+                "yolov8s-seg": [
+                    "yolov8s-seg.pt"
+                ],
+                "yolov8m-seg": [
+                    "yolov8m-seg.pt"
+                ],
+                "yolov8l-seg": [
+                    "yolov8l-seg.pt"
+                ],
+                "yolov8x-seg": [
+                    "yolov8x-seg.pt"
+                ]
+            }
         },
         "YoloV8 Classify": {
             "task": "classify",
             "pipeline": "Yolo Classify",
-            "weights": [
-                "yolov8n-cls.pt",
-                "yolov8s-cls.pt",
-                "yolov8m-cls.pt",
-                "yolov8l-cls.pt",
-                "yolov8x-cls.pt"
-            ]
+            "model_builders": {
+                "yolov8n-cls": [
+                    "yolov8n-cls.pt"
+                ],
+                "yolov8s-cls": [
+                    "yolov8s-cls.pt"
+                ],
+                "yolov8m-cls": [
+                    "yolov8m-cls.pt"
+                ],
+                "yolov8l-cls": [
+                    "yolov8l-cls.pt"
+                ],
+                "yolov8x-cls": [
+                    "yolov8x-cls.pt"
+                ]
+            }
         },
         "Yolov8 Pose": {
             "task": "pose",
             "pipeline": "Yolo Pose",
-            "weights": [
-                "yolov8n-pose.pt",
-                "yolov8s-pose.pt",
-                "yolov8m-pose.pt",
-                "yolov8l-pose.pt",
-                "yolov8x-pose.pt"
-            ]
+            "model_builders": {
+                "yolov8n-pose": [
+                    "yolov8n-pose.pt"
+                ],
+                "yolov8s-pose": [
+                    "yolov8s-pose.pt"
+                ],
+                "yolov8m-pose": [
+                    "yolov8m-pose.pt"
+                ],
+                "yolov8l-pose": [
+                    "yolov8l-pose.pt"
+                ],
+                "yolov8x-pose": [
+                    "yolov8x-pose.pt"
+                ]
+            }
         },
         "Yolov5": {
             "task": "detect",
             "pipeline": "Yolo Detect",
-            "weights": [
-                "yolov5nu.pt",
-                "yolov5su.pt",
-                "yolov5mu.pt",
-                "yolov5lu.pt",
-                "yolov5xu.pt",
-                "yolov5n6u.pt",
-                "yolov5s6u.pt",
-                "yolov5m6u.pt",
-                "yolov5l6u.pt",
-                "yolov5x6u.pt"
-            ]
+            "model_builders": {
+                "yolov5nu": [
+                    "yolov5nu.pt"
+                ],
+                "yolov5su": [
+                    "yolov5su.pt"
+                ],
+                "yolov5mu": [
+                    "yolov5mu.pt"
+                ],
+                "yolov5lu": [
+                    "yolov5lu.pt"
+                ],
+                "yolov5xu": [
+                    "yolov5xu.pt"
+                ],
+                "yolov5n6u": [
+                    "yolov5n6u.pt"
+                ],
+                "yolov5s6u": [
+                    "yolov5s6u.pt"
+                ],
+                "yolov5m6u": [
+                    "yolov5m6u.pt"
+                ],
+                "yolov5l6u": [
+                    "yolov5l6u.pt"
+                ],
+                "yolov5x6u": [
+                    "yolov5x6u.pt"
+                ]
+            }
         },
         "YoloV3": {
             "task": "detect",
             "pipeline": "Yolo Detect",
-            "weights": [
-                "yolov3-sppu.pt",
-                "yolov3-tinyu.pt",
-                "yolov3u.pt"
-            ]
+            "model_builders": {
+                "yolov3-sppu": [
+                    "yolov3-sppu.pt"
+                ],
+                "yolov3-tinyu": [
+                    "yolov3-tinyu.pt"
+                ],
+                "yolov3u": [
+                    "yolov3u.pt"
+                ]
+            }
         },
         "Faster-RCNN ResNet": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
-            "weights": [
-                "fasterrcnn_resnet50_fpn",
-                "fasterrcnn_resnet50_fpn_v2"
-            ]
+            "model_builders": {
+                "fasterrcnn_resnet50_fpn": [
+                    "COCO_V1"
+                ],
+                "fasterrcnn_resnet50_fpn_v2": [
+                    "COCO_V1"
+                ]
+            }
         },
         "Faster-RCNN MobileNet": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
-            "weights": [
-                "fasterrcnn_mobilenet_v3_large_fpn",
-                "fasterrcnn_mobilenet_v3_large_320_fpn"
-            ]
+            "model_builders": {
+                "fasterrcnn_mobilenet_v3_large_fpn": [
+                    "COCO_V1"
+                ],
+                "fasterrcnn_mobilenet_v3_large_320_fpn": [
+                    "COCO_V1"
+                ]
+            }
         },
         "Mask-RCNN Detect": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
-            "weights": [
-                "maskrcnn_resnet50_fpn"
-            ]
+            "model_builders": {
+                "maskrcnn_resnet50_fpn": [
+                    "COCO_V1"
+                ]
+            }
         },
         "Mask-RCNN Segment": {
             "task": "segment",
             "pipeline": "TorchVision Segment",
-            "weights": [
-                "maskrcnn_resnet50_fpn",
-                "maskrcnn_resnet50_fpn_v2"
-            ]
+            "model_builders": {
+                "maskrcnn_resnet50_fpn": [
+                    "COCO_V1"
+                ],
+                "maskrcnn_resnet50_fpn_v2": [
+                    "COCO_V1"
+                ]
+            }
         },
         "RetinaNet": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
-            "weights": [
-                "retinanet_resnet50_fpn",
-                "retinanet_resnet50_fpn_v2"
-            ]
+            "model_builders": {
+                "retinanet_resnet50_fpn": [
+                    "COCO_V1"
+                ],
+                "retinanet_resnet50_fpn_v2": [
+                    "COCO_V1"
+                ]
+            }
         },
         "SSD": {
             "task": "detect",
             "pipeline": "TorchVision Detect",
-            "weights": [
-                "ssd300_vgg16",
-                "ssdlite320_mobilenet_v3_large"
-            ]
+            "model_builders": {
+                "ssd300_vgg16": [
+                    "COCO_V1"
+                ],
+                "ssdlite320_mobilenet_v3_large": [
+                    "COCO_V1"
+                ]
+            }
         },
         "AlexNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "alexnet"
-            ]
+            "model_builders": {
+                "alexnet": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "ConvNeXt": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "convnext_tiny",
-                "convnext_small",
-                "convnext_large",
-                "convnext_base"
-            ]
+            "model_builders": {
+                "convnext_tiny": [
+                    "IMAGENET1K_V1"
+                ],
+                "convnext_small": [
+                    "IMAGENET1K_V1"
+                ],
+                "convnext_large": [
+                    "IMAGENET1K_V1"
+                ],
+                "convnext_base": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "DenseNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "densenet121",
-                "densenet161",
-                "densenet169",
-                "densenet201"
-            ]
+            "model_builders": {
+                "densenet121": [
+                    "IMAGENET1K_V1"
+                ],
+                "densenet161": [
+                    "IMAGENET1K_V1"
+                ],
+                "densenet169": [
+                    "IMAGENET1K_V1"
+                ],
+                "densenet201": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "EfficientNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "efficientnet_b0",
-                "efficientnet_b1",
-                "efficientnet_b2",
-                "efficientnet_b3",
-                "efficientnet_b4",
-                "efficientnet_b5",
-                "efficientnet_b6",
-                "efficientnet_b7"
-            ]
+            "model_builders": {
+                "efficientnet_b0": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b1": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "efficientnet_b2": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b3": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b4": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b5": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b6": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_b7": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "EfficientNetV2": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "efficientnet_v2_s",
-                "efficientnet_v2_m",
-                "efficientnet_v2_l"
-            ]
+            "model_builders": {
+                "efficientnet_v2_s": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_v2_m": [
+                    "IMAGENET1K_V1"
+                ],
+                "efficientnet_v2_l": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "GoogLeNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "googlenet"
-            ]
+            "model_builders": {
+                "googlenet": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "Inception V3": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "inception_v3"
-            ]
+            "model_builders": {
+                "inception_v3": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "MNASNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "mnasnet0_5",
-                "mnasnet0_75",
-                "mnasnet1_0",
-                "mnasnet1_3"
-            ]
+            "model_builders": {
+                "mnasnet0_5": [
+                    "IMAGENET1K_V1"
+                ],
+                "mnasnet0_75": [
+                    "IMAGENET1K_V1"
+                ],
+                "mnasnet1_0": [
+                    "IMAGENET1K_V1"
+                ],
+                "mnasnet1_3": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "MobileNet V2": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "mobilenet_v2"
-            ]
+            "model_builders": {
+                "mobilenet_v2": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ]
+            }
         },
         "MobileNet V3": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "mobilenet_v3_small",
-                "mobilenet_v3_large"
-            ]
+            "model_builders": {
+                "mobilenet_v3_small": [
+                    "IMAGENET1K_V1"
+                ],
+                "mobilenet_v3_large": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ]
+            }
         },
         "RegNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "regnet_y_400mf",
-                "regnet_y_800mf",
-                "regnet_y_1_6gf",
-                "regnet_y_3_2gf",
-                "regnet_y_8gf",
-                "regnet_y_16gf",
-                "regnet_x_400mf",
-                "regnet_x_800mf",
-                "regnet_x_1_6gf",
-                "regnet_x_3_2gf",
-                "regnet_x_8gf",
-                "regnet_x_16gf"
-            ]
+            "model_builders": {
+                "regnet_x_16gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_1_6gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_32gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_3_2gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_400mf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_800mf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_x_8gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_y_128gf": [
+                    "IMAGENET1K_SWAG_E2E_V1",
+                    "IMAGENET1K_SWAG_LINEAR_V1"
+                ],
+                "regnet_y_16gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2",
+                    "IMAGENET1K_SWAG_E2E_V1",
+                    "IMAGENET1K_SWAG_LINEAR_V1"
+                ],
+                "regnet_y_1_6gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_y_32gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2",
+                    "IMAGENET1K_SWAG_E2E_V1",
+                    "IMAGENET1K_SWAG_LINEAR_V1"
+                ],
+                "regnet_y_3_2gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_y_400mf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_y_800mf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "regnet_y_8gf": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ]
+            }
         },
         "ResNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "resnet18",
-                "resnet34",
-                "resnet50",
-                "resnet101",
-                "resnet152"
-            ]
+            "model_builders": {
+                "resnet18": [
+                    "IMAGENET1K_V1"
+                ],
+                "resnet34": [
+                    "IMAGENET1K_V1"
+                ],
+                "resnet50": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "resnet101": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "resnet152": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ]
+            }
         },
         "ResNeXt": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "resnext50_32x4d",
-                "resnext101_32x8d",
-                "resnext101_64x4d"
-            ]
+            "model_builders": {
+                "resnext50_32x4d": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "resnext101_32x8d": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "resnext101_64x4d": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "ShuffleNet V2": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "shufflenet_v2_x1_0",
-                "shufflenet_v2_x1_5",
-                "shufflenet_v2_x0_5",
-                "shufflenet_v2_x2_0"
-            ]
+            "model_builders": {
+                "shufflenet_v2_x0_5": [
+                    "IMAGENET1K_V1"
+                ],
+                "shufflenet_v2_x1_0": [
+                    "IMAGENET1K_V1"
+                ],
+                "shufflenet_v2_x1_5": [
+                    "IMAGENET1K_V1"
+                ],
+                "shufflenet_v2_x2_0": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "SqueezeNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "squeezenet1_0",
-                "squeezenet1_1"
-            ]
+            "model_builders": {
+                "squeezenet1_0": [
+                    "IMAGENET1K_V1"
+                ],
+                "squeezenet1_1": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "SwinTransformer": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "swin_t",
-                "swin_s",
-                "swin_b",
-                "swin_v2_t",
-                "swin_v2_s",
-                "swin_v2_b"
-            ]
+            "model_builders": {
+                "swin_t": [
+                    "IMAGENET1K_V1"
+                ],
+                "swin_s": [
+                    "IMAGENET1K_V1"
+                ],
+                "swin_b": [
+                    "IMAGENET1K_V1"
+                ],
+                "swin_v2_t": [
+                    "IMAGENET1K_V1"
+                ],
+                "swin_v2_s": [
+                    "IMAGENET1K_V1"
+                ],
+                "swin_v2_b": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "VGG": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "vgg11",
-                "vgg11_bn",
-                "vgg13",
-                "vgg13_bn",
-                "vgg16",
-                "vgg16_bn",
-                "vgg19",
-                "vgg19_bn"
-            ]
+            "model_builders": {
+                "vgg11": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg11_bn": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg13": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg13_bn": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg16": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg16_bn": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg19": [
+                    "IMAGENET1K_V1"
+                ],
+                "vgg19_bn": [
+                    "IMAGENET1K_V1"
+                ]
+            }
         },
         "Wide ResNet": {
             "task": "classify",
             "pipeline": "TorchVision Classify",
-            "weights": [
-                "wide_resnet50_2",
-                "wide_resnet101_2"
-            ]
+            "model_builders": {
+                "wide_resnet50_2": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ],
+                "wide_resnet101_2": [
+                    "IMAGENET1K_V1",
+                    "IMAGENET1K_V2"
+                ]
+            }
         },
         "Keypoint RCNN": {
             "task": "pose",
             "pipeline": "TorchVision Pose",
-            "weights": [
-                "keypointrcnn_resnet50_fpn"
-            ]
+            "model_builders": {
+                "keypointrcnn_resnet50_fpn": [
+                    "COCO_V1",
+                    "COCO_LEGACY"
+                ]
+            }
         }
     }
 }

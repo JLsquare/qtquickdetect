@@ -47,14 +47,18 @@ class ModelsWidget(QWidget):
             parent_item = QTreeWidgetItem(self._tree_widget)
             parent_item.setText(0, model_name)
             parent_item.setText(1, f"Pipeline - {model_details['pipeline']}, Task - {model_details['task']}")
-            for weight in model_details['weights']:
+            for model_builders, weights in model_details['model_builders'].items():
                 child_item = QTreeWidgetItem(parent_item)
-                child_item.setText(0, weight)
-                file_path = project_root / weight
-                if file_path.exists():
-                    child_item.setText(1, self.tr('Downloaded'))
-                else:
-                    child_item.setText(1, self.tr('Not downloaded'))
+                child_item.setText(0, model_builders)
+                for weight in weights:
+                    sub_child_item = QTreeWidgetItem(child_item)
+                    sub_child_item.setText(0, weight)
+                    # TODO fix download status
+                    file_path = project_root / weight
+                    if file_path.exists():
+                        sub_child_item.setText(1, self.tr('Downloaded'))
+                    else:
+                        sub_child_item.setText(1, self.tr('Not downloaded'))
 
     ##############################
     #         CONTROLLER         #

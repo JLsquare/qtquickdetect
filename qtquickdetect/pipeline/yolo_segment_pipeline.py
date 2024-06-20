@@ -13,8 +13,8 @@ class YoloSegmentPipeline(Pipeline):
     Pipeline for segmenting objects in images and videos using YoloV8.
     """
 
-    def __init__(self, weight: str, preset: Preset, images_paths: list[Path] | None, videos_paths: list[Path] | None,
-                 stream_url: str | None, results_path: Path | None):
+    def __init__(self, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
+                 videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
         """
         Initializes the pipeline.
 
@@ -25,7 +25,7 @@ class YoloSegmentPipeline(Pipeline):
         :param results_path: Path to save the results if processing images or videos.
         :param preset: Project object.
         """
-        super().__init__(weight, preset, images_paths, videos_paths, stream_url, results_path)
+        super().__init__(model_builder, weight, preset, images_paths, videos_paths, stream_url, results_path)
         self.device = torch.device(self.preset.device)
         self.model = YOLO(weight).to(self.device)
 
