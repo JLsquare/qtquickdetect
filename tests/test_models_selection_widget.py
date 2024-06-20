@@ -40,7 +40,9 @@ def test_initial_state_of_models_selection_widget(mock_get_instance, qtbot):
     assert model1_item.text(0) == "Model1"
     assert model2_item.text(0) == "Model2"
     assert model1_item.childCount() == 1
-    assert model2_item.childCount() == 2
+    assert model2_item.childCount() == 1
+    assert model1_item.child(0).childCount() == 1
+    assert model2_item.child(0).childCount() == 2
     assert model1_item.child(0).text(0) == "model_builder1"
     assert model2_item.child(0).text(0) == "model_builder2"
     assert model2_item.child(1).text(0) == "model_builder2"
@@ -66,20 +68,22 @@ def test_model_selection_changes_weights_property(mock_get_instance, qtbot):
 
     # Select weights and check the weights property
     model1_item = widget._model_tree.topLevelItem(0)
-    weight2_item = model1_item.child(0)
+    model_builder1_item = model1_item.child(0)
+    weight2_item = model_builder1_item.child(0)
     weight2_item.setCheckState(0, Qt.CheckState.Checked)
-    assert widget.weights == {"Model1": ["weight2"]}
+    assert widget.weights == {"Model1": {"model_builder1": ["weight2"]}}
     weight2_item.setCheckState(0, Qt.CheckState.Unchecked)
     assert widget.weights == {}
 
     model2_item = widget._model_tree.topLevelItem(1)
-    weight3_item = model2_item.child(0)
-    weight4_item = model2_item.child(1)
+    model_builder2_item = model2_item.child(0)
+    weight3_item = model_builder2_item.child(0)
+    weight4_item = model_builder2_item.child(1)
     weight3_item.setCheckState(0, Qt.CheckState.Checked)
     weight4_item.setCheckState(0, Qt.CheckState.Checked)
-    assert widget.weights == {"Model2": ["weight3", "weight4"]}
+    assert widget.weights == {"Model2": {"model_builder2": ["weight3", "weight4"]}}
     weight3_item.setCheckState(0, Qt.CheckState.Unchecked)
-    assert widget.weights == {"Model2": ["weight4"]}
+    assert widget.weights == {"Model2": {"model_builder2": ["weight4"]}}
     weight4_item.setCheckState(0, Qt.CheckState.Unchecked)
     assert widget.weights == {}
 
