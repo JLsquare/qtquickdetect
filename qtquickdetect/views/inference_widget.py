@@ -268,15 +268,6 @@ class InferenceWidget(QWidget):
             self.file_count += 1
             self._progress_bar.update_progress_bar(self.file_count, total_files, 0, input_path.name)
 
-        def callback_err(input_path: Path, exception: Exception) -> None:
-            """
-            Callback for when the pipeline has an error on a file.
-
-            :param input_path: The input media path
-            :param exception: The exception
-            """
-            logging.error('Detection failed for ' + input_path.name + ' : ' + str(exception))
-
         def callback_progress(progress: float, input_path: Path) -> None:
             """
             Callback for the pipeline progress when running a video.
@@ -295,10 +286,31 @@ class InferenceWidget(QWidget):
             self._btn_cancel.setEnabled(False)
             self.open_last_inference()
 
+        def callback_err(input_path: Path, exception: Exception) -> None:
+            """
+            Callback for when the pipeline has an error on a file.
+
+            :param input_path: The input media path
+            :param exception: The exception
+            """
+            logging.error('Detection failed for ' + input_path.name + ' : ' + str(exception))
+
+        def callback_fatal_err(message: str, exception: Exception) -> None:
+            """
+            Callback for when the pipeline has a fatal error.
+
+            :param message: The error message
+            :param exception: The exception
+            """
+            logging.error('Fatal error: ' + message + ' : ' + str(exception))
+            QMessageBox.critical(self, self.tr('Error'), message + ' : ' + str(exception),
+                                 QMessageBox.StandardButton.Ok)
+
         self.pipeline_manager.finished_file_signal.connect(callback_ok)
-        self.pipeline_manager.error_signal.connect(callback_err)
         self.pipeline_manager.progress_signal.connect(callback_progress)
         self.pipeline_manager.finished_all_signal.connect(callback_all)
+        self.pipeline_manager.error_signal.connect(callback_err)
+        self.pipeline_manager.fatal_error_signal.connect(callback_fatal_err)
 
         if self.media_type == 'image':
             self.pipeline_manager.run_image(inputs, result_path)

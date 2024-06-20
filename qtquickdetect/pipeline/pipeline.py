@@ -18,6 +18,7 @@ class Pipeline(QThread):
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
     finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
+    fatal_error_signal = pyqtSignal(str, Exception)  # Error message, exception
 
     def __init__(self, model_name: str, model_builder: str, weight: str, preset: Preset, images_paths: list[Path] | None,
                  videos_paths: list[Path] | None, stream_url: str | None, results_path: Path | None):
@@ -72,7 +73,7 @@ class Pipeline(QThread):
         :param inputs: The list of image paths.
         """
         if not self.results_path:
-            self.error_signal.emit('No results path provided', Exception('No results path provided'))
+            self.fatal_error_signal.emit('No results path provided', Exception('No results path provided'))
             return
 
         for input_path in inputs:
@@ -109,7 +110,7 @@ class Pipeline(QThread):
         :param inputs: The list of video paths.
         """
         if not self.results_path:
-            self.error_signal.emit('No results path provided', Exception('No results path provided'))
+            self.fatal_error_signal.emit('No results path provided', Exception('No results path provided'))
             return
 
         for input_path in inputs:
@@ -144,15 +145,19 @@ class Pipeline(QThread):
         :param url: The URL of the video stream or the webcam in the format "webcam:[device_index]".
         """
         if url is None:
-            self.error_signal.emit('No URL provided', Exception('No URL provided'))
+            self.fatal_error_signal.emit('No URL provided', Exception('No URL provided'))
             return
 
         # Create a media fetcher for the stream
-        if url.startswith('webcam:'):
-            device_index = int(url.split(':')[1])
-            media_fetcher = MediaFetcher(device_index)
-        else:
-            media_fetcher = MediaFetcher(url)
+        try:
+            if url.startswith('webcam:'):
+                device_index = int(url.split(':')[1])
+                media_fetcher = MediaFetcher(device_index)
+            else:
+                media_fetcher = MediaFetcher(url)
+        except Exception as e:
+            self.fatal_error_signal.emit('Error opening stream', e)
+            return
 
         self.stream_fps = media_fetcher.fps
         max_fps = 30.0
@@ -172,7 +177,7 @@ class Pipeline(QThread):
                     result_frame, _ = self._process_image(frame)
                     self.finished_stream_frame_signal.emit(result_frame)
                 except Exception as e:
-                    self.error_signal.emit("Error processing frame", e)
+                    self.fatal_error_signal.emit("Error processing frame", e)
                     break
                 last_frame_time = current_time
 

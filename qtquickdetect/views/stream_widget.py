@@ -2,7 +2,7 @@ import numpy as np
 
 from collections import deque
 from typing import Optional
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsScene, QGraphicsPixmapItem, QHBoxLayout, QPushButton
 from ..models.preset import Preset
@@ -11,10 +11,13 @@ from ..views.resizeable_graphics_widget import ResizeableGraphicsWidget
 
 
 class StreamWidget(QWidget):
+    fatal_error_signal = pyqtSignal(str, Exception)
+
     """
     StreamWidget is a QWidget that displays the live stream from the specified URL, using the specified task and model.
     """
-    def __init__(self, live_url: str, task: str, preset: Preset, models: dict[str, list[str]], return_to_main: callable):
+    def __init__(self, live_url: str, task: str, preset: Preset, models: dict[str, dict[str, list[str]]],
+                 return_to_main: callable):
         """
         Initializes the StreamWidget.
 
@@ -110,6 +113,7 @@ class StreamWidget(QWidget):
         Set the timer to update frame at the rate of pipeline fps * buffer rate
         """
         self._pipeline_manager.finished_stream_frame_signal.connect(self.receive_frame)
+        self._pipeline_manager.fatal_error_signal.connect(self.fatal_error_signal)
         self._pipeline_manager.run_stream(self._live_url)
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update_frame)

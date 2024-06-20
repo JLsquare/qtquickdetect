@@ -3,7 +3,7 @@ import cv2 as cv
 from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QComboBox
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QComboBox, QMessageBox
 from ..views.stream_widget import StreamWidget
 from ..utils import filepaths
 from ..models.app_state import AppState
@@ -272,6 +272,13 @@ class InferenceStreamWidget(QWidget):
         preset = Preset(self._preset.preset)
         self._stream_widget = StreamWidget(self._url.text(), self._task.task, preset, self._models.weights,
                                            self.return_to_main_view)
+
+        def callback_fatal_error(message: str, exception: Exception) -> None:
+            self.return_to_main_view()
+            QMessageBox.critical(self, message, str(exception), QMessageBox.StandardButton.Ok)
+
+        self._stream_widget.fatal_error_signal.connect(callback_fatal_error)
+
         self._inference_widget.hide()
         self._main_layout.removeWidget(self._inference_widget)
         self._main_layout.addWidget(self._stream_widget)

@@ -1,9 +1,9 @@
 import logging
 import json
 import shutil
-from pathlib import Path
-from typing import Dict, Any
+import subprocess
 
+from pathlib import Path
 from ..utils import filepaths
 
 
@@ -94,3 +94,16 @@ class AppConfig:
             data = self.__dict__.copy()
             del data['path']  # Remove path from data as it should not be saved in the config
             json.dump(data, f, indent=4)
+
+    def open_config(self) -> None:
+        """
+        Opens the config file in the default text editor.
+        """
+        subprocess.Popen(['xdg-open', self.path])
+
+    def reset_config(self) -> None:
+        """
+        Resets the configuration to default values.
+        """
+        shutil.copy(filepaths.get_app_dir() / 'resources' / 'default_app_config.json', self.path)
+        self._read_config()

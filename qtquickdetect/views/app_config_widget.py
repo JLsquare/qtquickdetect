@@ -24,12 +24,16 @@ class AppConfigWidget(QWidget):
         self._main_layout: Optional[QGridLayout] = None
         self._cancel_button: Optional[QPushButton] = None
         self._save_button: Optional[QPushButton] = None
+        self._open_config_button: Optional[QPushButton] = None
+        self._reset_config_button: Optional[QPushButton] = None
         self._qss_label: Optional[QLabel] = None
         self._qss_combo: Optional[QComboBox] = None
         self._qss_layout: Optional[QVBoxLayout] = None
         self._local_label: Optional[QLabel] = None
         self._local_combo: Optional[QComboBox] = None
         self._local_layout: Optional[QVBoxLayout] = None
+        self._config_label: Optional[QLabel] = None
+        self._config_layout: Optional[QVBoxLayout] = None
 
         self.init_ui()
 
@@ -51,9 +55,10 @@ class AppConfigWidget(QWidget):
 
         self._main_layout.addLayout(self.qss_ui(), 0, 0, alignment=Qt.AlignmentFlag.AlignTop)
         self._main_layout.addLayout(self.local_ui(), 1, 0, alignment=Qt.AlignmentFlag.AlignTop)
-        self._main_layout.addItem(self.spacer(), 2, 0, 1, 2)
-        self._main_layout.addWidget(self.cancel_button_ui(), 3, 0, alignment=Qt.AlignmentFlag.AlignLeft)
-        self._main_layout.addWidget(self.save_button_ui(), 3, 1, alignment=Qt.AlignmentFlag.AlignRight)
+        self._main_layout.addLayout(self.config_buttons_ui(), 2, 0, alignment=Qt.AlignmentFlag.AlignTop)
+        self._main_layout.addItem(self.spacer(), 3, 0, 1, 2)
+        self._main_layout.addWidget(self.cancel_button_ui(), 4, 0, alignment=Qt.AlignmentFlag.AlignLeft)
+        self._main_layout.addWidget(self.save_button_ui(), 4, 1, alignment=Qt.AlignmentFlag.AlignRight)
 
     def qss_ui(self) -> QVBoxLayout:
         """
@@ -91,6 +96,25 @@ class AppConfigWidget(QWidget):
         self._local_layout.addWidget(self._local_label)
         self._local_layout.addWidget(self._local_combo)
         return self._local_layout
+
+    def config_buttons_ui(self) -> QVBoxLayout:
+        """
+        Creates and returns the config buttons layout.
+
+        :return: QVBoxLayout for config buttons.
+        """
+        self._config_label = QLabel(self.tr('Advanced Options:'))
+        self._open_config_button = QPushButton(self.tr('Open App Config'))
+        self._open_config_button.clicked.connect(self.open_app_config)
+        self._reset_config_button = QPushButton(self.tr('Reset App Config'))
+        self._reset_config_button.setProperty("class", "red")
+        self._reset_config_button.clicked.connect(self.reset_app_config)
+
+        self._config_layout = QVBoxLayout()
+        self._config_layout.addWidget(self._config_label)
+        self._config_layout.addWidget(self._open_config_button)
+        self._config_layout.addWidget(self._reset_config_button)
+        return self._config_layout
 
     def spacer(self) -> QSpacerItem:
         """
@@ -133,14 +157,10 @@ class AppConfigWidget(QWidget):
         logging.debug('Saved settings')
 
         # QMessageBox to ask for restart with choice to not restart for now
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Icon.Question)
-        msg_box.setWindowTitle('Restart Required')
-        msg_box.setText('Settings have been saved. Would you like to restart the application now?')
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
-
-        reply = msg_box.exec()
+        reply = QMessageBox.question(self, 'Restart Required',
+                                     'Settings have been saved. Would you like to restart the application now?',
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                     QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
             QApplication.quit()
@@ -195,3 +215,32 @@ class AppConfigWidget(QWidget):
         """
         logging.debug(f'Setting localization to {self._local_combo.currentData()}')
         self.app_state.app_config.localization = self._local_combo.currentData()
+
+    def open_app_config(self) -> None:
+        """
+        Opens the app config JSON file.
+        """
+        try:
+            self.app_state.app_config.open_config()
+            QMessageBox.information(self, "Success", "App config JSON opened successfully.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to open app config: {str(e)}")
+
+    def reset_app_config(self) -> None:
+        """
+        Resets the app config to default values.
+        """
+        reply = QMessageBox.question(self, 'Reset App Config',
+                                     "Are you sure you want to reset the app config to default values?",
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                     QMessageBox.StandardButton.No)
+
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                self.app_state.app_config.reset_config()
+                self._qss_combo.setCurrentText(self.get_qss())
+                self._local_combo.setCurrentText(self.get_local())
+                QMessageBox.information(self, "Success", "App config reset successfully.")
+                self.save_settings()
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"Failed to reset app config: {str(e)}")

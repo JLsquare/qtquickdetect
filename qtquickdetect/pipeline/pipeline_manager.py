@@ -19,6 +19,7 @@ class PipelineManager(QObject):
     finished_stream_frame_signal = pyqtSignal(np.ndarray)  # Frame
     finished_all_signal = pyqtSignal()  # Signal emitted when all files are processed
     error_signal = pyqtSignal(Path, Exception)  # Source file, exception
+    fatal_error_signal = pyqtSignal(str, Exception)  # Error message, exception
 
     def __init__(self, task: str, preset: Preset, models: dict[str, dict[str, list[str]]]):
         """
@@ -166,3 +167,4 @@ class PipelineManager(QObject):
         self.current_pipeline.finished_file_signal.connect(self.finished_file_signal)
         self.current_pipeline.finished_stream_frame_signal.connect(self.finished_stream_frame_signal)
         self.current_pipeline.error_signal.connect(self.error_signal)
+        self.current_pipeline.fatal_error_signal.connect(self.fatal_error_signal)
