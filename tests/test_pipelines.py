@@ -53,22 +53,23 @@ def test_videos_path(tmp_path):
 
     return [dummy_video_path]
 
-@pytest.mark.parametrize("pipeline_class,weight", [
-    (TorchVisionClassifyPipeline, "alexnet"),
-    (TorchVisionDetectPipeline, "fasterrcnn_resnet50_fpn"),
-    (TorchVisionPosePipeline, "keypointrcnn_resnet50_fpn"),
-    (TorchVisionSegmentPipeline, "maskrcnn_resnet50_fpn"),
-    (YoloClassifyPipeline, "yolov8n-cls.pt"),
-    (YoloDetectPipeline, "yolov8n.pt"),
-    (YoloPosePipeline, "yolov8n-pose.pt"),
-    (YoloSegmentPipeline, "yolov8n-seg.pt"),
+@pytest.mark.parametrize("pipeline_class,model_builder,weight", [
+    (TorchVisionClassifyPipeline, "alexnet", "DEFAULT"),
+    (TorchVisionDetectPipeline, "fasterrcnn_resnet50_fpn", "DEFAULT"),
+    (TorchVisionPosePipeline, "keypointrcnn_resnet50_fpn", "DEFAULT"),
+    (TorchVisionSegmentPipeline, "maskrcnn_resnet50_fpn", "DEFAULT"),
+    (YoloClassifyPipeline, "yolov8n-cls", "yolov8n-cls.pt"),
+    (YoloDetectPipeline, "yolov8n", "yolov8n.pt"),
+    (YoloPosePipeline, "yolov8n-pose", "yolov8n-pose.pt"),
+    (YoloSegmentPipeline, "yolov8n-seg", "yolov8n-seg.pt"),
 ])
-def test_pipeline_images(pipeline_class, weight, test_images_path):
+def test_pipeline_images(pipeline_class, model_builder, weight, test_images_path):
     """
     Test various pipelines with image input.
     """
     results_path = Path("/tmp/results")
-    pipeline = pipeline_class(weight, preset, test_images_path, None, None, results_path)
+    pipeline = pipeline_class("model_name", model_builder, weight, preset, test_images_path, None,
+                              None, results_path)
 
     def on_finished_file_signal(input_path, image_path, json_path):
         assert image_path.exists()
@@ -77,22 +78,23 @@ def test_pipeline_images(pipeline_class, weight, test_images_path):
     pipeline.finished_file_signal.connect(on_finished_file_signal)
     pipeline.run()
 
-@pytest.mark.parametrize("pipeline_class,weight", [
-    (TorchVisionClassifyPipeline, "alexnet"),
-    (TorchVisionDetectPipeline, "fasterrcnn_resnet50_fpn"),
-    (TorchVisionPosePipeline, "keypointrcnn_resnet50_fpn"),
-    (TorchVisionSegmentPipeline, "maskrcnn_resnet50_fpn"),
-    (YoloClassifyPipeline, "yolov8n-cls.pt"),
-    (YoloDetectPipeline, "yolov8n.pt"),
-    (YoloPosePipeline, "yolov8n-pose.pt"),
-    (YoloSegmentPipeline, "yolov8n-seg.pt"),
+@pytest.mark.parametrize("pipeline_class,model_builder,weight", [
+    (TorchVisionClassifyPipeline, "alexnet", "DEFAULT"),
+    (TorchVisionDetectPipeline, "fasterrcnn_resnet50_fpn", "DEFAULT"),
+    (TorchVisionPosePipeline, "keypointrcnn_resnet50_fpn", "DEFAULT"),
+    (TorchVisionSegmentPipeline, "maskrcnn_resnet50_fpn", "DEFAULT"),
+    (YoloClassifyPipeline, "yolov8n-cls", "yolov8n-cls.pt"),
+    (YoloDetectPipeline, "yolov8n", "yolov8n.pt"),
+    (YoloPosePipeline, "yolov8n-pose", "yolov8n-pose.pt"),
+    (YoloSegmentPipeline, "yolov8n-seg", "yolov8n-seg.pt"),
 ])
-def test_pipeline_videos(pipeline_class, weight, test_videos_path):
+def test_pipeline_videos(pipeline_class, model_builder, weight, test_videos_path):
     """
     Test various pipelines with video input.
     """
     results_path = Path("/tmp/results")
-    pipeline = pipeline_class(weight, preset, None, test_videos_path, None, results_path)
+    pipeline = pipeline_class("model_name", model_builder, weight, preset, None,
+                              test_videos_path, None, results_path)
 
     def on_finished_file_signal(input_path, video_path, json_path):
         assert video_path.exists()

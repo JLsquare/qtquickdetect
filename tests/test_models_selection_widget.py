@@ -21,8 +21,8 @@ def test_initial_state_of_models_selection_widget(mock_get_instance, qtbot):
     mock_app_state = MagicMock()
     mock_app_state.get_theme_file_prefix.return_value = "default_"
     mock_app_state.app_config.models = {
-        "Model1": {"task": "detect", "weights": ["weight1", "weight2"]},
-        "Model2": {"task": "detect", "weights": ["weight3"]}
+        "Model1": {"task": "detect", "model_builders": {"model_builder1": ["weight2"]}},
+        "Model2": {"task": "detect", "model_builders": {"model_builder2": ["weight3", "weight4"]}}
     }
     mock_get_instance.return_value = mock_app_state
 
@@ -38,12 +38,12 @@ def test_initial_state_of_models_selection_widget(mock_get_instance, qtbot):
     model1_item = widget._model_tree.topLevelItem(0)
     model2_item = widget._model_tree.topLevelItem(1)
     assert model1_item.text(0) == "Model1"
-    assert model1_item.childCount() == 2
-    assert model1_item.child(0).text(0) == "weight1"
-    assert model1_item.child(1).text(0) == "weight2"
     assert model2_item.text(0) == "Model2"
-    assert model2_item.childCount() == 1
-    assert model2_item.child(0).text(0) == "weight3"
+    assert model1_item.childCount() == 1
+    assert model2_item.childCount() == 2
+    assert model1_item.child(0).text(0) == "model_builder1"
+    assert model2_item.child(0).text(0) == "model_builder2"
+    assert model2_item.child(1).text(0) == "model_builder2"
 
     # Check that the description is set correctly
     assert widget._model_description.text() == "Select the models weights"
@@ -55,8 +55,8 @@ def test_model_selection_changes_weights_property(mock_get_instance, qtbot):
     mock_app_state = MagicMock()
     mock_app_state.get_theme_file_prefix.return_value = "default_"
     mock_app_state.app_config.models = {
-        "Model1": {"task": "detect", "weights": ["weight1", "weight2"]},
-        "Model2": {"task": "detect", "weights": ["weight3"]}
+        "Model1": {"task": "detect", "model_builders": {"model_builder1": ["weight2"]}},
+        "Model2": {"task": "detect", "model_builders": {"model_builder2": ["weight3", "weight4"]}}
     }
     mock_get_instance.return_value = mock_app_state
 
@@ -66,18 +66,21 @@ def test_model_selection_changes_weights_property(mock_get_instance, qtbot):
 
     # Select weights and check the weights property
     model1_item = widget._model_tree.topLevelItem(0)
-    weight1_item = model1_item.child(0)
-    weight2_item = model1_item.child(1)
-    weight1_item.setCheckState(0, Qt.CheckState.Checked)
-    assert widget.weights == {"Model1": ["weight1"]}
-
+    weight2_item = model1_item.child(0)
     weight2_item.setCheckState(0, Qt.CheckState.Checked)
-    assert widget.weights == {"Model1": ["weight1", "weight2"]}
-
-    weight1_item.setCheckState(0, Qt.CheckState.Unchecked)
     assert widget.weights == {"Model1": ["weight2"]}
-
     weight2_item.setCheckState(0, Qt.CheckState.Unchecked)
+    assert widget.weights == {}
+
+    model2_item = widget._model_tree.topLevelItem(1)
+    weight3_item = model2_item.child(0)
+    weight4_item = model2_item.child(1)
+    weight3_item.setCheckState(0, Qt.CheckState.Checked)
+    weight4_item.setCheckState(0, Qt.CheckState.Checked)
+    assert widget.weights == {"Model2": ["weight3", "weight4"]}
+    weight3_item.setCheckState(0, Qt.CheckState.Unchecked)
+    assert widget.weights == {"Model2": ["weight4"]}
+    weight4_item.setCheckState(0, Qt.CheckState.Unchecked)
     assert widget.weights == {}
 
 
@@ -87,8 +90,8 @@ def test_models_changed_signal_emitted(mock_get_instance, qtbot):
     mock_app_state = MagicMock()
     mock_app_state.get_theme_file_prefix.return_value = "default_"
     mock_app_state.app_config.models = {
-        "Model1": {"task": "detect", "weights": ["weight1", "weight2"]},
-        "Model2": {"task": "detect", "weights": ["weight3"]}
+        "Model1": {"task": "detect", "model_builders": {"model_builder1": ["weight2"]}},
+        "Model2": {"task": "detect", "model_builders": {"model_builder2": ["weight3", "weight4"]}}
     }
     mock_get_instance.return_value = mock_app_state
 
@@ -115,8 +118,8 @@ def test_widget_layout_and_properties(mock_get_instance, qtbot):
     mock_app_state = MagicMock()
     mock_app_state.get_theme_file_prefix.return_value = "default_"
     mock_app_state.app_config.models = {
-        "Model1": {"task": "detect", "weights": ["weight1", "weight2"]},
-        "Model2": {"task": "detect", "weights": ["weight3"]}
+        "Model1": {"task": "detect", "model_builders": {"model_builder1": ["weight2"]}},
+        "Model2": {"task": "detect", "model_builders": {"model_builder2": ["weight3", "weight4"]}}
     }
     mock_get_instance.return_value = mock_app_state
 
@@ -143,8 +146,8 @@ def test_set_task_updates_model_tree(mock_get_instance, qtbot):
     mock_app_state = MagicMock()
     mock_app_state.get_theme_file_prefix.return_value = "default_"
     mock_app_state.app_config.models = {
-        "Model1": {"task": "detect", "weights": ["weight1", "weight2"]},
-        "Model2": {"task": "classify", "weights": ["weight3"]}
+        "Model1": {"task": "detect", "model_builders": {"model_builder1": ["weight2"]}},
+        "Model2": {"task": "classify", "model_builders": {"model_builder2": ["weight3", "weight4"]}}
     }
     mock_get_instance.return_value = mock_app_state
 
@@ -156,12 +159,12 @@ def test_set_task_updates_model_tree(mock_get_instance, qtbot):
     assert widget._model_tree.topLevelItemCount() == 1
     assert widget._model_tree.topLevelItem(0).text(0) == "Model1"
 
-    # Set task to classify and check the model tree
+    # Change the task to 'classify'
     widget.set_task("classify")
     assert widget._model_tree.topLevelItemCount() == 1
     assert widget._model_tree.topLevelItem(0).text(0) == "Model2"
 
-    # Set task to detect and check the model tree
+    # Change the task to 'detect'
     widget.set_task("detect")
     assert widget._model_tree.topLevelItemCount() == 1
     assert widget._model_tree.topLevelItem(0).text(0) == "Model1"
