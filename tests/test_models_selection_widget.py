@@ -45,7 +45,11 @@ def test_initial_state_of_models_selection_widget(mock_get_instance, qtbot):
     assert model2_item.child(0).childCount() == 2
     assert model1_item.child(0).text(0) == "model_builder1"
     assert model2_item.child(0).text(0) == "model_builder2"
-    assert model2_item.child(1).text(0) == "model_builder2"
+    model_builder1_item = model1_item.child(0)
+    model_builder2_item = model2_item.child(0)
+    assert model_builder1_item.child(0).text(0) == "weight2"
+    assert model_builder2_item.child(0).text(0) == "weight3"
+    assert model_builder2_item.child(1).text(0) == "weight4"
 
     # Check that the description is set correctly
     assert widget._model_description.text() == "Select the models weights"

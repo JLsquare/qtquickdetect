@@ -51,15 +51,15 @@ def test_initial_state_of_models_widget(mock_get_instance, mock_get_app_dir, qtb
     model1_item = widget._tree_widget.topLevelItem(0)
     assert model1_item.text(0) == 'Model1'
     assert model1_item.text(1) == 'Pipeline - Pipeline1, Task - Task1'
-    assert model1_item.childCount() == 2
+    assert model1_item.childCount() == 1
 
     model_builder1_item = model1_item.child(0)
+    assert model_builder1_item.childCount() == 2
     weight1_item = model_builder1_item.child(0)
     assert weight1_item.text(0) == 'weight1.pt'
     assert weight1_item.text(1) == 'Not downloaded'  # Mocking file existence not checked yet
 
-    model_builder2_item = model1_item.child(1)
-    weight2_item = model_builder2_item.child(0)
+    weight2_item = model_builder1_item.child(1)
     assert weight2_item.text(0) == 'weight2.pt'
     assert weight2_item.text(1) == 'Not downloaded'
 
@@ -69,6 +69,7 @@ def test_initial_state_of_models_widget(mock_get_instance, mock_get_app_dir, qtb
     assert model2_item.childCount() == 1
 
     model_builder3_item = model2_item.child(0)
+    assert model_builder3_item.childCount() == 1
     weight3_item = model_builder3_item.child(0)
     assert weight3_item.text(0) == 'weight3.pt'
     assert weight3_item.text(1) == 'Not downloaded'
