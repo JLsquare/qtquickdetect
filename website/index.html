@@ -27,7 +27,7 @@
         .download-links {
             margin-top: 20px;
         }
-        .download-links a {
+        .download-links a, .doc-button {
             display: inline-block;
             background-color: #007BFF;
             color: white;
@@ -35,11 +35,23 @@
             border-radius: 5px;
             margin-right: 10px;
             margin-bottom: 10px;
+            text-decoration: none;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .doc-button {
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <h1>QtQuickDetect</h1>
+    <div class="header-container">
+        <h1>QtQuickDetect</h1>
+        <a href="/docs/" target="_blank" class="doc-button">Documentation</a>
+    </div>
     <img src="https://raw.githubusercontent.com/JLsquare/qtquickdetect/main/media/app_screenshot.png" alt="QtQuickDetect Logo" style="max-width: 100%; margin-bottom: 20px;">
     <p>QtQuickDetect is a powerful application designed to compare and evaluate the performance of different deep learning models for object detection, segmentation, classification, and pose estimation. This user-friendly tool allows you to analyze images, videos, and live streams with ease, providing detailed results and history for each task.</p>
     <h2>Features</h2>
@@ -77,6 +89,11 @@ pip install .
     <h3>Important Notes for GPU Acceleration</h3>
     <p>GPU acceleration is supported for Nvidia users. Please install CUDA-enabled <code>torch 2.3.x</code> and <code>torchvision 0.18.x</code>, as per the instructions on the <a href="https://pytorch.org/get-started/locally/" target="_blank">PyTorch website</a>. You may install the GPU-enabled torch builds before or after installing QtQuickDetect.</p>
     <p>You will then have access to the device selection dropdown in the presets tab.</p>
+    <h2>Documentation</h2>
+    <p>For detailed information on how to use QtQuickDetect, please refer to our comprehensive documentation:</p>
+    <div class="download-links">
+        <a href="/docs/" target="_blank">View Documentation</a>
+    </div>
     <h2>Download</h2>
     <div class="download-links">
         <a href="qtquickdetect.zip" download>Download the latest version (.zip)</a>
