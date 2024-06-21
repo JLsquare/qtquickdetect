@@ -8,6 +8,7 @@ from ..models.app_state import AppState
 from ..models.preset import Preset
 from ..views.image_result_widget import ImageResultWidget
 from ..views.video_result_widget import VideoResultWidget
+import qtquickdetect.utils.filepaths as filepaths
 
 
 class InferenceHistoryWidget(QWidget):
@@ -97,7 +98,7 @@ class InferenceHistoryWidget(QWidget):
 
         :return: List of dictionaries containing the history of the inference results
         """
-        history_dir = Path('./history')
+        history_dir = filepaths.get_base_data_dir() / 'history'
         if not history_dir.exists():
             return []
 
@@ -131,7 +132,7 @@ class InferenceHistoryWidget(QWidget):
         collection_name = self._table.item(row, 1).text()
         preset_name = self._table.item(row, 2).text()
         result_folder = self.row_folder[row]
-        result_path = Path('./history') / result_folder
+        result_path = filepaths.get_base_data_dir() / 'history' / result_folder
         preset = Preset(preset_name)
         logging.debug(f'Opening result {media_type} {collection_name} {preset_name} {result_folder}')
 

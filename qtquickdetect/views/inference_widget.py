@@ -231,7 +231,7 @@ class InferenceWidget(QWidget):
             self._btn_cancel.setEnabled(False)
             return
 
-        result_path = Path('history') / f'{self.media_type}_{self._task.task}_{formatted_date}'
+        result_path = filepaths.get_base_data_dir() / 'history' / f'{self.media_type}_{self._task.task}_{formatted_date}'
         result_path.mkdir(parents=True, exist_ok=True)
 
         preset = Preset(self._preset.preset)
