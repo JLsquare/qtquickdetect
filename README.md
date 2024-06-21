@@ -1,8 +1,19 @@
 # QTQuickDetect
 
+<div align="center">
+
+[![Website](https://img.shields.io/badge/Website-Visit-blue?style=for-the-badge&logo=google-chrome)](https://qtquickdetect.feur.live)
+[![Documentation](https://img.shields.io/badge/Documentation-Read-green?style=for-the-badge&logo=readthedocs)](https://qtquickdetect.feur.live/docs/)
+
 ![app_screenshot](media/app_screenshot.png)
 
+</div>
+
 QTQuickDetect is a powerful application designed to compare and evaluate the performance of different deep learning models for object detection, segmentation, classification, and pose estimation. This user-friendly tool allows you to analyze images, videos, and live streams with ease, providing detailed results and history for each task.
+
+[Get Started](#installation) • [View Features](#features) • [Explore Tasks](#tasks)
+
+---
 
 ## Features
 
@@ -56,4 +67,4 @@ You will then have access to the device selection dropdown in the presets tab.
 
 ## Authors
 
-QTQuickDetect was developed by Jean-Loup Mellion and Gatien Da Rocha, students at the University IUT Vannes, France.
+QTQuickDetect was developed by Jean-Loup Mellion, Gatien Da Rocha and Jules Nicolas, students at the University IUT Vannes, France.
