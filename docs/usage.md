@@ -51,9 +51,13 @@ In QTQuickDetect, presets are a way to save a set of configurations. You can cre
 
 The Image/Video Collections tab is where you can manage your media collections. You can add, remove, and inspect images and videos. A collection is then used for inference, meaning all the media in the collection will be processed.
 
+![Collections](assets/collection_screenshot.png)
+
 # Image/Videos Inference tab
 
 Once you are happy with your settings, and have created a collection, you can start inference. The inference tab will have you select a task (detection, segmentation, classification, or pose estimation), one or multiple models, and a collection to process.
+
+![Image Inference](assets/image_screenshot.png)
 
 # Stream Inference tab
 
@@ -64,6 +68,8 @@ Just like the Image/Video Inference tab, but for live streams. You can select a 
 # Inference History tab
 
 You can view the results of previous inferences here. You can also export the results in JSON format for further analysis or integration with other tools.
+
+![History](assets/history_screenshot.png)
 
 # Settings tab
 
