@@ -36,7 +36,7 @@ def create_config_dir() -> None:
     """
     Creates the config directory if it does not exist
     """
-    get_base_config_dir().mkdir(exist_ok=True)
+    get_base_config_dir().mkdir(exist_ok=True, parents=True)
 
 
 # for application state files, such as model weights and user images
@@ -72,7 +72,7 @@ def create_data_dir() -> None:
 
     for subdir in subdirs:
         path = get_base_data_dir() / subdir
-        path.mkdir(exist_ok=True)
+        path.mkdir(exist_ok=True, parents=True)
 
 
 # for temporary files, such as logs and cache
@@ -101,7 +101,7 @@ def create_cache_dir() -> None:
     """
     Creates the cache directory if it does not exist
     """
-    get_base_cache_dir().mkdir(exist_ok=True)
+    get_base_cache_dir().mkdir(exist_ok=True, parents=True)
 
 
 # get the path to where the app's code is stored
