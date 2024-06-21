@@ -29,3 +29,6 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
+extra:
+  homepage: https://qtquickdetect.feur.live
