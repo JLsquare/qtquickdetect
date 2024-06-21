@@ -78,3 +78,5 @@ You can view the results of previous inferences here. You can also export the re
 # Settings tab
 
 If you wish to change the default language, or the theme, you can do so in the settings tab. If necessary, you can also reset the software to its default settings, or manually edit the configuration file.
+
+![Settings](assets/settings_screenshot.png)
