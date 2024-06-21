@@ -59,6 +59,8 @@ Once you are happy with your settings, and have created a collection, you can st
 
 Just like the Image/Video Inference tab, but for live streams. You can select a task, a __single__ model, a preset, and a stream source (URL, or webcam). You will then be met with a window showing the stream and the inference results in real-time.
 
+![Stream Inference](assets/stream_screenshot.png)
+
 # Inference History tab
 
 You can view the results of previous inferences here. You can also export the results in JSON format for further analysis or integration with other tools.
