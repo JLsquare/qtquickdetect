@@ -9,9 +9,13 @@ We highly recommend you read most of its contents, as it contains useful informa
 The models tab is where you can manage available models. You can inspect supported model families, and tasks, and manage custom weights.
 If you want custom weights for the yolo family of models, there are quite a few available over at [Roboflow universe](https://universe.roboflow.com/).
 
+![Models](assets/models_screenshot.png)
+
 ## Presets tab
 
 In QTQuickDetect, presets are a way to save a set of configurations. You can create presets and rename them to your liking.
+
+![Presets](assets/preset_screenshot.png)
 
 ### Available settings
 
