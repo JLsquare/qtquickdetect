@@ -9,9 +9,13 @@ We highly recommend you read most of its contents, as it contains useful informa
 The models tab is where you can manage available models. You can inspect supported model families, and tasks, and manage custom weights.
 If you want custom weights for the yolo family of models, there are quite a few available over at [Roboflow universe](https://universe.roboflow.com/).
 
+![Models](assets/models_screenshot.png)
+
 ## Presets tab
 
 In QTQuickDetect, presets are a way to save a set of configurations. You can create presets and rename them to your liking.
+
+![Presets](assets/preset_screenshot.png)
 
 ### Available settings
 
@@ -51,9 +55,13 @@ In QTQuickDetect, presets are a way to save a set of configurations. You can cre
 
 The Image/Video Collections tab is where you can manage your media collections. You can add, remove, and inspect images and videos. A collection is then used for inference, meaning all the media in the collection will be processed.
 
+![Collections](assets/collection_screenshot.png)
+
 # Image/Videos Inference tab
 
 Once you are happy with your settings, and have created a collection, you can start inference. The inference tab will have you select a task (detection, segmentation, classification, or pose estimation), one or multiple models, and a collection to process.
+
+![Image Inference](assets/image_screenshot.png)
 
 # Stream Inference tab
 
@@ -65,6 +73,10 @@ Just like the Image/Video Inference tab, but for live streams. You can select a 
 
 You can view the results of previous inferences here. You can also export the results in JSON format for further analysis or integration with other tools.
 
+![History](assets/history_screenshot.png)
+
 # Settings tab
 
 If you wish to change the default language, or the theme, you can do so in the settings tab. If necessary, you can also reset the software to its default settings, or manually edit the configuration file.
+
+![Settings](assets/settings_screenshot.png)
