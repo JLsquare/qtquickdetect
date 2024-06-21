@@ -46,3 +46,23 @@ In QTQuickDetect, presets are a way to save a set of configurations. You can cre
 **Pose Point Size** : The size of the points drawn by pose estimation models (varies depending on image resolution). Points are usually drawn at the joints of the detected pose.
 
 **Pose Line Thickness** : The thickness of the lines drawn by pose estimation models (varies depending on image resolution). Lines are usually drawn between the joints of the detected pose.
+
+# Image/Video Collections tab
+
+The Image/Video Collections tab is where you can manage your media collections. You can add, remove, and inspect images and videos. A collection is then used for inference, meaning all the media in the collection will be processed.
+
+# Image/Videos Inference tab
+
+Once you are happy with your settings, and have created a collection, you can start inference. The inference tab will have you select a task (detection, segmentation, classification, or pose estimation), one or multiple models, and a collection to process.
+
+# Stream Inference tab
+
+Just like the Image/Video Inference tab, but for live streams. You can select a task, a __single__ model, a preset, and a stream source (URL, or webcam). You will then be met with a window showing the stream and the inference results in real-time.
+
+# Inference History tab
+
+You can view the results of previous inferences here. You can also export the results in JSON format for further analysis or integration with other tools.
+
+# Settings tab
+
+If you wish to change the default language, or the theme, you can do so in the settings tab. If necessary, you can also reset the software to its default settings, or manually edit the configuration file.
