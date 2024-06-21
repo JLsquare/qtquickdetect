@@ -9,3 +9,4 @@ presets/
 qtquickdetect.spec
 *.egg-info
 build/
+site/
