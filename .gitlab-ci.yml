@@ -38,6 +38,9 @@ deploy:
     - source venv/bin/activate
     - pip install .[docs]
   script:
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "mkdir -p /var/www/qtquickdetect.feur.live"
+    - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -rf /var/www/qtquickdetect.feur.live/*"
+    - sshpass -p $SSH_PASSWORD scp -o StrictHostKeyChecking=no -r website/* $SSH_USER@$SSH_URL:/var/www/qtquickdetect.feur.live/
     - source venv/bin/activate
     - zip -r qtquickdetect.zip . -x "*.git*" -x "*.gitignore" -x "*.gitlab-ci.yml" -x "*tests*" -x "*website*" -x "*gestion_projet*" "*notebooks*" -x "*media*" -x "*docs*" -x "*site*" -x "*venv*"
     - sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_URL "rm -f /var/www/qtquickdetect.feur.live/qtquickdetect.zip"
