@@ -80,7 +80,7 @@ def test_local_setting_change(mock_get_instance, qtbot):
 def test_save_settings(mock_get_instance, qtbot, monkeypatch):
     # Setup the mock for app_state
     mock_app_state = MagicMock()
-    mock_app_state.qss = 'dark'  # Ensure qss is set to a valid string
+    mock_app_state.qss = 'dark'
     mock_get_instance.return_value = mock_app_state
 
     # Create the widget
@@ -96,8 +96,8 @@ def test_save_settings(mock_get_instance, qtbot, monkeypatch):
 
     monkeypatch.setattr(QApplication, 'quit', mock_quit)
 
-    # Mock the QMessageBox.exec method
-    with patch.object(QMessageBox, 'exec', return_value=QMessageBox.StandardButton.No):
+    # Test case 1: User chooses not to restart
+    with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.No):
         # Trigger save settings
         qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
 
@@ -107,9 +107,16 @@ def test_save_settings(mock_get_instance, qtbot, monkeypatch):
         # Ensure quit was not called
         assert not quit_called
 
-    with patch.object(QMessageBox, 'exec', return_value=QMessageBox.StandardButton.Yes):
+    # Reset mock_app_state.save call count
+    mock_app_state.save.reset_mock()
+
+    # Test case 2: User chooses to restart
+    with patch.object(QMessageBox, 'question', return_value=QMessageBox.StandardButton.Yes):
         # Trigger save settings again
         qtbot.mouseClick(widget._save_button, Qt.MouseButton.LeftButton)
+
+        # Check that the save method of app_state was called
+        mock_app_state.save.assert_called_once()
 
         # Ensure quit was called
         assert quit_called
